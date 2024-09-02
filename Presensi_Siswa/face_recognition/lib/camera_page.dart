@@ -3,10 +3,6 @@ import 'package:flutter/material.dart';
 import 'face_recognition_service.dart';
 
 class CameraPage extends StatefulWidget {
-  final String userId;
-
-  const CameraPage({super.key, required this.userId});
-
   @override
   _CameraPageState createState() => _CameraPageState();
 }
@@ -47,8 +43,7 @@ class _CameraPageState extends State<CameraPage> {
         onPressed: () async {
           try {
             XFile picture = await _cameraController.takePicture();
-            await FaceRecognitionService.recognizeFace(picture, widget.userId);
-            // Navigasi ke halaman konfirmasi absensi atau tampilkan notifikasi
+            await FaceRecognitionService.recognizeFace(picture);
           } catch (e) {
             print(e);
           }
