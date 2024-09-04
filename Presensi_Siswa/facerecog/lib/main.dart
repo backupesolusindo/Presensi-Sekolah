@@ -50,11 +50,11 @@ class Home extends StatelessWidget {
               child: Column(
                 children: [
                   ExpansionTile(
-                    title: const Text('Vision APIs'),
+                    title: const Text('Absen'),
                     children: [
                       // CustomCard('Barcode Scanning', BarcodeScannerView()),
                       // CustomCard('Face Detection', FaceDetectorView()),
-                      CustomCard('Face Mesh Detection', FaceMeshDetectorView()),
+                      CustomCard('Absensi Wajah', FaceMeshDetectorView()),
                       // CustomCard('Image Labeling', ImageLabelView()),
                       // CustomCard('Object Detection', ObjectDetectorView()),
                       // CustomCard('Text Recognition', TextRecognizerView()),
@@ -68,16 +68,18 @@ class Home extends StatelessWidget {
                   SizedBox(
                     height: 20,
                   ),
-                  // ExpansionTile(
-                  //   title: const Text('Natural Language APIs'),
-                  //   children: [
+                  ExpansionTile(
+                    title: const Text('Registrasi'),
+                    children: [
+                      CustomCard('Registrasi Wajah', FaceMeshDetectorView()),
+                  //     CustomCard(
                   //     CustomCard('Language ID', LanguageIdentifierView()),
                   //     CustomCard(
                   //         'On-device Translation', LanguageTranslatorView()),
                   //     CustomCard('Smart Reply', SmartReplyView()),
                   //     CustomCard('Entity Extraction', EntityExtractionView()),
-                  //   ],
-                  // ),
+                    ],
+                  ),
                 ],
               ),
             ),
