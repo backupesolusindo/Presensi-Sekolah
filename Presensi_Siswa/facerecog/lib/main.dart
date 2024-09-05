@@ -1,88 +1,51 @@
-import 'dart:io';
-
 import 'package:flutter/material.dart';
+import 'register_face_page.dart';
+import 'face_attendance_page.dart';
+import 'package:firebase_core/firebase_core.dart';
+import 'package:logger/logger.dart';
+import 'package:lottie/lottie.dart';
 
-// import 'nlp_detector_views/entity_extraction_view.dart';
-// import 'nlp_detector_views/language_identifier_view.dart';
-// import 'nlp_detector_views/language_translator_view.dart';
-// import 'nlp_detector_views/smart_reply_view.dart';
-// import 'vision_detector_views/barcode_scanner_view.dart';
-// import 'vision_detector_views/digital_ink_recognizer_view.dart';
-// import 'vision_detector_views/document_scanner_view.dart';
-// import 'vision_detector_views/face_detector_view.dart';
-import 'vision_detector_views/face_mesh_detector_view.dart';
-// import 'vision_detector_views/label_detector_view.dart';
-// import 'vision_detector_views/object_detector_view.dart';
-// import 'vision_detector_views/pose_detector_view.dart';
-// import 'vision_detector_views/selfie_segmenter_view.dart';
-// import 'vision_detector_views/text_detector_view.dart';
-
-Future<void> main() async {
+void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
-  runApp(MyApp());
-}
+  runApp(const MyAppLoader()); // Menampilkan layar loading terlebih dahulu
 
-class MyApp extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    return MaterialApp(
-      debugShowCheckedModeBanner: false,
-      home: Home(),
+  var logger = Logger(); // Inisialisasi logger
+
+  try {
+    await Firebase.initializeApp(
+      options: const FirebaseOptions(
+        // BAGIAN PENTING
+        apiKey: 'AIzaSyDLPEYoVa9zDTnSYo2fJwjJ7rKzHZTSCKk',
+        appId: '1:31816478123:android:4687b2935f7abe4a32f6ee',
+        messagingSenderId: '31816478123',
+        projectId: 'facerecog-4de3d',
+        databaseURL: 'https://facerecog-4de3d-default-rtdb.asia-southeast1.firebasedatabase.app',
+        storageBucket: 'facerecog-4de3d.appspot.com',
+      ),
     );
+    runApp(MyApp());
+  } catch (e) {
+    logger
+        .e("Failed to initialize Firebase: ${e.toString()}"); // Gunakan logger
+    runApp(MyAppNotConnected(errorMessage: e.toString()));
   }
 }
 
-class Home extends StatelessWidget {
+class MyAppLoader extends StatelessWidget {
+  const MyAppLoader({super.key});
+
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Text('Google ML Kit Demo App'),
-        centerTitle: true,
-        elevation: 0,
-      ),
-      body: SafeArea(
-        child: Center(
-          child: SingleChildScrollView(
-            child: Padding(
-              padding: EdgeInsets.symmetric(horizontal: 16),
-              child: Column(
-                children: [
-                  ExpansionTile(
-                    title: const Text('Absen'),
-                    children: [
-                      // CustomCard('Barcode Scanning', BarcodeScannerView()),
-                      // CustomCard('Face Detection', FaceDetectorView()),
-                      CustomCard('Absensi Wajah', FaceMeshDetectorView()),
-                      // CustomCard('Image Labeling', ImageLabelView()),
-                      // CustomCard('Object Detection', ObjectDetectorView()),
-                      // CustomCard('Text Recognition', TextRecognizerView()),
-                      // CustomCard('Digital Ink Recognition', DigitalInkView()),
-                      // CustomCard('Pose Detection', PoseDetectorView()),
-                      // CustomCard('Selfie Segmentation', SelfieSegmenterView()),
-                      // if (Platform.isAndroid)
-                      //   CustomCard('Document Scanner', DocumentScannerView()),
-                    ],
-                  ),
-                  SizedBox(
-                    height: 20,
-                  ),
-                  ExpansionTile(
-                    title: const Text('Registrasi'),
-                    children: [
-                      CustomCard('Registrasi Wajah', FaceMeshDetectorView()),
-                  //     CustomCard(
-                  //     CustomCard('Language ID', LanguageIdentifierView()),
-                  //     CustomCard(
-                  //         'On-device Translation', LanguageTranslatorView()),
-                  //     CustomCard('Smart Reply', SmartReplyView()),
-                  //     CustomCard('Entity Extraction', EntityExtractionView()),
-                    ],
-                  ),
-                ],
-              ),
-            ),
+    return MaterialApp(
+      home: Scaffold(
+        backgroundColor: Colors.white,
+        body: Center(
+          child: Lottie.asset(
+            'assets/loading.json', // Path to your Lottie JSON file
+            width: 200,
+            height: 200,
+            fit: BoxFit.fill,
           ),
         ),
       ),
@@ -90,35 +53,70 @@ class Home extends StatelessWidget {
   }
 }
 
-class CustomCard extends StatelessWidget {
-  final String _label;
-  final Widget _viewPage;
-  final bool featureCompleted;
-
-  const CustomCard(this._label, this._viewPage, {this.featureCompleted = true});
-
+class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    return Card(
-      elevation: 5,
-      margin: EdgeInsets.only(bottom: 10),
-      child: ListTile(
-        tileColor: Theme.of(context).primaryColor,
-        title: Text(
-          _label,
-          style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+    return MaterialApp(
+      debugShowCheckedModeBanner: false,
+      home: HomePage(),
+      routes: {
+        '/register-face': (context) => RegisterFacePage(),
+        '/face-attendance': (context) =>
+            FaceAttendancePage(), // Tambahkan rute absensi
+      },
+    );
+  }
+}
+
+class HomePage extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text('Face Recognition App'),
+        centerTitle: true,
+      ),
+      body: Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            ElevatedButton(
+              onPressed: () {
+                Navigator.pushNamed(context, '/register-face');
+              },
+              child: Text('Register Face'),
+            ),
+            SizedBox(height: 20),
+            ElevatedButton(
+              onPressed: () {
+                Navigator.pushNamed(
+                    context, '/face-attendance'); // Navigasi ke halaman absensi
+              },
+              child: Text('Face Attendance'),
+            ),
+          ],
         ),
-        onTap: () {
-          if (!featureCompleted) {
-            ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-                content:
-                    const Text('This feature has not been implemented yet')));
-          } else {
-            Navigator.push(
-                context, MaterialPageRoute(builder: (context) => _viewPage));
-          }
-        },
       ),
     );
   }
 }
+class MyAppNotConnected extends StatelessWidget {
+  final String errorMessage;
+
+  const MyAppNotConnected({super.key, required this.errorMessage});
+
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      home: Scaffold(
+        appBar: AppBar(
+          title: const Text('Connection Error'),
+        ),
+        body: Center(
+          child: Text('Failed to initialize Firebase: $errorMessage'),
+        ),
+      ),
+    );
+  }
+}
+
