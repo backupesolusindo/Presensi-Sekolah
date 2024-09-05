@@ -72,11 +72,13 @@ class _RegisterFacePageState extends State<RegisterFacePage> {
                 children: [
                   Text(
                     'Face = ${_faceData.toString()}',
-                    style: TextStyle(color: Colors.green, fontWeight: FontWeight.bold),
+                    style: TextStyle(
+                        color: Colors.green, fontWeight: FontWeight.bold),
                   ),
                   SizedBox(height: 20),
                   ElevatedButton(
-                    onPressed: _saveToDatabase, // Tombol untuk menyimpan data ke Firebase
+                    onPressed:
+                        _saveToDatabase, // Tombol untuk menyimpan data ke Firebase
                     child: Text('Simpan Data Wajah'),
                   ),
                 ],
@@ -95,7 +97,8 @@ class _RegisterFacePageState extends State<RegisterFacePage> {
       final faceData = await Navigator.push<List<double>>(
         context,
         MaterialPageRoute(
-          builder: (context) => FaceDetectorView(), // Panggil FaceDetectorView untuk mendeteksi wajah
+          builder: (context) =>
+              FaceDetectorView(), // Panggil FaceDetectorView untuk mendeteksi wajah
         ),
       );
 
@@ -120,7 +123,9 @@ class _RegisterFacePageState extends State<RegisterFacePage> {
   Future<void> _saveToDatabase() async {
     if (_faceData == null) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Data wajah belum ada, silakan scan wajah terlebih dahulu.')),
+        SnackBar(
+            content: Text(
+                'Data wajah belum ada, silakan scan wajah terlebih dahulu.')),
       );
       return;
     }
