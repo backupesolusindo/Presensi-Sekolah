@@ -10,7 +10,7 @@ class RegisterFacePage extends StatefulWidget {
 class _RegisterFacePageState extends State<RegisterFacePage> {
   final _formKey = GlobalKey<FormState>();
   String? _name, _class, _nis;
-  List<Map<String, dynamic>>? _faceData; // Data wajah dari deteksi
+  List<double>? _faceData; // Data wajah yang dipindai
   bool _isFaceScanned = false; // Status apakah wajah sudah dipindai
 
   @override
@@ -62,15 +62,24 @@ class _RegisterFacePageState extends State<RegisterFacePage> {
             ),
             SizedBox(height: 20),
             ElevatedButton(
-              onPressed: _registerFace,
+              onPressed: _registerFace, // Tombol untuk scan wajah
               child: Text('Scan Wajah'),
             ),
             SizedBox(height: 20),
-            // Tombol ini akan muncul setelah wajah berhasil dipindai
+            // Menampilkan data wajah jika sudah dipindai
             if (_isFaceScanned)
-              ElevatedButton(
-                onPressed: _saveToDatabase,
-                child: Text('Simpan Data Wajah'),
+              Column(
+                children: [
+                  Text(
+                    'Face = ${_faceData.toString()}',
+                    style: TextStyle(color: Colors.green, fontWeight: FontWeight.bold),
+                  ),
+                  SizedBox(height: 20),
+                  ElevatedButton(
+                    onPressed: _saveToDatabase, // Tombol untuk menyimpan data ke Firebase
+                    child: Text('Simpan Data Wajah'),
+                  ),
+                ],
               ),
           ],
         ),
@@ -83,17 +92,18 @@ class _RegisterFacePageState extends State<RegisterFacePage> {
       _formKey.currentState!.save();
 
       // Navigasi ke halaman deteksi wajah
-      final faceData = await Navigator.push<List<Map<String, dynamic>>>(
+      final faceData = await Navigator.push<List<double>>(
         context,
         MaterialPageRoute(
-          builder: (context) => FaceDetectorView(),
+          builder: (context) => FaceDetectorView(), // Panggil FaceDetectorView untuk mendeteksi wajah
         ),
       );
 
-      if (faceData != null && faceData.isNotEmpty) {
+      // Jika wajah berhasil dipindai, simpan datanya
+      if (faceData != null) {
         setState(() {
-          _faceData = faceData; // Simpan data hasil deteksi wajah
-          _isFaceScanned = true; // Tandai bahwa wajah sudah dipindai
+          _faceData = faceData;
+          _isFaceScanned = true;
         });
 
         ScaffoldMessenger.of(context).showSnackBar(
@@ -108,14 +118,13 @@ class _RegisterFacePageState extends State<RegisterFacePage> {
   }
 
   Future<void> _saveToDatabase() async {
-  if (_faceData == null) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text('Data wajah belum ada, silakan scan wajah terlebih dahulu.')),
-    );
-    return;
-  }
+    if (_faceData == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Data wajah belum ada, silakan scan wajah terlebih dahulu.')),
+      );
+      return;
+    }
 
-  try {
     // Simpan data ke Firebase Database
     final databaseRef = FirebaseDatabase.instance.ref('students');
     final newStudentRef = databaseRef.push(); // Buat ID baru
@@ -128,23 +137,14 @@ class _RegisterFacePageState extends State<RegisterFacePage> {
       'faceData': _faceData, // Simpan fitur wajah sebagai data numerik
     });
 
-    // Tambahkan log untuk memastikan bahwa data terkirim
-    print('Data berhasil dikirim ke Firebase');
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(content: Text('Registrasi wajah berhasil!')),
     );
-  } catch (e) {
-    print('Gagal menyimpan data: $e'); // Tambahkan log untuk menangkap error
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text('Gagal menyimpan data. Coba lagi.')),
-    );
+
+    // Reset status setelah data berhasil disimpan
+    setState(() {
+      _isFaceScanned = false;
+      _faceData = null;
+    });
   }
-
-  // Reset status setelah data berhasil disimpan
-  setState(() {
-    _isFaceScanned = false;
-    _faceData = null;
-  });
-}
-
 }

@@ -7,7 +7,7 @@ import 'painters/face_detector_painter.dart';
 
 class FaceDetectorView extends StatefulWidget {
   @override
-  State<FaceDetectorView> createState() => _FaceDetectorViewState();
+  _FaceDetectorViewState createState() => _FaceDetectorViewState();
 }
 
 class _FaceDetectorViewState extends State<FaceDetectorView> {
@@ -22,6 +22,7 @@ class _FaceDetectorViewState extends State<FaceDetectorView> {
   CustomPaint? _customPaint;
   String? _text;
   var _cameraLensDirection = CameraLensDirection.front;
+  List<double>? _faceData; // Untuk menyimpan data wajah
 
   @override
   void dispose() {
@@ -32,13 +33,30 @@ class _FaceDetectorViewState extends State<FaceDetectorView> {
 
   @override
   Widget build(BuildContext context) {
-    return DetectorView(
-      title: 'Face Detector',
-      customPaint: _customPaint,
-      text: _text,
-      onImage: _processImage,
-      initialCameraLensDirection: _cameraLensDirection,
-      onCameraLensDirectionChanged: (value) => _cameraLensDirection = value,
+    return Scaffold(
+      appBar: AppBar(
+        title: Text('Deteksi Wajah'),
+      ),
+      body: DetectorView(
+        title: 'Face Detector',
+        customPaint: _customPaint,
+        text: _text,
+        onImage: _processImage,
+        initialCameraLensDirection: _cameraLensDirection,
+        onCameraLensDirectionChanged: (value) => _cameraLensDirection = value,
+      ),
+      floatingActionButton: FloatingActionButton(
+        child: Icon(Icons.check),
+        onPressed: () {
+          if (_faceData != null) {
+            Navigator.pop(context, _faceData); // Kembalikan data wajah ke halaman sebelumnya
+          } else {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(content: Text('Tidak ada wajah yang terdeteksi')),
+            );
+          }
+        },
+      ),
     );
   }
 
@@ -51,24 +69,8 @@ class _FaceDetectorViewState extends State<FaceDetectorView> {
     });
 
     final faces = await _faceDetector.processImage(inputImage);
-    if (faces.isNotEmpty) {
-      // Ambil data bounding box wajah atau fitur lain
-      final faceData = faces.map((face) {
-        return {
-          'boundingBox': face.boundingBox,
-          // Jika ingin menyimpan landmark atau fitur lain, tambahkan di sini
-        };
-      }).toList();
-
-      // Kembalikan data wajah ke halaman sebelumnya
-      Navigator.pop(context, faceData);
-    } else {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Tidak ada wajah terdeteksi. Silakan coba lagi.')),
-      );
-    }
-
-    if (inputImage.metadata?.size != null && inputImage.metadata?.rotation != null) {
+    if (inputImage.metadata?.size != null &&
+        inputImage.metadata?.rotation != null) {
       final painter = FaceDetectorPainter(
         faces,
         inputImage.metadata!.size,
@@ -76,8 +78,28 @@ class _FaceDetectorViewState extends State<FaceDetectorView> {
         _cameraLensDirection,
       );
       _customPaint = CustomPaint(painter: painter);
+
+      // Ambil data wajah dari deteksi dan simpan sebagai list double
+      if (faces.isNotEmpty) {
+        final face = faces.first;
+        final boundingBox = face.boundingBox;
+
+        _faceData = [
+          boundingBox.left,
+          boundingBox.top,
+          boundingBox.right,
+          boundingBox.bottom,
+        ]; // Simpan koordinat wajah
+      } else {
+        _faceData = null;
+      }
     } else {
       _customPaint = null;
+      // Periksa apakah _text null sebelum menggabungkan string
+      _text = 'Faces found: ${faces.length}\n\n';
+      for (final face in faces) {
+        _text = '${_text ?? ''}face: ${face.boundingBox}\n\n';
+      }
     }
 
     _isBusy = false;
