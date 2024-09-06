@@ -16,7 +16,7 @@ class _FaceAttendancePageState extends State<FaceAttendancePage> {
   }
 
   Future<void> _loadStudents() async {
-    final databaseRef = FirebaseDatabase.instance.ref('students');
+    final databaseRef = FirebaseDatabase.instance.ref('siswa');
     final snapshot = await databaseRef.once();
 
     if (snapshot.snapshot.value != null) {
