@@ -17,142 +17,73 @@ class _RegisterFacePageState extends State<RegisterFacePage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text(
-          'Registrasi Wajah',
-          style: TextStyle(
-            fontWeight: FontWeight.bold,
-            color: Colors.white,
-          ),
-        ),
-        flexibleSpace: Container(
-          decoration: BoxDecoration(
-            gradient: LinearGradient(
-              colors: [Color(0xFF0060B3), Color(0xFF0A3B67)],
-              begin: Alignment.topRight,
-              end: Alignment.bottomLeft,
+        title: Text('Registrasi Wajah'),
+      ),
+      body: Padding(
+        padding: EdgeInsets.all(16.0),
+        child: Column(
+          children: [
+            Form(
+              key: _formKey,
+              child: Column(
+                children: [
+                  TextFormField(
+                    decoration: InputDecoration(labelText: 'Nama'),
+                    validator: (value) {
+                      if (value!.isEmpty) {
+                        return 'Nama harus diisi';
+                      }
+                      return null;
+                    },
+                    onSaved: (value) => _name = value,
+                  ),
+                  TextFormField(
+                    decoration: InputDecoration(labelText: 'Kelas'),
+                    validator: (value) {
+                      if (value!.isEmpty) {
+                        return 'Kelas harus diisi';
+                      }
+                      return null;
+                    },
+                    onSaved: (value) => _class = value,
+                  ),
+                  TextFormField(
+                    decoration: InputDecoration(labelText: 'NIS'),
+                    validator: (value) {
+                      if (value!.isEmpty) {
+                        return 'NIS harus diisi';
+                      }
+                      return null;
+                    },
+                    onSaved: (value) => _nis = value,
+                  ),
+                ],
+              ),
             ),
-          ),
-        ),
-      ),
-      body: Container(
-        decoration: BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
-            colors: [Color(0xFF81C6FF), Color(0xFF0A3B67)],
-          ),
-        ),
-        child: Padding(
-          padding: EdgeInsets.all(16.0),
-          child: Column(
-            children: [
-              // Card untuk form input
-              Container(
-                width: double.infinity,
-                child: Card(
-                  elevation: 8,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(20),
+            SizedBox(height: 20),
+            ElevatedButton(
+              onPressed: _registerFace, // Tombol untuk scan wajah
+              child: Text('Scan Wajah'),
+            ),
+            SizedBox(height: 20),
+            // Menampilkan data wajah jika sudah dipindai
+            if (_isFaceScanned)
+              Column(
+                children: [
+                  Text(
+                    'Face = ${_faceData.toString()}',
+                    style: TextStyle(color: Colors.green, fontWeight: FontWeight.bold),
                   ),
-                  margin: EdgeInsets.symmetric(horizontal: 30),
-                  child: Padding(
-                    padding: EdgeInsets.all(20),
-                    child: Column(
-                      children: [
-                        _buildTextFormField('Nama', (value) => _name = value),
-                        _buildTextFormField('Kelas', (value) => _class = value),
-                        _buildTextFormField('NIS', (value) => _nis = value),
-                      ],
-                    ),
+                  SizedBox(height: 20),
+                  ElevatedButton(
+                    onPressed: _saveToDatabase, // Tombol untuk menyimpan data ke Firebase
+                    child: Text('Simpan Data Wajah'),
                   ),
-                ),
+                ],
               ),
-              SizedBox(height: 20),
-              // Kolom Scan Wajah dengan desain yang menarik
-              if (_isFaceScanned)
-                Container(
-                  width: double.infinity,
-                  decoration: BoxDecoration(
-                    gradient: LinearGradient(
-                      colors: [Color(0xFF81C6FF), Color(0xFF0A3B67)],
-                    ),
-                    borderRadius: BorderRadius.circular(30),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black.withOpacity(0.6),
-                        spreadRadius: 3,
-                        blurRadius: 10,
-                        offset: Offset(0, 5),
-                      ),
-                    ],
-                  ),
-                  padding: EdgeInsets.all(16.0),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.stretch,
-                    children: [
-                      Text(
-                        'Face Data: ${_faceData.toString()}',
-                        style: TextStyle(
-                            color: Colors.white, fontWeight: FontWeight.bold),
-                      ),
-                      SizedBox(height: 20),
-                      ElevatedButton(
-                        onPressed: _saveToDatabase,
-                        style: ElevatedButton.styleFrom(
-                          padding: EdgeInsets.symmetric(
-                              horizontal: 20, vertical: 10),
-                          backgroundColor: Colors.deepOrangeAccent,
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(30),
-                          ),
-                        ),
-                        child: Text(
-                          'Simpan Data Wajah',
-                          style: TextStyle(fontSize: 16, color: Colors.white),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              SizedBox(height: 20),
-              // Tombol Scan Wajah dengan desain modern
-              ElevatedButton(
-                onPressed: _registerFace,
-                style: ElevatedButton.styleFrom(
-                  padding: EdgeInsets.symmetric(horizontal: 20, vertical: 10),
-                  backgroundColor: Color(0xFF1ED384),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(30),
-                  ),
-                ),
-                child: Text(
-                  'Scan Wajah',
-                  style: TextStyle(fontSize: 16, color: Colors.white),
-                ),
-              ),
-            ],
-          ),
+          ],
         ),
       ),
-    );
-  }
-
-  TextFormField _buildTextFormField(
-      String label, FormFieldSetter<String>? onSaved) {
-    return TextFormField(
-      decoration: InputDecoration(
-        labelText: label,
-        border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
-        ),
-      ),
-      validator: (value) {
-        if (value!.isEmpty) {
-          return '$label harus diisi';
-        }
-        return null;
-      },
-      onSaved: onSaved,
     );
   }
 
@@ -160,13 +91,15 @@ class _RegisterFacePageState extends State<RegisterFacePage> {
     if (_formKey.currentState!.validate()) {
       _formKey.currentState!.save();
 
+      // Navigasi ke halaman deteksi wajah
       final faceData = await Navigator.push<List<double>>(
         context,
         MaterialPageRoute(
-          builder: (context) => FaceDetectorView(),
+          builder: (context) => FaceDetectorView(), // Panggil FaceDetectorView untuk mendeteksi wajah
         ),
       );
 
+      // Jika wajah berhasil dipindai, simpan datanya
       if (faceData != null) {
         setState(() {
           _faceData = faceData;
@@ -192,21 +125,23 @@ class _RegisterFacePageState extends State<RegisterFacePage> {
       return;
     }
 
+    // Simpan data ke Firebase Database
     final databaseRef = FirebaseDatabase.instance.ref('students');
-    final newStudentRef = databaseRef.push();
+    final newStudentRef = databaseRef.push(); // Buat ID baru
 
     await newStudentRef.set({
       'id': newStudentRef.key,
       'name': _name,
       'class': _class,
       'nis': _nis,
-      'faceData': _faceData,
+      'faceData': _faceData, // Simpan fitur wajah sebagai data numerik
     });
 
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(content: Text('Registrasi wajah berhasil!')),
     );
 
+    // Reset status setelah data berhasil disimpan
     setState(() {
       _isFaceScanned = false;
       _faceData = null;
