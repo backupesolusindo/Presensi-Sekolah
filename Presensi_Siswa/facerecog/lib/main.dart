@@ -1,157 +1,261 @@
 import 'package:flutter/material.dart';
-import 'package:firebase_database/firebase_database.dart';
-import 'vision_detector_views/face_detector_view.dart';
+import 'register_face_page.dart';
+import 'face_attendance_page.dart';
+import 'package:firebase_core/firebase_core.dart';
+import 'package:logger/logger.dart';
+import 'package:lottie/lottie.dart';
 
-class RegisterFacePage extends StatefulWidget {
-  @override
-  _RegisterFacePageState createState() => _RegisterFacePageState();
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+
+  runApp(const MyAppLoader()); // Menampilkan layar loading terlebih dahulu
+
+  var logger = Logger(); // Inisialisasi logger
+
+  try {
+    await Firebase.initializeApp(
+      options: const FirebaseOptions(
+        apiKey: 'AIzaSyDLPEYoVa9zDTnSYo2fJwjJ7rKzHZTSCKk',
+        appId: '1:31816478123:android:4687b2935f7abe4a32f6ee',
+        messagingSenderId: '31816478123',
+        projectId: 'facerecog-4de3d',
+        databaseURL:
+            'https://facerecog-4de3d-default-rtdb.asia-southeast1.firebasedatabase.app',
+        storageBucket: 'facerecog-4de3d.appspot.com',
+      ),
+    );
+    runApp(MyApp());
+  } catch (e) {
+    logger
+        .e("Failed to initialize Firebase: ${e.toString()}"); // Gunakan logger
+    runApp(MyAppNotConnected(errorMessage: e.toString()));
+  }
 }
 
-class _RegisterFacePageState extends State<RegisterFacePage> {
-  final _formKey = GlobalKey<FormState>();
-  String? _name, _class, _nis;
-  List<double>? _faceData; // Data wajah yang dipindai
-  bool _isFaceScanned = false; // Status apakah wajah sudah dipindai
+class MyAppLoader extends StatelessWidget {
+  const MyAppLoader({super.key});
 
   @override
   Widget build(BuildContext context) {
+    return MaterialApp(
+      home: Scaffold(
+        backgroundColor: Colors.white,
+        body: Center(
+          child: Lottie.asset(
+            'assets/loading.json', // Path to your Lottie JSON file
+            width: 200,
+            height: 200,
+            fit: BoxFit.fill,
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class MyApp extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      debugShowCheckedModeBanner: false,
+      home: HomePage(),
+      routes: {
+        '/register-face': (context) => RegisterFacePage(),
+        '/face-attendance': (context) => FaceAttendancePage(),
+      },
+    );
+  }
+}
+
+class HomePage extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: Text('Registrasi Wajah'),
-      ),
-      body: Padding(
-        padding: EdgeInsets.all(16.0),
-        child: Column(
-          children: [
-            Form(
-              key: _formKey,
-              child: Column(
-                children: [
-                  TextFormField(
-                    decoration: InputDecoration(labelText: 'Nama'),
-                    validator: (value) {
-                      if (value!.isEmpty) {
-                        return 'Nama harus diisi';
-                      }
-                      return null;
-                    },
-                    onSaved: (value) => _name = value,
-                  ),
-                  TextFormField(
-                    decoration: InputDecoration(labelText: 'Kelas'),
-                    validator: (value) {
-                      if (value!.isEmpty) {
-                        return 'Kelas harus diisi';
-                      }
-                      return null;
-                    },
-                    onSaved: (value) => _class = value,
-                  ),
-                  TextFormField(
-                    decoration: InputDecoration(labelText: 'NIS'),
-                    validator: (value) {
-                      if (value!.isEmpty) {
-                        return 'NIS harus diisi';
-                      }
-                      return null;
-                    },
-                    onSaved: (value) => _nis = value,
-                  ),
-                ],
+      body: Container(
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+            colors: [
+              const Color.fromARGB(255, 129, 198, 255),
+              const Color.fromARGB(255, 10, 59, 103),
+            ],
+          ),
+        ),
+        child: Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              // Text di atas Card
+              Text(
+                'Welcome to Face Recognition App',
+                style: TextStyle(
+                  fontSize: 24,
+                  color: Colors.white,
+                  fontWeight: FontWeight.bold,
+                ),
+                textAlign: TextAlign.center,
               ),
-            ),
-            SizedBox(height: 20),
-            ElevatedButton(
-              onPressed: _registerFace, // Tombol untuk scan wajah
-              child: Text('Scan Wajah'),
-            ),
-            SizedBox(height: 20),
-            // Menampilkan data wajah jika sudah dipindai
-            if (_isFaceScanned)
-              Column(
-                children: [
-                  Text(
-                    'Face = ${_faceData.toString()}',
-                    style: TextStyle(color: Colors.green, fontWeight: FontWeight.bold),
-                  ),
-                  SizedBox(height: 20),
-                  ElevatedButton(
-                    onPressed: _saveToDatabase, // Tombol untuk menyimpan data ke Firebase
-                    child: Text('Simpan Data Wajah'),
-                  ),
-                ],
+              SizedBox(height: 10), // Spasi antara teks
+
+              // Text tambahan di bawah welcome text
+              Text(
+                'Your one-stop solution for secure face-based authentication',
+                style: TextStyle(
+                  fontSize: 16,
+                  color: Colors.white,
+                ),
+                textAlign: TextAlign.center,
               ),
-          ],
+              SizedBox(height: 20), // Spasi antara teks dan Card
+
+              // Card yang membungkus tombol
+              Container(
+                width: 350,
+                height: 150, // Menentukan lebar card
+                child: Card(
+                  elevation: 8,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(20),
+                  ),
+                  margin: EdgeInsets.symmetric(
+                      horizontal: 20), // Menyesuaikan margin
+                  child: Padding(
+                    padding: EdgeInsets.all(20),
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        // Register Face Button dengan gradasi
+                        Container(
+                          height: 45,
+                          width: double.infinity,
+                          child: Container(
+                            decoration: BoxDecoration(
+                              gradient: LinearGradient(
+                                colors: [
+                                  const Color.fromARGB(255, 129, 198, 255),
+                                  const Color.fromARGB(255, 10, 59, 103),
+                                ],
+                              ),
+                              borderRadius: BorderRadius.circular(30),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: const Color.fromARGB(255, 0, 0, 0)
+                                      .withOpacity(0.5),
+                                  spreadRadius: 2,
+                                  blurRadius: 5,
+                                  offset: Offset(0, 3),
+                                ),
+                              ],
+                            ),
+                            child: ElevatedButton(
+                              onPressed: () {
+                                Navigator.pushNamed(context, '/register-face');
+                              },
+                              style: ElevatedButton.styleFrom(
+                                padding: EdgeInsets.symmetric(
+                                    horizontal: 20, vertical: 10),
+                                backgroundColor: Colors.transparent,
+                                shadowColor: Colors.transparent,
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(30),
+                                ),
+                              ),
+                              child: Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  Icon(Icons.face,
+                                      size: 30, color: Colors.white),
+                                  SizedBox(width: 10),
+                                  Text('Register Face',
+                                      style: TextStyle(
+                                          fontSize: 16, color: Colors.white)),
+                                ],
+                              ),
+                            ),
+                          ),
+                        ),
+                        SizedBox(height: 20),
+                        // Face Attendance Button dengan gradasi
+                        Container(
+                          height: 45,
+                          width: double.infinity,
+                          child: Container(
+                            decoration: BoxDecoration(
+                              gradient: LinearGradient(
+                                colors: [
+                                  const Color.fromARGB(255, 129, 198, 255),
+                                  const Color.fromARGB(255, 10, 59, 103),
+                                ],
+                              ),
+                              borderRadius: BorderRadius.circular(30),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: const Color.fromARGB(255, 0, 0, 0)
+                                      .withOpacity(0.5),
+                                  spreadRadius: 2,
+                                  blurRadius: 5,
+                                  offset: Offset(0, 3),
+                                ),
+                              ],
+                            ),
+                            child: ElevatedButton(
+                              onPressed: () {
+                                Navigator.pushNamed(
+                                    context, '/face-attendance');
+                              },
+                              style: ElevatedButton.styleFrom(
+                                padding: EdgeInsets.symmetric(
+                                    horizontal: 20, vertical: 10),
+                                backgroundColor: Colors.transparent,
+                                shadowColor: Colors.transparent,
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(30),
+                                ),
+                              ),
+                              child: Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  Icon(Icons.how_to_reg,
+                                      size: 30, color: Colors.white),
+                                  SizedBox(width: 10),
+                                  Text('Face Attendance',
+                                      style: TextStyle(
+                                          fontSize: 16, color: Colors.white)),
+                                ],
+                              ),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );
   }
+}
 
-  Future<void> _registerFace() async {
-    if (_formKey.currentState!.validate()) {
-      _formKey.currentState!.save();
+class MyAppNotConnected extends StatelessWidget {
+  final String errorMessage;
 
-      // Navigasi ke halaman deteksi wajah
-      final faceData = await Navigator.push<List<double>>(
-        context,
-        MaterialPageRoute(
-          builder: (context) => FaceDetectorView(
-            onFaceDetected: (detectedFaceData) {
-              setState(() {
-                _faceData = detectedFaceData;
-                _isFaceScanned = true;
-              });
-            },
-          ), // Panggil FaceDetectorView untuk mendeteksi wajah
+  const MyAppNotConnected({super.key, required this.errorMessage});
+
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      home: Scaffold(
+        appBar: AppBar(
+          title: const Text('Connection Error'),
         ),
-      );
-
-      // Jika wajah berhasil dipindai, simpan datanya
-      if (faceData != null) {
-        setState(() {
-          _faceData = faceData;
-          _isFaceScanned = true;
-        });
-
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Wajah berhasil dipindai!')),
-        );
-      } else {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Pindai wajah gagal. Coba lagi.')),
-        );
-      }
-    }
-  }
-
-  Future<void> _saveToDatabase() async {
-    if (_faceData == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Data wajah belum ada, silakan scan wajah terlebih dahulu.')),
-      );
-      return;
-    }
-
-    // Simpan data ke Firebase Database
-    final databaseRef = FirebaseDatabase.instance.ref('students');
-    final newStudentRef = databaseRef.push(); // Buat ID baru
-
-    await newStudentRef.set({
-      'id': newStudentRef.key,
-      'name': _name,
-      'class': _class,
-      'nis': _nis,
-      'faceData': _faceData, // Simpan fitur wajah sebagai data numerik
-    });
-
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text('Registrasi wajah berhasil!')),
+        body: Center(
+          child: Text('Failed to initialize Firebase: $errorMessage'),
+        ),
+      ),
     );
-
-    // Reset status setelah data berhasil disimpan
-    setState(() {
-      _isFaceScanned = false;
-      _faceData = null;
-    });
   }
 }
