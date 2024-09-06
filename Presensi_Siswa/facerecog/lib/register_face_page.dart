@@ -20,17 +20,14 @@ class _RegisterFacePageState extends State<RegisterFacePage> {
         title: Text(
           'Registrasi Wajah',
           style: TextStyle(
-            fontWeight: FontWeight.bold, // Membuat teks tebal
-            color: Colors.white, // Mengatur warna teks menjadi putih
+            fontWeight: FontWeight.bold,
+            color: Colors.white,
           ),
         ),
         flexibleSpace: Container(
           decoration: BoxDecoration(
             gradient: LinearGradient(
-              colors: [
-                const Color.fromARGB(255, 0, 96, 179),
-                const Color.fromARGB(255, 10, 59, 103),
-              ],
+              colors: [Color(0xFF0060B3), Color(0xFF0A3B67)],
               begin: Alignment.topRight,
               end: Alignment.bottomLeft,
             ),
@@ -42,10 +39,7 @@ class _RegisterFacePageState extends State<RegisterFacePage> {
           gradient: LinearGradient(
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
-            colors: [
-              const Color.fromARGB(255, 129, 198, 255),
-              const Color.fromARGB(255, 10, 59, 103),
-            ],
+            colors: [Color(0xFF81C6FF), Color(0xFF0A3B67)],
           ),
         ),
         child: Padding(
@@ -60,7 +54,7 @@ class _RegisterFacePageState extends State<RegisterFacePage> {
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(20),
                   ),
-                  margin: EdgeInsets.symmetric(horizontal: 20),
+                  margin: EdgeInsets.symmetric(horizontal: 30),
                   child: Padding(
                     padding: EdgeInsets.all(20),
                     child: Column(
@@ -74,26 +68,21 @@ class _RegisterFacePageState extends State<RegisterFacePage> {
                 ),
               ),
               SizedBox(height: 20),
-              // Kolom Scan Wajah di luar Card dengan warna gradasi dan bayangan
+              // Kolom Scan Wajah dengan desain yang menarik
               if (_isFaceScanned)
                 Container(
                   width: double.infinity,
                   decoration: BoxDecoration(
                     gradient: LinearGradient(
-                      colors: [
-                        const Color.fromARGB(255, 129, 198, 255),
-                        const Color.fromARGB(255, 10, 59, 103),
-                      ],
+                      colors: [Color(0xFF81C6FF), Color(0xFF0A3B67)],
                     ),
                     borderRadius: BorderRadius.circular(30),
                     boxShadow: [
                       BoxShadow(
-                        color:
-                            const Color.fromARGB(255, 0, 0, 0).withOpacity(0.6),
+                        color: Colors.black.withOpacity(0.6),
                         spreadRadius: 3,
                         blurRadius: 10,
-                        offset:
-                            Offset(0, 5), // Efek bayangan lebih besar ke bawah
+                        offset: Offset(0, 5),
                       ),
                     ],
                   ),
@@ -126,12 +115,12 @@ class _RegisterFacePageState extends State<RegisterFacePage> {
                   ),
                 ),
               SizedBox(height: 20),
-              // Tombol Scan Wajah
+              // Tombol Scan Wajah dengan desain modern
               ElevatedButton(
-                onPressed: _confirmAndRegisterFace,
+                onPressed: _registerFace,
                 style: ElevatedButton.styleFrom(
                   padding: EdgeInsets.symmetric(horizontal: 20, vertical: 10),
-                  backgroundColor: const Color.fromARGB(255, 30, 211, 132),
+                  backgroundColor: Color(0xFF1ED384),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(30),
                   ),
@@ -151,7 +140,12 @@ class _RegisterFacePageState extends State<RegisterFacePage> {
   TextFormField _buildTextFormField(
       String label, FormFieldSetter<String>? onSaved) {
     return TextFormField(
-      decoration: InputDecoration(labelText: label),
+      decoration: InputDecoration(
+        labelText: label,
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+        ),
+      ),
       validator: (value) {
         if (value!.isEmpty) {
           return '$label harus diisi';
@@ -162,70 +156,38 @@ class _RegisterFacePageState extends State<RegisterFacePage> {
     );
   }
 
-  Future<void> _confirmAndRegisterFace() async {
+  Future<void> _registerFace() async {
     if (_formKey.currentState!.validate()) {
       _formKey.currentState!.save();
 
-      // Tampilkan dialog konfirmasi
-      bool? confirm = await showDialog<bool>(
-        context: context,
-        barrierDismissible:
-            false, // Tidak bisa menutup dialog dengan tap di luar
-        builder: (BuildContext context) {
-          return AlertDialog(
-            title: Text('Konfirmasi'),
-            content: Text(
-                'Apakah data yang dimasukkan benar dan siap untuk dipindai?'),
-            actions: [
-              TextButton(
-                child: Text('Batal'),
-                onPressed: () => Navigator.of(context).pop(false),
-              ),
-              TextButton(
-                child: Text('Ya'),
-                onPressed: () => Navigator.of(context).pop(true),
-              ),
-            ],
-          );
-        },
+      final faceData = await Navigator.push<List<double>>(
+        context,
+        MaterialPageRoute(
+          builder: (context) => FaceDetectorView(),
+        ),
       );
 
-      if (confirm == true) {
-        final faceData = await Navigator.push<List<double>>(
-          context,
-          MaterialPageRoute(
-            builder: (context) => FaceDetectorView(),
-          ),
+      if (faceData != null) {
+        setState(() {
+          _faceData = faceData;
+          _isFaceScanned = true;
+        });
+
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Wajah berhasil dipindai!')),
         );
-
-        if (faceData != null) {
-          setState(() {
-            _faceData = faceData;
-            _isFaceScanned = true;
-          });
-
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('Wajah berhasil dipindai!')),
-          );
-        } else {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('Pindai wajah gagal. Coba lagi.')),
-          );
-        }
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Pindai wajah gagal. Coba lagi.')),
+        );
       }
-    } else {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Silakan isi semua data sebelum melanjutkan.')),
-      );
     }
   }
 
   Future<void> _saveToDatabase() async {
     if (_faceData == null) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-            content: Text(
-                'Data wajah belum ada, silakan scan wajah terlebih dahulu.')),
+        SnackBar(content: Text('Data wajah belum ada, silakan scan wajah terlebih dahulu.')),
       );
       return;
     }
