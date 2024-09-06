@@ -6,10 +6,6 @@ import 'detector_view.dart';
 import 'painters/face_detector_painter.dart';
 
 class FaceDetectorView extends StatefulWidget {
-  final Function(List<double>?) onFaceDetected; // Tambahkan parameter onFaceDetected
-
-  FaceDetectorView({required this.onFaceDetected}); // Ubah konstruktor agar menerima callback
-
   @override
   _FaceDetectorViewState createState() => _FaceDetectorViewState();
 }
@@ -53,7 +49,7 @@ class _FaceDetectorViewState extends State<FaceDetectorView> {
         child: Icon(Icons.check),
         onPressed: () {
           if (_faceData != null) {
-            widget.onFaceDetected(_faceData); // Gunakan callback untuk mengembalikan data wajah
+            Navigator.pop(context, _faceData); // Kembalikan data wajah ke halaman sebelumnya
           } else {
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(content: Text('Tidak ada wajah yang terdeteksi')),
@@ -73,7 +69,8 @@ class _FaceDetectorViewState extends State<FaceDetectorView> {
     });
 
     final faces = await _faceDetector.processImage(inputImage);
-    if (inputImage.metadata?.size != null && inputImage.metadata?.rotation != null) {
+    if (inputImage.metadata?.size != null &&
+        inputImage.metadata?.rotation != null) {
       final painter = FaceDetectorPainter(
         faces,
         inputImage.metadata!.size,
@@ -98,11 +95,11 @@ class _FaceDetectorViewState extends State<FaceDetectorView> {
       }
     } else {
       _customPaint = null;
-    }
-
-    _text = 'Faces found: ${faces.length}\n\n';
-    for (final face in faces) {
-      _text = '${_text ?? ''}face: ${face.boundingBox}\n\n';
+      // Periksa apakah _text null sebelum menggabungkan string
+      _text = 'Faces found: ${faces.length}\n\n';
+      for (final face in faces) {
+        _text = '${_text ?? ''}face: ${face.boundingBox}\n\n';
+      }
     }
 
     _isBusy = false;
