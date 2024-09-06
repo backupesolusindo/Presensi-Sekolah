@@ -126,7 +126,7 @@ class _RegisterFacePageState extends State<RegisterFacePage> {
     }
 
     // Simpan data ke Firebase Database
-    final databaseRef = FirebaseDatabase.instance.ref('students');
+    final databaseRef = FirebaseDatabase.instance.ref('siswa');
     final newStudentRef = databaseRef.push(); // Buat ID baru
 
     await newStudentRef.set({
