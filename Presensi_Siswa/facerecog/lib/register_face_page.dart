@@ -60,7 +60,7 @@ class _RegisterFacePageState extends State<RegisterFacePage> {
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(20),
                   ),
-                  margin: EdgeInsets.symmetric(horizontal: 30),
+                  margin: EdgeInsets.symmetric(horizontal: 20),
                   child: Padding(
                     padding: EdgeInsets.all(20),
                     child: Column(
@@ -194,7 +194,16 @@ class _RegisterFacePageState extends State<RegisterFacePage> {
         final faceData = await Navigator.push<List<double>>(
           context,
           MaterialPageRoute(
-            builder: (context) => FaceDetectorView(),
+            builder: (context) => FaceDetectorView(onFaceDetected: (List<double>? faceData) {
+          // Logika untuk menangani data wajah yang terdeteksi
+          if (faceData != null) {
+            print('Face data detected: $faceData');
+            // Lakukan sesuatu dengan data wajah, seperti menyimpannya di database
+          } else {
+            print('No face detected.');
+          }
+        },
+      ),
           ),
         );
 
