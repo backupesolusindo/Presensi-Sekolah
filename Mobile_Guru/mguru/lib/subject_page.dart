@@ -559,7 +559,7 @@ class _SubjectPageState extends State<SubjectPage> {
                 SizedBox(height: 15),
                 // Pilihan Edit dengan Icon
                 ListTile(
-                  leading: Icon(Icons.edit, color: Colors.teal, size: 20),
+                  leading: Icon(Icons.edit, color: Colors.teal, size: 30),
                   title: Text(
                     'Edit Mata Pelajaran',
                     style: GoogleFonts.raleway(fontSize: 12),
@@ -572,7 +572,7 @@ class _SubjectPageState extends State<SubjectPage> {
                 SizedBox(height: 10),
                 // Pilihan Hapus dengan Icon
                 ListTile(
-                  leading: Icon(Icons.delete, color: Colors.red, size: 20),
+                  leading: Icon(Icons.delete, color: Colors.red, size: 30),
                   title: Text(
                     'Hapus Mata Pelajaran',
                     style: GoogleFonts.raleway(fontSize: 12),
