@@ -16,6 +16,12 @@ class _SubjectPageState extends State<SubjectPage> {
   TextEditingController _codeController = TextEditingController();
   List<dynamic> subjects = [];
   List<dynamic> filteredSubjects = [];
+  List<String> _years = List.generate(10, (index) {
+    int year = DateTime.now().year - index;
+    return '$year/${year + 1}';
+  });
+  String? _selectedYear;
+
   String? _selectedSubjectId;
 
   @override
@@ -52,13 +58,74 @@ class _SubjectPageState extends State<SubjectPage> {
   }
 
   void _addSubject() {
+    // Validate name
+    if (_nameController.text.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Nama Mata Pelajaran tidak boleh kosong.'),
+          backgroundColor: Colors.red,
+        ),
+      );
+      return;
+    }
+    if (!RegExp(r'^[a-zA-Z\s]+$').hasMatch(_nameController.text)) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content:
+              Text('Nama Mata Pelajaran hanya boleh berisi huruf dan spasi.'),
+          backgroundColor: Colors.red,
+        ),
+      );
+      return;
+    }
+
+    // Validate class
+    if (_classController.text.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Kelas tidak boleh kosong.'),
+          backgroundColor: Colors.red,
+        ),
+      );
+      return;
+    }
+    if (!RegExp(r'^[1-9][0-9]*[A-Z]*$').hasMatch(_classController.text)) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Kelas tidak valid.'),
+          backgroundColor: Colors.red,
+        ),
+      );
+      return;
+    }
+
+    // Validate code
+    if (_codeController.text.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Tahun Ajaran tidak boleh kosong.'),
+          backgroundColor: Colors.red,
+        ),
+      );
+      return;
+    }
+    if (!RegExp(r'^\d{4}/\d{4}$').hasMatch(_codeController.text)) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Tahun Ajaran harus dalam format YYYY/YYYY.'),
+          backgroundColor: Colors.red,
+        ),
+      );
+      return;
+    }
+
     String id = _subjectRef.push().key!;
     _subjectRef.child(id).set({
       'id': id,
       'name': _nameController.text,
       'class': _classController.text,
       'class_code': _codeController.text,
-      'image_url': generateImageUrl(id)
+      'image_url': generateImageUrl(id),
     }).then((_) {
       _nameController.clear();
       _classController.clear();
@@ -90,118 +157,183 @@ class _SubjectPageState extends State<SubjectPage> {
   }
 
   void _showAddSubjectDialog() {
+    final _formKey = GlobalKey<FormState>(); // Key for form validation
+
     showDialog(
       context: context,
       builder: (context) {
         return Dialog(
           shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(20),
+            borderRadius: BorderRadius.circular(15),
           ),
           elevation: 5,
           backgroundColor: Colors.white,
           child: Padding(
             padding: const EdgeInsets.all(20.0),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                // Icon di bagian atas dialog
-                Icon(
-                  Icons.school,
-                  color: Colors.teal,
-                  size: 60,
-                ),
-                SizedBox(height: 20),
-                Text(
-                  'Tambah Mata Pelajaran',
-                  style: GoogleFonts.raleway(
-                    fontWeight: FontWeight.bold,
-                    fontSize: 20,
-                    color: Colors.teal,
-                  ),
-                ),
-                SizedBox(height: 20),
-                // Input Nama Mata Pelajaran
-                TextField(
-                  controller: _nameController,
-                  decoration: InputDecoration(
-                    labelText: 'Nama Mata Pelajaran',
-                    labelStyle: GoogleFonts.raleway(),
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(15),
+            child: Form(
+              key: _formKey,
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  Icon(Icons.edit, size: 60, color: Colors.teal),
+                  SizedBox(height: 15),
+                  Text(
+                    'Edit Mata Pelajaran',
+                    style: GoogleFonts.raleway(
+                      fontWeight: FontWeight.bold,
+                      fontSize: 20,
+                      color: Colors.teal,
                     ),
-                    filled: true,
-                    fillColor: Colors.grey[100],
+                    textAlign: TextAlign.center,
                   ),
-                  style: GoogleFonts.raleway(),
-                ),
-                SizedBox(height: 10),
-                // Input Kelas
-                TextField(
-                  controller: _classController,
-                  decoration: InputDecoration(
-                    labelText: 'Kelas',
-                    labelStyle: GoogleFonts.raleway(),
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(15),
+                  SizedBox(height: 20),
+                  // Input Nama Mata Pelajaran
+                  TextFormField(
+                    controller: _nameController,
+                    decoration: InputDecoration(
+                      labelText: 'Nama Mata Pelajaran',
+                      labelStyle: GoogleFonts.raleway(),
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(15),
+                      ),
+                      filled: true,
+                      fillColor: Colors.grey[100],
                     ),
-                    filled: true,
-                    fillColor: Colors.grey[100],
+                    style: GoogleFonts.raleway(),
+                    validator: (value) {
+                      if (value == null || value.isEmpty) {
+                        return 'Nama Mata Pelajaran tidak boleh kosong.';
+                      }
+                      if (!RegExp(r'^[a-zA-Z\s]+$').hasMatch(value)) {
+                        return 'Nama Mata Pelajaran hanya boleh berisi huruf dan spasi.';
+                      }
+                      return null;
+                    },
                   ),
-                  style: GoogleFonts.raleway(),
-                ),
-                SizedBox(height: 10),
-                // Input Tahun Ajaran
-                TextField(
-                  controller: _codeController,
-                  decoration: InputDecoration(
-                    labelText: 'Tahun Ajaran',
-                    labelStyle: GoogleFonts.raleway(),
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(15),
+                  SizedBox(height: 15),
+                  // Input Kelas
+                  TextFormField(
+                    controller: _classController,
+                    decoration: InputDecoration(
+                      labelText: 'Kelas',
+                      labelStyle: GoogleFonts.raleway(),
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(15),
+                      ),
+                      filled: true,
+                      fillColor: Colors.grey[100],
                     ),
-                    filled: true,
-                    fillColor: Colors.grey[100],
+                    style: GoogleFonts.raleway(),
+                    validator: (value) {
+                      if (value == null || value.isEmpty) {
+                        return 'Kelas tidak boleh kosong.';
+                      }
+                      if (!RegExp(r'^[1-9][0-9]*[A-Z]*$').hasMatch(value)) {
+                        return 'Kelas tidak valid. (e.g., 8B)';
+                      }
+                      return null;
+                    },
                   ),
-                  style: GoogleFonts.raleway(),
-                ),
-                SizedBox(height: 20),
-                // Tombol Aksi
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    TextButton(
-                      onPressed: () => Navigator.of(context).pop(),
-                      child: Text(
-                        'Batal',
-                        style: GoogleFonts.raleway(
-                          fontSize: 16,
-                          color: Colors.grey[600],
-                        ),
+                  SizedBox(height: 15),
+                  // Dropdown Tahun Ajaran
+                  DropdownButtonFormField<String>(
+                    value: _selectedYear,
+                    decoration: InputDecoration(
+                      labelText: 'Tahun Ajaran',
+                      labelStyle:
+                          GoogleFonts.raleway(), // Customize label style
+                      border: OutlineInputBorder(
+                        borderRadius:
+                            BorderRadius.circular(15), // Rounded corners
+                        borderSide: BorderSide(
+                            color: Colors.blueAccent), // Border color
+                      ),
+                      focusedBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(15),
+                        borderSide: BorderSide(
+                            color: Colors.blueAccent,
+                            width: 2), // Focused border color
+                      ),
+                      enabledBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(15),
+                        borderSide: BorderSide(
+                            color: Colors.grey,
+                            width: 1), // Enabled border color
                       ),
                     ),
-                    ElevatedButton(
-                      onPressed: _addSubject,
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.teal,
-                        padding: EdgeInsets.symmetric(
-                          horizontal: 30,
-                          vertical: 12,
+                    onChanged: (String? newValue) {
+                      setState(() {
+                        _selectedYear = newValue;
+                      });
+                    },
+                    items: _years.map<DropdownMenuItem<String>>((String year) {
+                      return DropdownMenuItem<String>(
+                        value: year,
+                        child: Text(
+                          year,
+                          style: GoogleFonts
+                              .raleway(), // Customize item text style
                         ),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(15),
+                      );
+                    }).toList(),
+                    style: GoogleFonts.raleway(),
+                    validator: (value) {
+                      if (value == null || value.isEmpty) {
+                        return 'Tahun Ajaran tidak boleh kosong.';
+                      }
+                      if (!RegExp(r'^\d{4}/\d{4}$').hasMatch(value)) {
+                        return 'Tahun Ajaran harus dalam format YYYY/YYYY.';
+                      }
+                      return null;
+                    },
+                    icon: Icon(Icons.arrow_drop_down,
+                        color: Colors.blueAccent), // Customize dropdown icon
+                    iconSize: 20, // Customize icon size
+                  ),
+                  SizedBox(height: 20),
+                  // Tombol Aksi
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      TextButton(
+                        onPressed: () => Navigator.of(context).pop(),
+                        child: Text(
+                          'Batal',
+                          style: GoogleFonts.raleway(
+                            fontSize: 16,
+                            color: Colors.grey[600],
+                          ),
                         ),
                       ),
-                      child: Text(
-                        'Tambah',
-                        style: GoogleFonts.raleway(
-                          fontSize: 16,
-                          color: Colors.white,
+                      ElevatedButton(
+                        onPressed: () {
+                          if (_formKey.currentState?.validate() ?? false) {
+                            _addSubject();
+                          }
+                        },
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.teal,
+                          padding: EdgeInsets.symmetric(
+                            horizontal: 30,
+                            vertical: 12,
+                          ),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(15),
+                          ),
+                        ),
+                        child: Text(
+                          'Tambah',
+                          style: GoogleFonts.raleway(
+                            fontSize: 16,
+                            color: Colors.white,
+                          ),
                         ),
                       ),
-                    ),
-                  ],
-                )
-              ],
+                    ],
+                  )
+                ],
+              ),
             ),
           ),
         );
@@ -209,118 +341,189 @@ class _SubjectPageState extends State<SubjectPage> {
     );
   }
 
-  void _showEditSubjectDialog(String id, String name, String classInfo, String code) {
+  void _showEditSubjectDialog(
+      String id, String name, String classInfo, String code) {
+    final _formKey = GlobalKey<FormState>(); // Key for form validation
+
     _selectedSubjectId = id;
     _nameController.text = name;
     _classController.text = classInfo;
     _codeController.text = code;
-    
+
     showDialog(
       context: context,
       builder: (context) {
         return Dialog(
           shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(20),
+            borderRadius: BorderRadius.circular(15),
           ),
           elevation: 5,
           backgroundColor: Colors.white,
           child: Padding(
             padding: const EdgeInsets.all(20.0),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Icon(Icons.edit, size: 60, color: Colors.teal), // Ikon Edit
-                SizedBox(height: 20),
-                Text(
-                  'Edit Mata Pelajaran',
-                  style: GoogleFonts.raleway(
-                    fontWeight: FontWeight.bold,
-                    fontSize: 20,
-                    color: Colors.teal,
-                  ),
-                ),
-                SizedBox(height: 20),
-                // Input Nama Mata Pelajaran
-                TextField(
-                  controller: _nameController,
-                  decoration: InputDecoration(
-                    labelText: 'Nama Mata Pelajaran',
-                    labelStyle: GoogleFonts.raleway(),
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(15),
+            child: Form(
+              key: _formKey,
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  Icon(Icons.edit, size: 60, color: Colors.teal),
+                  SizedBox(height: 15),
+                  Text(
+                    'Edit Mata Pelajaran',
+                    style: GoogleFonts.raleway(
+                      fontWeight: FontWeight.bold,
+                      fontSize: 20,
+                      color: Colors.teal,
                     ),
-                    filled: true,
-                    fillColor: Colors.grey[100],
+                    textAlign: TextAlign.center,
                   ),
-                  style: GoogleFonts.raleway(),
-                ),
-                SizedBox(height: 10),
-                // Input Kelas
-                TextField(
-                  controller: _classController,
-                  decoration: InputDecoration(
-                    labelText: 'Kelas',
-                    labelStyle: GoogleFonts.raleway(),
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(15),
+                  SizedBox(height: 20),
+                  // Input Nama Mata Pelajaran
+                  TextFormField(
+                    controller: _nameController,
+                    decoration: InputDecoration(
+                      labelText: 'Nama Mata Pelajaran',
+                      labelStyle: GoogleFonts.raleway(),
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(15),
+                      ),
+                      filled: true,
+                      fillColor: Colors.grey[100],
                     ),
-                    filled: true,
-                    fillColor: Colors.grey[100],
+                    style: GoogleFonts.raleway(),
+                    validator: (value) {
+                      if (value == null || value.isEmpty) {
+                        return 'Nama Mata Pelajaran tidak boleh kosong.';
+                      }
+                      if (!RegExp(r'^[a-zA-Z\s]+$').hasMatch(value)) {
+                        return 'Nama Mata Pelajaran hanya boleh berisi huruf dan spasi.';
+                      }
+                      return null;
+                    },
                   ),
-                  style: GoogleFonts.raleway(),
-                ),
-                SizedBox(height: 10),
-                // Input Tahun Ajaran
-                TextField(
-                  controller: _codeController,
-                  decoration: InputDecoration(
-                    labelText: 'Tahun Ajaran',
-                    labelStyle: GoogleFonts.raleway(),
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(15),
+                  SizedBox(height: 15),
+                  // Input Kelas
+                  TextFormField(
+                    controller: _classController,
+                    decoration: InputDecoration(
+                      labelText: 'Kelas',
+                      labelStyle: GoogleFonts.raleway(),
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(15),
+                      ),
+                      filled: true,
+                      fillColor: Colors.grey[100],
                     ),
-                    filled: true,
-                    fillColor: Colors.grey[100],
+                    style: GoogleFonts.raleway(),
+                    validator: (value) {
+                      if (value == null || value.isEmpty) {
+                        return 'Kelas tidak boleh kosong.';
+                      }
+                      if (!RegExp(r'^[1-9][0-9]*[A-Z]*$').hasMatch(value)) {
+                        return 'Kelas tidak valid. (e.g., 8B)';
+                      }
+                      return null;
+                    },
                   ),
-                  style: GoogleFonts.raleway(),
-                ),
-                SizedBox(height: 20),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    TextButton(
-                      onPressed: () => Navigator.of(context).pop(),
-                      child: Text(
-                        'Batal',
-                        style: GoogleFonts.raleway(
-                          fontSize: 16,
-                          color: Colors.grey[600],
-                        ),
+                  SizedBox(height: 15),
+                  // Dropdown Tahun Ajaran
+                  DropdownButtonFormField<String>(
+                    value: _selectedYear,
+                    decoration: InputDecoration(
+                      labelText: 'Tahun Ajaran',
+                      labelStyle:
+                          GoogleFonts.raleway(), // Customize label style
+                      border: OutlineInputBorder(
+                        borderRadius:
+                            BorderRadius.circular(15), // Rounded corners
+                        borderSide: BorderSide(
+                            color: Colors.blueAccent), // Border color
+                      ),
+                      focusedBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(15),
+                        borderSide: BorderSide(
+                            color: Colors.blueAccent,
+                            width: 2), // Focused border color
+                      ),
+                      enabledBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(15),
+                        borderSide: BorderSide(
+                            color: Colors.grey,
+                            width: 1), // Enabled border color
                       ),
                     ),
-                    ElevatedButton(
-                      onPressed: _updateSubject,
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.teal,
-                        padding: EdgeInsets.symmetric(
-                          horizontal: 30,
-                          vertical: 12,
+                    onChanged: (String? newValue) {
+                      setState(() {
+                        _selectedYear = newValue;
+                      });
+                    },
+                    items: _years.map<DropdownMenuItem<String>>((String year) {
+                      return DropdownMenuItem<String>(
+                        value: year,
+                        child: Text(
+                          year,
+                          style: GoogleFonts
+                              .raleway(), // Customize item text style
                         ),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(15),
+                      );
+                    }).toList(),
+                    style: GoogleFonts.raleway(),
+                    validator: (value) {
+                      if (value == null || value.isEmpty) {
+                        return 'Tahun Ajaran tidak boleh kosong.';
+                      }
+                      if (!RegExp(r'^\d{4}/\d{4}$').hasMatch(value)) {
+                        return 'Tahun Ajaran harus dalam format YYYY/YYYY.';
+                      }
+                      return null;
+                    },
+                    icon: Icon(Icons.arrow_drop_down,
+                        color: Colors.blueAccent), // Customize dropdown icon
+                    iconSize: 20, // Customize icon size
+                  ),
+                  SizedBox(height: 20),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      TextButton(
+                        onPressed: () => Navigator.of(context).pop(),
+                        child: Text(
+                          'Batal',
+                          style: GoogleFonts.raleway(
+                            fontSize: 16,
+                            color: Colors.grey[600],
+                          ),
                         ),
                       ),
-                      child: Text(
-                        'Simpan',
-                        style: GoogleFonts.raleway(
-                          fontSize: 16,
-                          color: Colors.white,
+                      ElevatedButton(
+                        onPressed: () {
+                          if (_formKey.currentState?.validate() ?? false) {
+                            _updateSubject();
+                          }
+                        },
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.teal,
+                          padding: EdgeInsets.symmetric(
+                            horizontal: 30,
+                            vertical: 12,
+                          ),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(20),
+                          ),
+                        ),
+                        child: Text(
+                          'Simpan',
+                          style: GoogleFonts.raleway(
+                            fontSize: 16,
+                            color: Colors.white,
+                          ),
                         ),
                       ),
-                    ),
-                  ],
-                )
-              ],
+                    ],
+                  ),
+                ],
+              ),
             ),
           ),
         );
@@ -328,7 +531,8 @@ class _SubjectPageState extends State<SubjectPage> {
     );
   }
 
-  void _showSubjectOptionsDialog(String id, String name, String classInfo, String code) {
+  void _showSubjectOptionsDialog(
+      String id, String name, String classInfo, String code) {
     showDialog(
       context: context,
       builder: (context) {
@@ -352,13 +556,13 @@ class _SubjectPageState extends State<SubjectPage> {
                     color: Colors.teal,
                   ),
                 ),
-                SizedBox(height: 20),
+                SizedBox(height: 15),
                 // Pilihan Edit dengan Icon
                 ListTile(
-                  leading: Icon(Icons.edit, color: Colors.teal, size: 30),
+                  leading: Icon(Icons.edit, color: Colors.teal, size: 20),
                   title: Text(
                     'Edit Mata Pelajaran',
-                    style: GoogleFonts.raleway(fontSize: 18),
+                    style: GoogleFonts.raleway(fontSize: 12),
                   ),
                   onTap: () {
                     Navigator.of(context).pop();
@@ -368,10 +572,10 @@ class _SubjectPageState extends State<SubjectPage> {
                 SizedBox(height: 10),
                 // Pilihan Hapus dengan Icon
                 ListTile(
-                  leading: Icon(Icons.delete, color: Colors.red, size: 30),
+                  leading: Icon(Icons.delete, color: Colors.red, size: 20),
                   title: Text(
                     'Hapus Mata Pelajaran',
-                    style: GoogleFonts.raleway(fontSize: 18),
+                    style: GoogleFonts.raleway(fontSize: 12),
                   ),
                   onTap: () {
                     Navigator.of(context).pop();
@@ -384,7 +588,8 @@ class _SubjectPageState extends State<SubjectPage> {
                   onPressed: () => Navigator.of(context).pop(),
                   child: Text(
                     'Batal',
-                    style: GoogleFonts.raleway(fontSize: 16, color: Colors.grey),
+                    style:
+                        GoogleFonts.raleway(fontSize: 12, color: Colors.grey),
                   ),
                 ),
               ],
@@ -410,7 +615,8 @@ class _SubjectPageState extends State<SubjectPage> {
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                Icon(Icons.delete_forever, size: 60, color: Colors.red), // Ikon Hapus
+                Icon(Icons.delete_forever,
+                    size: 60, color: Colors.red), // Ikon Hapus
                 SizedBox(height: 20),
                 Text(
                   'Hapus Mata Pelajaran',
@@ -449,7 +655,7 @@ class _SubjectPageState extends State<SubjectPage> {
                           vertical: 12,
                         ),
                         shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(15),
+                          borderRadius: BorderRadius.circular(20),
                         ),
                       ),
                       child: Text(
@@ -469,7 +675,6 @@ class _SubjectPageState extends State<SubjectPage> {
       },
     );
   }
-
 
   String generateImageUrl(String subjectId) {
     return 'https://picsum.photos/seed/$subjectId/150';
@@ -507,7 +712,7 @@ class _SubjectPageState extends State<SubjectPage> {
                 prefixIcon: Icon(Icons.search, color: Colors.grey),
                 hintText: 'Cari Kelas',
                 border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(30),
+                  borderRadius: BorderRadius.circular(15),
                 ),
               ),
               style: GoogleFonts.raleway(),
@@ -525,12 +730,13 @@ class _SubjectPageState extends State<SubjectPage> {
                     borderRadius: BorderRadius.circular(15),
                   ),
                   child: Container(
-                    height: 150, // Tinggi tetap untuk setiap item agar ukuran gambar konsisten
+                    height:
+                        150, // Tinggi tetap untuk setiap item agar ukuran gambar konsisten
                     decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(15),
+                      borderRadius: BorderRadius.circular(20),
                       image: DecorationImage(
                         image: NetworkImage(
-                          'https://picsum.photos/seed/${subject['id']}/500/300',
+                          'https://picsum.photos/seed/${subject['id']}/200/300/?blur',
                         ),
                         fit: BoxFit.cover,
                       ),
@@ -553,7 +759,8 @@ class _SubjectPageState extends State<SubjectPage> {
                         ),
                       ),
                       trailing: PopupMenuButton<int>(
-                        icon: Icon(Icons.more_vert, color: Colors.white), // Ikon di sebelah kanan
+                        icon: Icon(Icons.more_vert,
+                            color: Colors.white), // Ikon di sebelah kanan
                         onSelected: (value) {
                           if (value == 0) {
                             // Aksi untuk Edit
@@ -600,16 +807,41 @@ class _SubjectPageState extends State<SubjectPage> {
         ],
       ),
       bottomNavigationBar: Container(
-        padding: EdgeInsets.all(16),
+        padding: EdgeInsets.all(5),
+        decoration: BoxDecoration(
+          color: Colors
+              .transparent, // Make background transparent to focus on the button
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.2), // Soft shadow
+              spreadRadius: 2,
+              blurRadius: 4,
+              offset: Offset(0, 3), // Shadow position
+            ),
+          ],
+        ),
         child: ElevatedButton(
           onPressed: _showAddSubjectDialog,
           style: ElevatedButton.styleFrom(
             backgroundColor: Colors.white,
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
-            padding: EdgeInsets.symmetric(vertical: 16),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(5),
+            ),
+            padding: EdgeInsets.symmetric(vertical: 9),
+            elevation: 4, // Adds elevation for more depth
+            shadowColor:
+                Colors.grey.withOpacity(0.5), // Shadow color for the button
           ),
-          child: Text('+', style: GoogleFonts.roboto(fontSize: 30, color: Colors.teal)),
+          child: Text(
+            '+',
+            style: GoogleFonts.roboto(
+              fontSize: 24,
+              color: Colors.teal,
+              fontWeight: FontWeight.bold, // Make the text stand out
+            ),
+          ),
         ),
-      ),    );
+      ),
+    );
   }
 }
