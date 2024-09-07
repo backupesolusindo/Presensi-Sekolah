@@ -93,121 +93,303 @@ class _SubjectPageState extends State<SubjectPage> {
     showDialog(
       context: context,
       builder: (context) {
-        return AlertDialog(
-          title: Text('Tambah Mata Pelajaran',
-              style: GoogleFonts.raleway(fontWeight: FontWeight.bold)),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              TextField(
-                controller: _nameController,
-                decoration: InputDecoration(labelText: 'Nama Mata Pelajaran'),
-                style: GoogleFonts.raleway(),
-              ),
-              TextField(
-                controller: _classController,
-                decoration: InputDecoration(labelText: 'Kelas'),
-                style: GoogleFonts.raleway(),
-              ),
-              TextField(
-                controller: _codeController,
-                decoration: InputDecoration(labelText: 'Tahun Ajaran'),
-                style: GoogleFonts.raleway(),
-              ),
-            ],
+        return Dialog(
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(20),
           ),
-          actions: [
-            TextButton(
-              child: Text('Batal', style: GoogleFonts.raleway()),
-              onPressed: () => Navigator.of(context).pop(),
+          elevation: 5,
+          backgroundColor: Colors.white,
+          child: Padding(
+            padding: const EdgeInsets.all(20.0),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                // Icon di bagian atas dialog
+                Icon(
+                  Icons.school,
+                  color: Colors.teal,
+                  size: 60,
+                ),
+                SizedBox(height: 20),
+                Text(
+                  'Tambah Mata Pelajaran',
+                  style: GoogleFonts.raleway(
+                    fontWeight: FontWeight.bold,
+                    fontSize: 20,
+                    color: Colors.teal,
+                  ),
+                ),
+                SizedBox(height: 20),
+                // Input Nama Mata Pelajaran
+                TextField(
+                  controller: _nameController,
+                  decoration: InputDecoration(
+                    labelText: 'Nama Mata Pelajaran',
+                    labelStyle: GoogleFonts.raleway(),
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(15),
+                    ),
+                    filled: true,
+                    fillColor: Colors.grey[100],
+                  ),
+                  style: GoogleFonts.raleway(),
+                ),
+                SizedBox(height: 10),
+                // Input Kelas
+                TextField(
+                  controller: _classController,
+                  decoration: InputDecoration(
+                    labelText: 'Kelas',
+                    labelStyle: GoogleFonts.raleway(),
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(15),
+                    ),
+                    filled: true,
+                    fillColor: Colors.grey[100],
+                  ),
+                  style: GoogleFonts.raleway(),
+                ),
+                SizedBox(height: 10),
+                // Input Tahun Ajaran
+                TextField(
+                  controller: _codeController,
+                  decoration: InputDecoration(
+                    labelText: 'Tahun Ajaran',
+                    labelStyle: GoogleFonts.raleway(),
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(15),
+                    ),
+                    filled: true,
+                    fillColor: Colors.grey[100],
+                  ),
+                  style: GoogleFonts.raleway(),
+                ),
+                SizedBox(height: 20),
+                // Tombol Aksi
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    TextButton(
+                      onPressed: () => Navigator.of(context).pop(),
+                      child: Text(
+                        'Batal',
+                        style: GoogleFonts.raleway(
+                          fontSize: 16,
+                          color: Colors.grey[600],
+                        ),
+                      ),
+                    ),
+                    ElevatedButton(
+                      onPressed: _addSubject,
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.teal,
+                        padding: EdgeInsets.symmetric(
+                          horizontal: 30,
+                          vertical: 12,
+                        ),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(15),
+                        ),
+                      ),
+                      child: Text(
+                        'Tambah',
+                        style: GoogleFonts.raleway(
+                          fontSize: 16,
+                          color: Colors.white,
+                        ),
+                      ),
+                    ),
+                  ],
+                )
+              ],
             ),
-            ElevatedButton(
-              child: Text('Tambah', style: GoogleFonts.raleway()),
-              onPressed: _addSubject,
-            ),
-          ],
+          ),
         );
       },
     );
   }
 
-  void _showEditSubjectDialog(
-      String id, String name, String classInfo, String code) {
+  void _showEditSubjectDialog(String id, String name, String classInfo, String code) {
     _selectedSubjectId = id;
     _nameController.text = name;
     _classController.text = classInfo;
     _codeController.text = code;
+    
     showDialog(
       context: context,
       builder: (context) {
-        return AlertDialog(
-          title: Text('Edit Mata Pelajaran',
-              style: GoogleFonts.raleway(fontWeight: FontWeight.bold)),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              TextField(
-                controller: _nameController,
-                decoration: InputDecoration(labelText: 'Nama Mata Pelajaran'),
-                style: GoogleFonts.raleway(),
-              ),
-              TextField(
-                controller: _classController,
-                decoration: InputDecoration(labelText: 'Kelas'),
-                style: GoogleFonts.raleway(),
-              ),
-              TextField(
-                controller: _codeController,
-                decoration: InputDecoration(labelText: 'Kode Kelas'),
-                style: GoogleFonts.raleway(),
-              ),
-            ],
+        return Dialog(
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(20),
           ),
-          actions: [
-            TextButton(
-              child: Text('Batal', style: GoogleFonts.raleway()),
-              onPressed: () => Navigator.of(context).pop(),
+          elevation: 5,
+          backgroundColor: Colors.white,
+          child: Padding(
+            padding: const EdgeInsets.all(20.0),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Icon(Icons.edit, size: 60, color: Colors.teal), // Ikon Edit
+                SizedBox(height: 20),
+                Text(
+                  'Edit Mata Pelajaran',
+                  style: GoogleFonts.raleway(
+                    fontWeight: FontWeight.bold,
+                    fontSize: 20,
+                    color: Colors.teal,
+                  ),
+                ),
+                SizedBox(height: 20),
+                // Input Nama Mata Pelajaran
+                TextField(
+                  controller: _nameController,
+                  decoration: InputDecoration(
+                    labelText: 'Nama Mata Pelajaran',
+                    labelStyle: GoogleFonts.raleway(),
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(15),
+                    ),
+                    filled: true,
+                    fillColor: Colors.grey[100],
+                  ),
+                  style: GoogleFonts.raleway(),
+                ),
+                SizedBox(height: 10),
+                // Input Kelas
+                TextField(
+                  controller: _classController,
+                  decoration: InputDecoration(
+                    labelText: 'Kelas',
+                    labelStyle: GoogleFonts.raleway(),
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(15),
+                    ),
+                    filled: true,
+                    fillColor: Colors.grey[100],
+                  ),
+                  style: GoogleFonts.raleway(),
+                ),
+                SizedBox(height: 10),
+                // Input Tahun Ajaran
+                TextField(
+                  controller: _codeController,
+                  decoration: InputDecoration(
+                    labelText: 'Tahun Ajaran',
+                    labelStyle: GoogleFonts.raleway(),
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(15),
+                    ),
+                    filled: true,
+                    fillColor: Colors.grey[100],
+                  ),
+                  style: GoogleFonts.raleway(),
+                ),
+                SizedBox(height: 20),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    TextButton(
+                      onPressed: () => Navigator.of(context).pop(),
+                      child: Text(
+                        'Batal',
+                        style: GoogleFonts.raleway(
+                          fontSize: 16,
+                          color: Colors.grey[600],
+                        ),
+                      ),
+                    ),
+                    ElevatedButton(
+                      onPressed: _updateSubject,
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.teal,
+                        padding: EdgeInsets.symmetric(
+                          horizontal: 30,
+                          vertical: 12,
+                        ),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(15),
+                        ),
+                      ),
+                      child: Text(
+                        'Simpan',
+                        style: GoogleFonts.raleway(
+                          fontSize: 16,
+                          color: Colors.white,
+                        ),
+                      ),
+                    ),
+                  ],
+                )
+              ],
             ),
-            ElevatedButton(
-              child: Text('Simpan', style: GoogleFonts.raleway()),
-              onPressed: _updateSubject,
-            ),
-          ],
+          ),
         );
       },
     );
   }
 
-  void _showSubjectOptionsDialog(
-      String id, String name, String classInfo, String code) {
+  void _showSubjectOptionsDialog(String id, String name, String classInfo, String code) {
     showDialog(
       context: context,
       builder: (context) {
-        return AlertDialog(
-          title: Text('Pilih Aksi',
-              style: GoogleFonts.raleway(fontWeight: FontWeight.bold)),
-          content: Text('Apa yang ingin Anda lakukan?',
-              style: GoogleFonts.raleway()),
-          actions: [
-            TextButton(
-              child: Text('Edit', style: GoogleFonts.raleway()),
-              onPressed: () {
-                Navigator.of(context).pop();
-                _showEditSubjectDialog(id, name, classInfo, code);
-              },
+        return Dialog(
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(20),
+          ),
+          elevation: 5,
+          backgroundColor: Colors.white,
+          child: Padding(
+            padding: const EdgeInsets.all(20.0),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                // Title dialog
+                Text(
+                  '',
+                  style: GoogleFonts.raleway(
+                    fontWeight: FontWeight.bold,
+                    fontSize: 20,
+                    color: Colors.teal,
+                  ),
+                ),
+                SizedBox(height: 20),
+                // Pilihan Edit dengan Icon
+                ListTile(
+                  leading: Icon(Icons.edit, color: Colors.teal, size: 30),
+                  title: Text(
+                    'Edit Mata Pelajaran',
+                    style: GoogleFonts.raleway(fontSize: 18),
+                  ),
+                  onTap: () {
+                    Navigator.of(context).pop();
+                    _showEditSubjectDialog(id, name, classInfo, code);
+                  },
+                ),
+                SizedBox(height: 10),
+                // Pilihan Hapus dengan Icon
+                ListTile(
+                  leading: Icon(Icons.delete, color: Colors.red, size: 30),
+                  title: Text(
+                    'Hapus Mata Pelajaran',
+                    style: GoogleFonts.raleway(fontSize: 18),
+                  ),
+                  onTap: () {
+                    Navigator.of(context).pop();
+                    _showDeleteSubjectDialog(id);
+                  },
+                ),
+                SizedBox(height: 20),
+                // Tombol Batal
+                TextButton(
+                  onPressed: () => Navigator.of(context).pop(),
+                  child: Text(
+                    'Batal',
+                    style: GoogleFonts.raleway(fontSize: 16, color: Colors.grey),
+                  ),
+                ),
+              ],
             ),
-            TextButton(
-              child: Text('Hapus', style: GoogleFonts.raleway()),
-              onPressed: () {
-                Navigator.of(context).pop();
-                _showDeleteSubjectDialog(id);
-              },
-            ),
-            TextButton(
-              child: Text('Batal', style: GoogleFonts.raleway()),
-              onPressed: () => Navigator.of(context).pop(),
-            ),
-          ],
+          ),
         );
       },
     );
@@ -217,25 +399,77 @@ class _SubjectPageState extends State<SubjectPage> {
     showDialog(
       context: context,
       builder: (context) {
-        return AlertDialog(
-          title: Text('Hapus Mata Pelajaran',
-              style: GoogleFonts.raleway(fontWeight: FontWeight.bold)),
-          content: Text('Apakah Anda yakin ingin menghapus mata pelajaran ini?',
-              style: GoogleFonts.raleway()),
-          actions: [
-            TextButton(
-              child: Text('Batal', style: GoogleFonts.raleway()),
-              onPressed: () => Navigator.of(context).pop(),
+        return Dialog(
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(20),
+          ),
+          elevation: 5,
+          backgroundColor: Colors.white,
+          child: Padding(
+            padding: const EdgeInsets.all(20.0),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Icon(Icons.delete_forever, size: 60, color: Colors.red), // Ikon Hapus
+                SizedBox(height: 20),
+                Text(
+                  'Hapus Mata Pelajaran',
+                  style: GoogleFonts.raleway(
+                    fontWeight: FontWeight.bold,
+                    fontSize: 20,
+                    color: Colors.red,
+                  ),
+                ),
+                SizedBox(height: 20),
+                Text(
+                  'Apakah Anda yakin ingin menghapus mata pelajaran ini?',
+                  style: GoogleFonts.raleway(fontSize: 16),
+                  textAlign: TextAlign.center,
+                ),
+                SizedBox(height: 20),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    TextButton(
+                      onPressed: () => Navigator.of(context).pop(),
+                      child: Text(
+                        'Batal',
+                        style: GoogleFonts.raleway(
+                          fontSize: 16,
+                          color: Colors.grey[600],
+                        ),
+                      ),
+                    ),
+                    ElevatedButton(
+                      onPressed: () => _deleteSubject(id),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.red,
+                        padding: EdgeInsets.symmetric(
+                          horizontal: 30,
+                          vertical: 12,
+                        ),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(15),
+                        ),
+                      ),
+                      child: Text(
+                        'Hapus',
+                        style: GoogleFonts.raleway(
+                          fontSize: 16,
+                          color: Colors.white,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ],
             ),
-            ElevatedButton(
-              child: Text('Hapus', style: GoogleFonts.raleway()),
-              onPressed: () => _deleteSubject(id),
-            ),
-          ],
+          ),
         );
       },
     );
   }
+
 
   String generateImageUrl(String subjectId) {
     return 'https://picsum.photos/seed/$subjectId/150';
@@ -250,7 +484,7 @@ class _SubjectPageState extends State<SubjectPage> {
             Image.asset('logo.png', height: 40),
             SizedBox(width: 10),
             Text('ABSENSI SMPN 1 JEMBER',
-                style: GoogleFonts.raleway(fontSize: 18)),
+                style: GoogleFonts.roboto(fontSize: 18)),
           ],
         ),
         actions: [
@@ -291,8 +525,7 @@ class _SubjectPageState extends State<SubjectPage> {
                     borderRadius: BorderRadius.circular(15),
                   ),
                   child: Container(
-                    height:
-                        150, // Tinggi tetap untuk setiap item agar ukuran gambar konsisten
+                    height: 150, // Tinggi tetap untuk setiap item agar ukuran gambar konsisten
                     decoration: BoxDecoration(
                       borderRadius: BorderRadius.circular(15),
                       image: DecorationImage(
@@ -305,7 +538,7 @@ class _SubjectPageState extends State<SubjectPage> {
                     child: ListTile(
                       contentPadding: EdgeInsets.all(15),
                       title: Text(
-                        subject['name'],
+                        subject['name'] ?? 'Mata Pelajaran',
                         style: GoogleFonts.raleway(
                           fontWeight: FontWeight.bold,
                           fontSize: 20,
@@ -313,20 +546,51 @@ class _SubjectPageState extends State<SubjectPage> {
                         ),
                       ),
                       subtitle: Text(
-                        'Tahun Ajaran 2023-2024\n${subject['class']}',
+                        'Tahun Ajaran ${subject['class_code'] ?? 'Tidak diketahui'}\n${subject['class'] ?? 'Kelas tidak tersedia'}',
                         style: GoogleFonts.raleway(
                           fontSize: 16,
                           color: Colors.white,
                         ),
                       ),
-                      onTap: () {
-                        _showSubjectOptionsDialog(
-                          subject['id'],
-                          subject['name'],
-                          subject['class'],
-                          '', // Tidak menampilkan kode kelas
-                        );
-                      },
+                      trailing: PopupMenuButton<int>(
+                        icon: Icon(Icons.more_vert, color: Colors.white), // Ikon di sebelah kanan
+                        onSelected: (value) {
+                          if (value == 0) {
+                            // Aksi untuk Edit
+                            _showEditSubjectDialog(
+                              subject['id'],
+                              subject['name'],
+                              subject['class'],
+                              subject['class_code'],
+                            );
+                          } else if (value == 1) {
+                            // Aksi untuk Hapus
+                            _showDeleteSubjectDialog(subject['id']);
+                          }
+                        },
+                        itemBuilder: (context) => [
+                          PopupMenuItem(
+                            value: 0,
+                            child: Row(
+                              children: [
+                                Icon(Icons.edit, color: Colors.teal),
+                                SizedBox(width: 10),
+                                Text('Edit', style: GoogleFonts.raleway()),
+                              ],
+                            ),
+                          ),
+                          PopupMenuItem(
+                            value: 1,
+                            child: Row(
+                              children: [
+                                Icon(Icons.delete, color: Colors.red),
+                                SizedBox(width: 10),
+                                Text('Hapus', style: GoogleFonts.raleway()),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
                     ),
                   ),
                 );
@@ -335,11 +599,17 @@ class _SubjectPageState extends State<SubjectPage> {
           ),
         ],
       ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: _showAddSubjectDialog,
-        child: Icon(Icons.add),
-        backgroundColor: Colors.teal,
-      ),
-    );
+      bottomNavigationBar: Container(
+        padding: EdgeInsets.all(16),
+        child: ElevatedButton(
+          onPressed: _showAddSubjectDialog,
+          style: ElevatedButton.styleFrom(
+            backgroundColor: Colors.white,
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
+            padding: EdgeInsets.symmetric(vertical: 16),
+          ),
+          child: Text('+', style: GoogleFonts.roboto(fontSize: 30, color: Colors.teal)),
+        ),
+      ),    );
   }
 }
