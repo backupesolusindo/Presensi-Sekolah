@@ -16,12 +16,6 @@ class _SubjectPageState extends State<SubjectPage> {
   TextEditingController _codeController = TextEditingController();
   List<dynamic> subjects = [];
   List<dynamic> filteredSubjects = [];
-  List<String> _years = List.generate(10, (index) {
-    int year = DateTime.now().year - index;
-    return '$year/${year + 1}';
-  });
-  String? _selectedYear;
-
   String? _selectedSubjectId;
 
   @override
@@ -71,8 +65,7 @@ class _SubjectPageState extends State<SubjectPage> {
     if (!RegExp(r'^[a-zA-Z\s]+$').hasMatch(_nameController.text)) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content:
-              Text('Nama Mata Pelajaran hanya boleh berisi huruf dan spasi.'),
+          content: Text('Nama Mata Pelajaran hanya boleh berisi huruf dan spasi.'),
           backgroundColor: Colors.red,
         ),
       );
@@ -134,6 +127,7 @@ class _SubjectPageState extends State<SubjectPage> {
     });
   }
 
+
   void _updateSubject() {
     if (_selectedSubjectId != null) {
       _subjectRef.child(_selectedSubjectId!).update({
@@ -164,7 +158,7 @@ class _SubjectPageState extends State<SubjectPage> {
       builder: (context) {
         return Dialog(
           shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(15),
+            borderRadius: BorderRadius.circular(20),
           ),
           elevation: 5,
           backgroundColor: Colors.white,
@@ -174,20 +168,22 @@ class _SubjectPageState extends State<SubjectPage> {
               key: _formKey,
               child: Column(
                 mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
-                  Icon(Icons.edit, size: 60, color: Colors.teal),
+                  Icon(
+                    Icons.school,
+                    color: Colors.teal,
+                    size: 60,
+                  ),
                   SizedBox(height: 15),
                   Text(
-                    'Edit Mata Pelajaran',
+                    'Tambah Mata Pelajaran',
                     style: GoogleFonts.raleway(
                       fontWeight: FontWeight.bold,
                       fontSize: 20,
                       color: Colors.teal,
                     ),
-                    textAlign: TextAlign.center,
                   ),
-                  SizedBox(height: 20),
+                  SizedBox(height: 15),
                   // Input Nama Mata Pelajaran
                   TextFormField(
                     controller: _nameController,
@@ -211,7 +207,7 @@ class _SubjectPageState extends State<SubjectPage> {
                       return null;
                     },
                   ),
-                  SizedBox(height: 15),
+                  SizedBox(height: 10),
                   // Input Kelas
                   TextFormField(
                     controller: _classController,
@@ -230,53 +226,24 @@ class _SubjectPageState extends State<SubjectPage> {
                         return 'Kelas tidak boleh kosong.';
                       }
                       if (!RegExp(r'^[1-9][0-9]*[A-Z]*$').hasMatch(value)) {
-                        return 'Kelas tidak valid. (e.g., 8B)';
+                        return 'Kelas tidak valid.';
                       }
                       return null;
                     },
                   ),
-                  SizedBox(height: 15),
-                  // Dropdown Tahun Ajaran
-                  DropdownButtonFormField<String>(
-                    value: _selectedYear,
+                  SizedBox(height: 10),
+                  // Input Tahun Ajaran
+                  TextFormField(
+                    controller: _codeController,
                     decoration: InputDecoration(
                       labelText: 'Tahun Ajaran',
-                      labelStyle:
-                          GoogleFonts.raleway(), // Customize label style
+                      labelStyle: GoogleFonts.raleway(),
                       border: OutlineInputBorder(
-                        borderRadius:
-                            BorderRadius.circular(15), // Rounded corners
-                        borderSide: BorderSide(
-                            color: Colors.blueAccent), // Border color
-                      ),
-                      focusedBorder: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(15),
-                        borderSide: BorderSide(
-                            color: Colors.blueAccent,
-                            width: 2), // Focused border color
                       ),
-                      enabledBorder: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(15),
-                        borderSide: BorderSide(
-                            color: Colors.grey,
-                            width: 1), // Enabled border color
-                      ),
+                      filled: true,
+                      fillColor: Colors.grey[100],
                     ),
-                    onChanged: (String? newValue) {
-                      setState(() {
-                        _selectedYear = newValue;
-                      });
-                    },
-                    items: _years.map<DropdownMenuItem<String>>((String year) {
-                      return DropdownMenuItem<String>(
-                        value: year,
-                        child: Text(
-                          year,
-                          style: GoogleFonts
-                              .raleway(), // Customize item text style
-                        ),
-                      );
-                    }).toList(),
                     style: GoogleFonts.raleway(),
                     validator: (value) {
                       if (value == null || value.isEmpty) {
@@ -287,9 +254,6 @@ class _SubjectPageState extends State<SubjectPage> {
                       }
                       return null;
                     },
-                    icon: Icon(Icons.arrow_drop_down,
-                        color: Colors.blueAccent), // Customize dropdown icon
-                    iconSize: 20, // Customize icon size
                   ),
                   SizedBox(height: 20),
                   // Tombol Aksi
@@ -341,15 +305,14 @@ class _SubjectPageState extends State<SubjectPage> {
     );
   }
 
-  void _showEditSubjectDialog(
-      String id, String name, String classInfo, String code) {
+  void _showEditSubjectDialog(String id, String name, String classInfo, String code) {
     final _formKey = GlobalKey<FormState>(); // Key for form validation
 
     _selectedSubjectId = id;
     _nameController.text = name;
     _classController.text = classInfo;
     _codeController.text = code;
-
+    
     showDialog(
       context: context,
       builder: (context) {
@@ -365,7 +328,6 @@ class _SubjectPageState extends State<SubjectPage> {
               key: _formKey,
               child: Column(
                 mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
                   Icon(Icons.edit, size: 60, color: Colors.teal),
                   SizedBox(height: 15),
@@ -376,9 +338,8 @@ class _SubjectPageState extends State<SubjectPage> {
                       fontSize: 20,
                       color: Colors.teal,
                     ),
-                    textAlign: TextAlign.center,
                   ),
-                  SizedBox(height: 20),
+                  SizedBox(height: 15),
                   // Input Nama Mata Pelajaran
                   TextFormField(
                     controller: _nameController,
@@ -386,7 +347,7 @@ class _SubjectPageState extends State<SubjectPage> {
                       labelText: 'Nama Mata Pelajaran',
                       labelStyle: GoogleFonts.raleway(),
                       border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(15),
+                        borderRadius: BorderRadius.circular(20),
                       ),
                       filled: true,
                       fillColor: Colors.grey[100],
@@ -402,7 +363,7 @@ class _SubjectPageState extends State<SubjectPage> {
                       return null;
                     },
                   ),
-                  SizedBox(height: 15),
+                  SizedBox(height: 10),
                   // Input Kelas
                   TextFormField(
                     controller: _classController,
@@ -410,7 +371,7 @@ class _SubjectPageState extends State<SubjectPage> {
                       labelText: 'Kelas',
                       labelStyle: GoogleFonts.raleway(),
                       border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(15),
+                        borderRadius: BorderRadius.circular(20),
                       ),
                       filled: true,
                       fillColor: Colors.grey[100],
@@ -421,53 +382,24 @@ class _SubjectPageState extends State<SubjectPage> {
                         return 'Kelas tidak boleh kosong.';
                       }
                       if (!RegExp(r'^[1-9][0-9]*[A-Z]*$').hasMatch(value)) {
-                        return 'Kelas tidak valid. (e.g., 8B)';
+                        return 'Kelas tidak valid. (e,g.8B)';
                       }
                       return null;
                     },
                   ),
-                  SizedBox(height: 15),
-                  // Dropdown Tahun Ajaran
-                  DropdownButtonFormField<String>(
-                    value: _selectedYear,
+                  SizedBox(height: 10),
+                  // Input Tahun Ajaran
+                  TextFormField(
+                    controller: _codeController,
                     decoration: InputDecoration(
                       labelText: 'Tahun Ajaran',
-                      labelStyle:
-                          GoogleFonts.raleway(), // Customize label style
+                      labelStyle: GoogleFonts.raleway(),
                       border: OutlineInputBorder(
-                        borderRadius:
-                            BorderRadius.circular(15), // Rounded corners
-                        borderSide: BorderSide(
-                            color: Colors.blueAccent), // Border color
+                        borderRadius: BorderRadius.circular(20),
                       ),
-                      focusedBorder: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(15),
-                        borderSide: BorderSide(
-                            color: Colors.blueAccent,
-                            width: 2), // Focused border color
-                      ),
-                      enabledBorder: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(15),
-                        borderSide: BorderSide(
-                            color: Colors.grey,
-                            width: 1), // Enabled border color
-                      ),
+                      filled: true,
+                      fillColor: Colors.grey[100],
                     ),
-                    onChanged: (String? newValue) {
-                      setState(() {
-                        _selectedYear = newValue;
-                      });
-                    },
-                    items: _years.map<DropdownMenuItem<String>>((String year) {
-                      return DropdownMenuItem<String>(
-                        value: year,
-                        child: Text(
-                          year,
-                          style: GoogleFonts
-                              .raleway(), // Customize item text style
-                        ),
-                      );
-                    }).toList(),
                     style: GoogleFonts.raleway(),
                     validator: (value) {
                       if (value == null || value.isEmpty) {
@@ -478,11 +410,8 @@ class _SubjectPageState extends State<SubjectPage> {
                       }
                       return null;
                     },
-                    icon: Icon(Icons.arrow_drop_down,
-                        color: Colors.blueAccent), // Customize dropdown icon
-                    iconSize: 20, // Customize icon size
                   ),
-                  SizedBox(height: 20),
+                  SizedBox(height: 15),
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
@@ -530,9 +459,7 @@ class _SubjectPageState extends State<SubjectPage> {
       },
     );
   }
-
-  void _showSubjectOptionsDialog(
-      String id, String name, String classInfo, String code) {
+  void _showSubjectOptionsDialog(String id, String name, String classInfo, String code) {
     showDialog(
       context: context,
       builder: (context) {
@@ -562,7 +489,7 @@ class _SubjectPageState extends State<SubjectPage> {
                   leading: Icon(Icons.edit, color: Colors.teal, size: 30),
                   title: Text(
                     'Edit Mata Pelajaran',
-                    style: GoogleFonts.raleway(fontSize: 12),
+                    style: GoogleFonts.raleway(fontSize: 18),
                   ),
                   onTap: () {
                     Navigator.of(context).pop();
@@ -575,7 +502,7 @@ class _SubjectPageState extends State<SubjectPage> {
                   leading: Icon(Icons.delete, color: Colors.red, size: 30),
                   title: Text(
                     'Hapus Mata Pelajaran',
-                    style: GoogleFonts.raleway(fontSize: 12),
+                    style: GoogleFonts.raleway(fontSize: 18),
                   ),
                   onTap: () {
                     Navigator.of(context).pop();
@@ -588,8 +515,7 @@ class _SubjectPageState extends State<SubjectPage> {
                   onPressed: () => Navigator.of(context).pop(),
                   child: Text(
                     'Batal',
-                    style:
-                        GoogleFonts.raleway(fontSize: 12, color: Colors.grey),
+                    style: GoogleFonts.raleway(fontSize: 16, color: Colors.grey),
                   ),
                 ),
               ],
@@ -615,8 +541,7 @@ class _SubjectPageState extends State<SubjectPage> {
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                Icon(Icons.delete_forever,
-                    size: 60, color: Colors.red), // Ikon Hapus
+                Icon(Icons.delete_forever, size: 60, color: Colors.red), // Ikon Hapus
                 SizedBox(height: 20),
                 Text(
                   'Hapus Mata Pelajaran',
@@ -676,6 +601,7 @@ class _SubjectPageState extends State<SubjectPage> {
     );
   }
 
+
   String generateImageUrl(String subjectId) {
     return 'https://picsum.photos/seed/$subjectId/150';
   }
@@ -730,8 +656,7 @@ class _SubjectPageState extends State<SubjectPage> {
                     borderRadius: BorderRadius.circular(15),
                   ),
                   child: Container(
-                    height:
-                        150, // Tinggi tetap untuk setiap item agar ukuran gambar konsisten
+                    height: 150, // Tinggi tetap untuk setiap item agar ukuran gambar konsisten
                     decoration: BoxDecoration(
                       borderRadius: BorderRadius.circular(20),
                       image: DecorationImage(
@@ -759,8 +684,7 @@ class _SubjectPageState extends State<SubjectPage> {
                         ),
                       ),
                       trailing: PopupMenuButton<int>(
-                        icon: Icon(Icons.more_vert,
-                            color: Colors.white), // Ikon di sebelah kanan
+                        icon: Icon(Icons.more_vert, color: Colors.white), // Ikon di sebelah kanan
                         onSelected: (value) {
                           if (value == 0) {
                             // Aksi untuk Edit
@@ -809,8 +733,7 @@ class _SubjectPageState extends State<SubjectPage> {
       bottomNavigationBar: Container(
         padding: EdgeInsets.all(5),
         decoration: BoxDecoration(
-          color: Colors
-              .transparent, // Make background transparent to focus on the button
+          color: Colors.transparent, // Make background transparent to focus on the button
           boxShadow: [
             BoxShadow(
               color: Colors.black.withOpacity(0.2), // Soft shadow
@@ -829,8 +752,7 @@ class _SubjectPageState extends State<SubjectPage> {
             ),
             padding: EdgeInsets.symmetric(vertical: 9),
             elevation: 4, // Adds elevation for more depth
-            shadowColor:
-                Colors.grey.withOpacity(0.5), // Shadow color for the button
+            shadowColor: Colors.grey.withOpacity(0.5), // Shadow color for the button
           ),
           child: Text(
             '+',
