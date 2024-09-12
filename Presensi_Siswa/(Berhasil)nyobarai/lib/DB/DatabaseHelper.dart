@@ -108,4 +108,10 @@ class DatabaseHelper {
     );
     return maps.isNotEmpty;
   }
+
+  Future<void> deleteAll() async {
+  final db = await database;
+  await db.delete(table, where: '1=1');
+}
+
 }
