@@ -6,6 +6,7 @@ import 'package:image/image.dart' as img;
 import 'package:google_mlkit_face_detection/google_mlkit_face_detection.dart';
 import 'ML/Recognition.dart';
 import 'ML/Recognizer.dart';
+import 'DB/DatabaseHelper.dart'; // Pastikan path ini sesuai
 
 class RegistrationScreen extends StatefulWidget {
   const RegistrationScreen({Key? key}) : super(key: key);
@@ -21,7 +22,9 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
   late Recognizer recognizer;
   List<Face> faces = [];
   var image;
-  TextEditingController textEditingController = TextEditingController();
+  TextEditingController nameController = TextEditingController();
+  TextEditingController nisController = TextEditingController();
+  TextEditingController kelasController = TextEditingController();
 
   @override
   void initState() {
@@ -44,7 +47,8 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
   }
 
   _imgFromGallery() async {
-    XFile? pickedFile = await imagePicker.pickImage(source: ImageSource.gallery);
+    XFile? pickedFile =
+        await imagePicker.pickImage(source: ImageSource.gallery);
     if (pickedFile != null) {
       setState(() {
         _image = File(pickedFile.path);
@@ -67,17 +71,24 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
         Rect faceRect = face.boundingBox;
         num left = faceRect.left < 0 ? 0 : faceRect.left;
         num top = faceRect.top < 0 ? 0 : faceRect.top;
-        num right = faceRect.right > image.width ? image.width - 1 : faceRect.right;
-        num bottom = faceRect.bottom > image.height ? image.height - 1 : faceRect.bottom;
+        num right =
+            faceRect.right > image.width ? image.width - 1 : faceRect.right;
+        num bottom =
+            faceRect.bottom > image.height ? image.height - 1 : faceRect.bottom;
         num width = right - left;
         num height = bottom - top;
 
         final bytes = _image!.readAsBytesSync();
         img.Image? faceImg = img.decodeImage(bytes);
-        img.Image croppedFace = img.copyCrop(faceImg!, x: left.toInt(), y: top.toInt(), width: width.toInt(), height: height.toInt());
+        img.Image croppedFace = img.copyCrop(faceImg!,
+            x: left.toInt(),
+            y: top.toInt(),
+            width: width.toInt(),
+            height: height.toInt());
 
         Recognition recognition = recognizer.recognize(croppedFace, faceRect);
-        showFaceRegistrationDialogue(Uint8List.fromList(img.encodeBmp(croppedFace)), recognition);
+        showFaceRegistrationDialogue(
+            Uint8List.fromList(img.encodeBmp(croppedFace)), recognition);
       }
     }
     drawRectangleAroundFaces();
@@ -88,17 +99,17 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
       context: context,
       builder: (ctx) => AlertDialog(
         title: const Text("Face Registration", textAlign: TextAlign.center),
-        content: SizedBox(
-          height: 340,
+        content: SingleChildScrollView(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.center,
+            mainAxisSize: MainAxisSize.min,
             children: [
               const SizedBox(height: 20),
               Image.memory(croppedFace, width: 200, height: 200),
               SizedBox(
                 width: 200,
                 child: TextField(
-                  controller: textEditingController,
+                  controller: nameController,
                   decoration: const InputDecoration(
                     fillColor: Colors.white,
                     filled: true,
@@ -106,18 +117,58 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
                   ),
                 ),
               ),
+              TextField(
+                controller: nisController,
+                decoration: const InputDecoration(
+                  fillColor: Colors.white,
+                  filled: true,
+                  hintText: "Enter NIS",
+                ),
+                keyboardType: TextInputType.number,
+              ),
+              TextField(
+                controller: kelasController,
+                decoration: const InputDecoration(
+                  fillColor: Colors.white,
+                  filled: true,
+                  hintText: "Enter Class",
+                ),
+              ),
               const SizedBox(height: 10),
               ElevatedButton(
-                onPressed: () {
-                  recognizer.registerFaceInDB(
-                      textEditingController.text, recognition.embeddings);
-                  textEditingController.clear();
-                  Navigator.pop(context);
-                  ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(content: Text("Face Registered")));
+                onPressed: () async {
+                  if (nameController.text.isEmpty ||
+                      nisController.text.isEmpty ||
+                      kelasController.text.isEmpty) {
+                    // Tampilkan Snackbar jika ada field yang kosong
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(
+                          content: Text("Please fill in all fields")),
+                    );
+                  } else if (await DatabaseHelper.instance
+                      .isNisExists(nisController.text)) {
+                    // Tampilkan Snackbar jika NIS sudah ada
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(content: Text("NIS already exists")),
+                    );
+                  } else {
+                    // Simpan data ke database
+                    recognizer.registerFaceInDB(
+                        nameController.text,
+                        nisController.text,
+                        kelasController.text,
+                        recognition.embeddings);
+                    nameController.clear();
+                    nisController.clear();
+                    kelasController.clear();
+                    Navigator.pop(context);
+                    ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(content: Text("Face Registered")));
+                  }
                 },
                 style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.blue, minimumSize: const Size(200, 40)),
+                    backgroundColor: Colors.blue,
+                    minimumSize: const Size(200, 40)),
                 child: const Text("Register"),
               )
             ],
@@ -137,7 +188,8 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
   }
 
   removeRotation(File inputImage) async {
-    final img.Image? capturedImage = img.decodeImage(await File(inputImage.path).readAsBytes());
+    final img.Image? capturedImage =
+        img.decodeImage(await File(inputImage.path).readAsBytes());
     final img.Image orientedImage = img.bakeOrientation(capturedImage!);
     return await File(_image!.path).writeAsBytes(img.encodeJpg(orientedImage));
   }
@@ -159,7 +211,8 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
                       width: image.width.toDouble(),
                       height: image.width.toDouble(),
                       child: CustomPaint(
-                        painter: FacePainter(facesList: faces, imageFile: image),
+                        painter:
+                            FacePainter(facesList: faces, imageFile: image),
                       ),
                     ),
                   ),
@@ -178,8 +231,8 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
               children: [
-                _buildIconButton(
-                    screenWidth, Icons.image, "Pick from Gallery", _imgFromGallery),
+                _buildIconButton(screenWidth, Icons.image, "Pick from Gallery",
+                    _imgFromGallery),
                 _buildIconButton(
                     screenWidth, Icons.camera, "Capture Image", _imgFromCamera),
               ],
@@ -190,7 +243,8 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
     );
   }
 
-  Widget _buildIconButton(double screenWidth, IconData icon, String label, Function onTap) {
+  Widget _buildIconButton(
+      double screenWidth, IconData icon, String label, Function onTap) {
     return Card(
       shape: const RoundedRectangleBorder(
           borderRadius: BorderRadius.all(Radius.circular(200))),

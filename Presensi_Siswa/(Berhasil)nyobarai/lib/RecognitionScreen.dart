@@ -123,58 +123,6 @@ class _RecognitionScreenState extends State<RecognitionScreen> {
 
   TextEditingController textEditingController = TextEditingController();
 
-  void showFaceRegistrationDialogue(Uint8List croppedFace, Recognition recognition) {
-    showDialog(
-      context: context,
-      builder: (ctx) => AlertDialog(
-        title: const Text("Face Registration", textAlign: TextAlign.center),
-        alignment: Alignment.center,
-        content: SizedBox(
-          height: 340,
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.center,
-            children: [
-              const SizedBox(height: 20),
-              Image.memory(
-                croppedFace,
-                width: 200,
-                height: 200,
-              ),
-              SizedBox(
-                width: 200,
-                child: TextField(
-                  controller: textEditingController,
-                  decoration: const InputDecoration(
-                    fillColor: Colors.white,
-                    filled: true,
-                    hintText: "Enter Name",
-                  ),
-                ),
-              ),
-              const SizedBox(height: 10),
-              ElevatedButton(
-                onPressed: () {
-                  recognizer.registerFaceInDB(textEditingController.text, recognition.embeddings);
-                  textEditingController.clear();
-                  Navigator.pop(context);
-                  ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
-                    content: Text("Face Registered"),
-                  ));
-                },
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.blue,
-                  minimumSize: const Size(200, 40),
-                ),
-                child: const Text("Register"),
-              ),
-            ],
-          ),
-        ),
-        contentPadding: EdgeInsets.zero,
-      ),
-    );
-  }
-
   @override
   Widget build(BuildContext context) {
     double screenWidth = MediaQuery.of(context).size.width;

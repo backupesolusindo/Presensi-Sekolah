@@ -42,8 +42,10 @@ class _UserListScreenState extends State<UserListScreen> {
             itemBuilder: (context, index) {
               final user = users[index];
               return ListTile(
-                title: Text(user['name']),
-                subtitle: Text('ID: ${user['_id']}'),
+                title: Text(user[DatabaseHelper.columnName]), // Menampilkan nama
+                subtitle: Text(
+                  'ID: ${user[DatabaseHelper.columnId]}, NIS: ${user[DatabaseHelper.columnNIS]}, Kelas: ${user[DatabaseHelper.columnKelas]}'
+                ),
               );
             },
           );
