@@ -167,7 +167,7 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
               : Container(
                   margin: const EdgeInsets.only(top: 100),
                   child: Image.asset(
-                    "images/logo.jpg",
+                    "images/logo.png",
                     width: screenWidth - 100,
                     height: screenWidth - 100,
                   ),

@@ -22,7 +22,7 @@ class _HomePageState extends State<HomeScreen> {
           Container(
               margin: const EdgeInsets.only(top: 100),
               child: Image.asset(
-                "images/logo.jpg",
+                "images/logo.png",
                 width: screenWidth - 40,
                 height: screenWidth - 40,
               )),
