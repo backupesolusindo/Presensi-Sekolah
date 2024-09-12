@@ -44,7 +44,7 @@ class _UserListScreenState extends State<UserListScreen> {
               return ListTile(
                 title: Text(user[DatabaseHelper.columnName]), // Menampilkan nama
                 subtitle: Text(
-                  'ID: ${user[DatabaseHelper.columnId]}, NIS: ${user[DatabaseHelper.columnNIS]}, Kelas: ${user[DatabaseHelper.columnKelas]}'
+                  'ID: ${user[DatabaseHelper.columnId]}, NIS: ${user[DatabaseHelper.columnNIS]}, Kelas: ${user[DatabaseHelper.columnKelas]}, FaceData: ${user[DatabaseHelper.columnEmbedding]}'
                 ),
               );
             },
