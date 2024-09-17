@@ -113,7 +113,7 @@ class Recognizer {
 
   // Mencari embedding terdekat
   Pair findNearest(List<double> emb) {
-    Pair pair = Pair("Unknown", double.infinity);
+    Pair pair = Pair("Tidak dikenali", double.infinity);
     for (MapEntry<String, Recognition> item in registered.entries) {
       final String name = item.key;
       List<double> knownEmb = item.value.embeddings;
@@ -129,7 +129,7 @@ class Recognizer {
       }
     }
     if (pair.distance > threshold) {
-      pair.name = "Unknown";
+      pair.name = "Tidak dikenali";
     }
     return pair;
   }
