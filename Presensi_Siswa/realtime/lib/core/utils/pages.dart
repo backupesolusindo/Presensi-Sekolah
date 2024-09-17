@@ -9,7 +9,7 @@ class Pages {
   static List<Widget> pages = [
     const HomeScreen(),
     const RegistrationScreen(),
-    const RecognitionScreen(),
+    //const RecognitionScreen(),
     // RealtimeFaceDetection(
     //   title: 'detection',
     // ),
