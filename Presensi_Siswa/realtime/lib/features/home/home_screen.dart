@@ -45,19 +45,19 @@ class HomeScreen extends StatelessWidget {
                 Container(
                   height: 20,
                 ),
-                ElevatedButton(
-                  onPressed: () {
-                    Navigator.push(context, MaterialPageRoute(builder: (context) => const RecognitionScreen()));
-                  },
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: ColorsManager.buttonsColor,
-                    minimumSize: Size(screenWidth - 30, 50),
-                  ),
-                  child: Text(
-                    "Recognize",
-                    style: GoogleFonts.poppins(color: Colors.white),
-                  ),
-                ),
+                // ElevatedButton(
+                //   onPressed: () {
+                //     Navigator.push(context, MaterialPageRoute(builder: (context) => const RecognitionScreen()));
+                //   },
+                //   style: ElevatedButton.styleFrom(
+                //     backgroundColor: ColorsManager.buttonsColor,
+                //     minimumSize: Size(screenWidth - 30, 50),
+                //   ),
+                //   child: Text(
+                //     "Recognize",
+                //     style: GoogleFonts.poppins(color: Colors.white),
+                //   ),
+                // ),
               ],
             ),
           ),
