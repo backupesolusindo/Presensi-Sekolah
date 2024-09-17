@@ -16,7 +16,7 @@ class Recognizer {
 
   // Nama model
   String get modelName => 'assets/mobile_face_net.tflite';
-
+  double threshold = 0.5; // Contoh ambang batas, dapat diubah sesuai kebutuhan
   // Konstruktor
   Recognizer({int? numThreads}) {
     _interpreterOptions = InterpreterOptions();
@@ -127,6 +127,9 @@ class Recognizer {
         pair.distance = distance;
         pair.name = name;
       }
+    }
+    if (pair.distance > threshold) {
+      pair.name = "Unknown";
     }
     return pair;
   }
