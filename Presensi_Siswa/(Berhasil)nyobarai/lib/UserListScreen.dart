@@ -22,19 +22,18 @@ class _UserListScreenState extends State<UserListScreen> {
     return await dbHelper.queryAllRows();
   }
 
-  bool _uploadCompleted = false;
 
-  Future<void> _uploadData() async {
+  Future<void> _syncDatabro() async {
     final dbHelper = DatabaseHelper.instance;
     final users = await dbHelper.queryAllRows();
     List<Map<String, dynamic>> arData = [];
 
     for (var user in users) {
       arData.add({
-        'nama': user[DatabaseHelper.columnName],
+        'name': user[DatabaseHelper.columnName],
         'nis': user[DatabaseHelper.columnNIS],
         'kelas': user[DatabaseHelper.columnKelas],
-        'model': user[DatabaseHelper.columnEmbedding],
+        'embedding': user[DatabaseHelper.columnEmbedding],
       });
     }
     String bodyraw = jsonEncode(<String, dynamic>{'data': arData});
@@ -61,52 +60,55 @@ class _UserListScreenState extends State<UserListScreen> {
         // Menyimpan data baru
         for (var user in users) {
           await dbHelper.insert({
-            DatabaseHelper.columnName: user['nama'],
-            DatabaseHelper.columnNIS: user['nis'],
-            DatabaseHelper.columnKelas: user['kelas'],
-            DatabaseHelper.columnEmbedding: user['model'],
-          });
-        }
-      }
-      _uploadCompleted = true;
-      _uploadCompleted = false;
-    } else {
-      print('Failed to upload data');
-    }
-  }
-
-  Future<void> _downloadData() async {
-    final response = await http.get(Uri.parse(
-        'https://presensi-smp1.esolusindo.com/ApiSiswa/Siswa/getSiswa')); // Ganti dengan URL API Anda
-    if (_uploadCompleted) {
-      if (response.statusCode == 200) {
-        final List<dynamic> users = jsonDecode(response.body);
-        final dbHelper = DatabaseHelper.instance;
-
-        // Menghapus data lama
-        await dbHelper.deleteAll();
-
-        // Menyimpan data baru
-        for (var user in users) {
-          await dbHelper.insert({
             DatabaseHelper.columnName: user['name'],
             DatabaseHelper.columnNIS: user['nis'],
             DatabaseHelper.columnKelas: user['kelas'],
             DatabaseHelper.columnEmbedding: user['embedding'],
           });
         }
-
-        // Refresh data
-        setState(() {
-          _users = _fetchUsers();
-        });
-
-        print('Data downloaded and synchronized successfully');
       }
+
+      // Refresh data
+      setState(() {
+        _users = _fetchUsers();
+      });
     } else {
-      print('Failed to download data');
+      print('Failed to upload data');
     }
   }
+
+  // Future<void> _downloadData() async {
+  //   final response = await http.get(Uri.parse(
+  //       'https://presensi-smp1.esolusindo.com/ApiSiswa/Siswa/getSiswa')); // Ganti dengan URL API Anda
+  //   if (_uploadCompleted) {
+  //     if (response.statusCode == 200) {
+  //       final List<dynamic> users = jsonDecode(response.body);
+  //       final dbHelper = DatabaseHelper.instance;
+
+  //       // Menghapus data lama
+  //       await dbHelper.deleteAll();
+
+  //       // Menyimpan data baru
+  //       for (var user in users) {
+  //         await dbHelper.insert({
+  //           DatabaseHelper.columnName: user['name'],
+  //           DatabaseHelper.columnNIS: user['nis'],
+  //           DatabaseHelper.columnKelas: user['kelas'],
+  //           DatabaseHelper.columnEmbedding: user['embedding'],
+  //         });
+  //       }
+
+  //       // Refresh data
+  //       setState(() {
+  //         _users = _fetchUsers();
+  //       });
+
+  //       print('Data downloaded and synchronized successfully');
+  //     }
+  //   } else {
+  //     print('Failed to download data');
+  //   }
+  // }
 
   @override
   Widget build(BuildContext context) {
@@ -115,7 +117,7 @@ class _UserListScreenState extends State<UserListScreen> {
       body: Column(
         children: [
           ElevatedButton(
-            onPressed: _uploadData,
+            onPressed: _syncDatabro,
             child: Text('Sync Data'),
           ),
           Expanded(
