@@ -218,8 +218,9 @@ class FacePainter extends CustomPainter {
 
       TextSpan span = TextSpan(
         style: const TextStyle(color: Colors.white, fontSize: 130),
-        text: "${rectangle.name}  ${rectangle.distance.toStringAsFixed(2)}",
+        text: "${rectangle.name} ${(rectangle.distance * 100).toStringAsFixed(2)}%",
       );
+
       TextPainter tp = TextPainter(
         text: span,
         textAlign: TextAlign.left,
