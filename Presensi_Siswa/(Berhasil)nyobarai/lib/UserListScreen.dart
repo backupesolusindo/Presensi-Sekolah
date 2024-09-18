@@ -30,10 +30,10 @@ class _UserListScreenState extends State<UserListScreen> {
 
     for (var user in users) {
       arData.add({
-        'name': user[DatabaseHelper.columnName],
+        'nama': user[DatabaseHelper.columnName],
         'nis': user[DatabaseHelper.columnNIS],
         'kelas': user[DatabaseHelper.columnKelas],
-        'embedding': user[DatabaseHelper.columnEmbedding],
+        'model': user[DatabaseHelper.columnEmbedding],
       });
     }
     String bodyraw = jsonEncode(<String, dynamic>{'data': arData});
@@ -60,10 +60,10 @@ class _UserListScreenState extends State<UserListScreen> {
         // Menyimpan data baru
         for (var user in users) {
           await dbHelper.insert({
-            DatabaseHelper.columnName: user['name'],
+            DatabaseHelper.columnName: user['nama'],
             DatabaseHelper.columnNIS: user['nis'],
             DatabaseHelper.columnKelas: user['kelas'],
-            DatabaseHelper.columnEmbedding: user['embedding'],
+            DatabaseHelper.columnEmbedding: user['model'],
           });
         }
       }
