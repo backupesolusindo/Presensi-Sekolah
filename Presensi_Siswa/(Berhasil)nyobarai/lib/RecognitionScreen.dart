@@ -215,10 +215,10 @@ class FacePainter extends CustomPainter {
 
     for (Recognition rectangle in facesList) {
       canvas.drawRect(rectangle.location, p);
-
+//TEKS DIKOTAK WAJAH
       TextSpan span = TextSpan(
         style: const TextStyle(color: Colors.white, fontSize: 130),
-        text: "${rectangle.name} ${(rectangle.distance * 100).toStringAsFixed(2)}%",
+        text: "${rectangle.name} ${(100 - rectangle.distance).toStringAsFixed(2)}%",
       );
 
       TextPainter tp = TextPainter(
