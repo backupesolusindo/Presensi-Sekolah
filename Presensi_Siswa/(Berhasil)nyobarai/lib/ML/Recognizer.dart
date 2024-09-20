@@ -33,18 +33,25 @@ class Recognizer {
     final allRows = await dbHelper.queryAllRows();
     for (final row in allRows) {
       String name = row[DatabaseHelper.columnName];
+      String nis = row[DatabaseHelper.columnNIS]; // Ambil NIS dari database
+      String kelas =
+          row[DatabaseHelper.columnKelas]; // Ambil Kelas dari database
       List<double> embd = row[DatabaseHelper.columnEmbedding]
           .split(',')
           .map((e) => double.parse(e))
           .toList()
           .cast<double>();
-      Recognition recognition = Recognition(row[DatabaseHelper.columnName], Rect.zero, embd, 0, 0);
+
+      // Masukkan NIS dan Kelas ke dalam objek Recognition
+      Recognition recognition =
+          Recognition(name, Rect.zero, embd, 0, 0, nis, kelas);
       registered.putIfAbsent(name, () => recognition);
     }
   }
 
   // Mendaftarkan wajah ke database
-  void registerFaceInDB(String name, String nis, String kelas, List<double> embedding) async {
+  void registerFaceInDB(
+      String name, String nis, String kelas, List<double> embedding) async {
     // row to insert
     Map<String, dynamic> row = {
       DatabaseHelper.columnName: name,
@@ -67,8 +74,10 @@ class Recognizer {
 
   // Mengubah gambar menjadi array
   List<dynamic> imageToArray(img.Image inputImage) {
-    img.Image resizedImage = img.copyResize(inputImage, width: WIDTH, height: HEIGHT);
-    List<double> flattenedList = resizedImage.data!.expand((channel) => [channel.r, channel.g, channel.b])
+    img.Image resizedImage =
+        img.copyResize(inputImage, width: WIDTH, height: HEIGHT);
+    List<double> flattenedList = resizedImage.data!
+        .expand((channel) => [channel.r, channel.g, channel.b])
         .map((value) => value.toDouble())
         .toList();
     Float32List float32Array = Float32List.fromList(flattenedList);
@@ -80,7 +89,9 @@ class Recognizer {
       for (int h = 0; h < height; h++) {
         for (int w = 0; w < width; w++) {
           int index = c * height * width + h * width + w;
-          reshapedArray[index] = (float32Array[c * height * width + h * width + w] - 127.5) / 127.5;
+          reshapedArray[index] =
+              (float32Array[c * height * width + h * width + w] - 127.5) /
+                  127.5;
         }
       }
     }
@@ -107,17 +118,22 @@ class Recognizer {
     // Mencari embedding terdekat di database
     Pair pair = findNearest(outputArray);
     print("distance= ${pair.distance}");
+
     // Jika "Tidak dikenali", set distance = 1 (100% tidak dikenali)
     double confidence;
     if (pair.name == "Tidak dikenali") {
       confidence = 0.0; // Set confidence to 0% if not recognized
+      return Recognition(pair.name, location, outputArray, pair.distance,
+          confidence, '', ''); // Jika tidak dikenali, NIS dan kelas kosong
     } else {
       // Hitung confidence sebagai kebalikan dari jarak, jika dikenali
       confidence = (1.0 - (pair.distance / threshold)) * 100;
-      //confidence = confidence.clamp(0.0, 100.0); // Pastikan dalam range 0-100
-    }
 
-    return Recognition(pair.name, location, outputArray, pair.distance, confidence);
+      // Ambil data NIS dan kelas dari registered map
+      Recognition registeredRecognition = registered[pair.name]!;
+      return Recognition(pair.name, location, outputArray, pair.distance,
+          confidence, registeredRecognition.nis, registeredRecognition.kelas);
+    }
   }
 
   // Mencari embedding terdekat

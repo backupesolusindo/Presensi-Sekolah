@@ -22,7 +22,6 @@ class _UserListScreenState extends State<UserListScreen> {
     return await dbHelper.queryAllRows();
   }
 
-
   Future<void> _syncDatabro() async {
     final dbHelper = DatabaseHelper.instance;
     final users = await dbHelper.queryAllRows();

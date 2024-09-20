@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'dart:io';
 import 'dart:math';
 import 'dart:typed_data';
@@ -5,6 +6,7 @@ import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:image/image.dart' as img;
 import 'package:google_mlkit_face_detection/google_mlkit_face_detection.dart';
+import 'package:http/http.dart' as http; // Tambahkan ini
 import 'ML/Recognition.dart';
 import 'ML/Recognizer.dart';
 
@@ -25,6 +27,7 @@ class _RecognitionScreenState extends State<RecognitionScreen> {
   List<Recognition> recognitions = [];
   List<Face> faces = [];
   var image;
+  String detectedNIS = ""; // Simpan NIS yang terdeteksi
 
   @override
   void initState() {
@@ -92,6 +95,9 @@ class _RecognitionScreenState extends State<RecognitionScreen> {
 
           Recognition recognition = recognizer.recognize(croppedFace, faceRect);
           recognitions.add(recognition);
+          
+          // Simpan NIS yang terdeteksi (misalnya, dari recognition.name)
+          detectedNIS = recognition.nis; // Asumsi bahwa recognition.name adalah NIS
         }
       }
 
@@ -120,6 +126,35 @@ class _RecognitionScreenState extends State<RecognitionScreen> {
         image;
         faces;
       });
+    }
+  }
+
+  Future<void> verifyAttendance() async {
+    if (detectedNIS.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('NIS tidak terdeteksi')),
+      );
+      return;
+    }
+
+    final url = 'https://presensi-smp1.esolusindo.com/ApiGerbang/Gerbang/uploadAbsen';
+    final response = await http.post(
+      Uri.parse(url),
+      headers: {'Content-Type': 'application/json'},
+      body: json.encode({'nis': detectedNIS, 'status': 'absen'}),
+    );
+
+    if (response.statusCode == 200) {
+      final responseData = json.decode(response.body);
+      // Tampilkan hasilnya
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(responseData['message'])),
+      );
+    } else {
+      // Tangani error
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Gagal mengirim data')),
+      );
     }
   }
 
@@ -159,6 +194,14 @@ class _RecognitionScreenState extends State<RecognitionScreen> {
                     height: screenWidth - 100,
                   ),
                 ),
+          Container(height: 20),
+          ElevatedButton(
+            onPressed: verifyAttendance,
+            child: Text("Verifikasi"),
+            style: ElevatedButton.styleFrom(
+              padding: EdgeInsets.symmetric(horizontal: 40, vertical: 20),
+            ),
+          ),
           Container(height: 50),
           Container(
             margin: const EdgeInsets.only(bottom: 50),
@@ -219,7 +262,7 @@ class FacePainter extends CustomPainter {
 
     for (Recognition rectangle in facesList) {
       canvas.drawRect(rectangle.location, p);
-//TEKS DIKOTAK WAJAH
+      // TEKS DIKOTAK WAJAH
       TextSpan span = TextSpan(
         style: const TextStyle(color: Colors.white, fontSize: 130),
         text:

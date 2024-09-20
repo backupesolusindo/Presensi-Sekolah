@@ -9,6 +9,6 @@ class Recognition {
   final String nis; // Menambahkan NIS
   final String kelas; // Menambahkan Kelas
 
-  Recognition(this.name, this.location, this.embeddings, this.distance, this.confidence, {this.nis = '', this.kelas = ''});
+  Recognition(this.name, this.location, this.embeddings, this.distance, this.confidence, this.nis, this.kelas);
 
 }
