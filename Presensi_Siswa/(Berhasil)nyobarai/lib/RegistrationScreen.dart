@@ -136,7 +136,7 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: const Text("Face Registration", textAlign: TextAlign.center),
+        title: const Text("Pendaftaran Wajah", textAlign: TextAlign.center),
         content: SingleChildScrollView(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.center,
@@ -150,7 +150,7 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
                 decoration: const InputDecoration(
                   fillColor: Colors.white,
                   filled: true,
-                  hintText: "Enter Name",
+                  hintText: "Nama",
                 ),
               ),
               TextField(
@@ -158,7 +158,7 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
                 decoration: const InputDecoration(
                   fillColor: Colors.white,
                   filled: true,
-                  hintText: "Enter NIS",
+                  hintText: "NIS",
                 ),
                 keyboardType: TextInputType.number,
               ),
@@ -167,7 +167,7 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
                 decoration: const InputDecoration(
                   fillColor: Colors.white,
                   filled: true,
-                  hintText: "Enter Class",
+                  hintText: "Kelas",
                 ),
               ),
               const SizedBox(height: 10),
