@@ -95,11 +95,13 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
       showDialog(
         context: context,
         builder: (ctx) => AlertDialog(
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+          shape:
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
           title: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              const Icon(Icons.error_outline, color: Colors.red, size: 80), // Ikon X merah besar
+              const Icon(Icons.error_outline,
+                  color: Colors.red, size: 80), // Ikon X merah besar
               const SizedBox(height: 10),
               const Text(
                 "Wajah Tidak Terdeteksi",
@@ -142,15 +144,13 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
             children: [
               const SizedBox(height: 20),
               Image.memory(croppedFace, width: 200, height: 200),
-              SizedBox(
-                width: 200,
-                child: TextField(
-                  controller: nameController,
-                  decoration: const InputDecoration(
-                    fillColor: Colors.white,
-                    filled: true,
-                    hintText: "Enter Name",
-                  ),
+              // Input field hanya ditampilkan pertama kali
+              TextField(
+                controller: nameController,
+                decoration: const InputDecoration(
+                  fillColor: Colors.white,
+                  filled: true,
+                  hintText: "Enter Name",
                 ),
               ),
               TextField(
@@ -178,7 +178,8 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
                       kelasController.text.isEmpty) {
                     // Tampilkan Snackbar jika ada field yang kosong
                     ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(content: Text("Please fill in all fields")),
+                      const SnackBar(
+                          content: Text("Please fill in all fields")),
                     );
                   } else if (await DatabaseHelper.instance
                       .isNisExists(nisController.text)) {
@@ -194,19 +195,17 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
                         kelasController.text,
                         recognition.embeddings);
 
-                    nameController.clear();
-                    nisController.clear();
-                    kelasController.clear();
-
                     // Tampilkan dialog sukses dengan centang
                     showDialog(
                       context: context,
                       builder: (ctx) => AlertDialog(
-                        title: const Text("Success", textAlign: TextAlign.center),
+                        title:
+                            const Text("Success", textAlign: TextAlign.center),
                         content: Column(
                           mainAxisSize: MainAxisSize.min,
                           children: [
-                            const Icon(Icons.check_circle, color: Colors.green, size: 100),
+                            const Icon(Icons.check_circle,
+                                color: Colors.green, size: 100),
                             const SizedBox(height: 20),
                             const Text("Face Registered Successfully!",
                                 textAlign: TextAlign.center),
@@ -215,7 +214,9 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
                         actions: [
                           TextButton(
                             onPressed: () {
-                              Navigator.pop(ctx); // Tutup dialog setelah diklik OK
+                              Navigator.pop(ctx); // Tutup dialog sukses
+                              Navigator.pop(
+                                  context); // Kembali ke halaman sebelumnya
                             },
                             child: const Text("OK"),
                           ),
@@ -223,17 +224,17 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
                       ),
                     );
 
-                    // Tampilkan snackbar konfirmasi
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(content: Text("Face Registered")),
-                    );
+                    // Reset text controllers setelah dialog sukses ditutup
+                    nameController.clear();
+                    nisController.clear();
+                    kelasController.clear();
                   }
                 },
                 style: ElevatedButton.styleFrom(
                     backgroundColor: Colors.blue,
                     minimumSize: const Size(200, 40)),
                 child: const Text("Register"),
-              )
+              ),
             ],
           ),
         ),
@@ -262,6 +263,7 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
     double screenWidth = MediaQuery.of(context).size.width;
 
     return Scaffold(
+      backgroundColor: Colors.blue[50], // Atur warna latar belakang di sini
       resizeToAvoidBottomInset: false,
       body: Column(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -292,24 +294,99 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
           Container(
             margin: const EdgeInsets.only(bottom: 50),
             child: Row(
-              mainAxisAlignment: MainAxisAlignment.center,
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
               children: [
-                FloatingActionButton(
-                  onPressed: _imgFromGallery,
-                  backgroundColor: Colors.blue,
-                  heroTag: 'gallery',
-                  child: const Icon(Icons.photo_album),
+                Card(
+                  shape: RoundedRectangleBorder(
+                    borderRadius:
+                        BorderRadius.circular(20), // Sudut yang lebih lembut
+                  ),
+                  elevation: 5, // Memberikan efek bayangan
+                  child: InkWell(
+                    borderRadius:
+                        BorderRadius.circular(20), // Respons saat ditekan
+                    onTap: _imgFromGallery,
+                    child: Container(
+                      width: screenWidth / 2 - 50,
+                      height: screenWidth / 2 - 50,
+                      decoration: BoxDecoration(
+                        borderRadius:
+                            BorderRadius.circular(20), // Sudut yang membulat
+                        gradient: const LinearGradient(
+                          colors: [
+                            Colors.blue,
+                            Colors.blueAccent
+                          ], // Gradasi warna
+                          begin: Alignment.topLeft,
+                          end: Alignment.bottomRight,
+                        ),
+                      ),
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Icon(Icons.photo_album,
+                              color: Colors.white, size: screenWidth / 7),
+                          const SizedBox(height: 10),
+                          const Text(
+                            "Galeri",
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontSize: 18,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
                 ),
-                const SizedBox(width: 30),
-                FloatingActionButton(
-                  onPressed: _imgFromCamera,
-                  backgroundColor: Colors.blue,
-                  heroTag: 'camera',
-                  child: const Icon(Icons.camera_alt),
+                Card(
+                  shape: RoundedRectangleBorder(
+                    borderRadius:
+                        BorderRadius.circular(20), // Sudut yang lebih lembut
+                  ),
+                  elevation: 5, // Memberikan efek bayangan
+                  child: InkWell(
+                    borderRadius:
+                        BorderRadius.circular(20), // Respons saat ditekan
+                    onTap: _imgFromCamera,
+                    child: Container(
+                      width: screenWidth / 2 - 50,
+                      height: screenWidth / 2 - 50,
+                      decoration: BoxDecoration(
+                        borderRadius:
+                            BorderRadius.circular(20), // Sudut yang membulat
+                        gradient: const LinearGradient(
+                          colors: [
+                            Colors.green,
+                            Colors.greenAccent
+                          ], // Gradasi warna
+                          begin: Alignment.topLeft,
+                          end: Alignment.bottomRight,
+                        ),
+                      ),
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Icon(Icons.camera_alt,
+                              color: Colors.white, size: screenWidth / 7),
+                          const SizedBox(height: 10),
+                          const Text(
+                            "Kamera",
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontSize: 18,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
                 ),
               ],
             ),
-          ),
+          )
         ],
       ),
     );

@@ -1,8 +1,6 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:nyobarai/UserListScreen.dart'; // Pastikan path ini sesuai
-// import 'package:nyobarai/realtime.dart';
-
+import 'package:nyobarai/UserListScreen.dart';
 import 'RecognitionScreen.dart';
 import 'RegistrationScreen.dart';
 
@@ -19,68 +17,75 @@ class _HomePageState extends State<HomeScreen> {
     double screenWidth = MediaQuery.of(context).size.width;
     
     return Scaffold(
+      backgroundColor: Colors.blue[50], // Warna latar belakang
       body: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Container(
-              margin: const EdgeInsets.only(top: 100),
-              child: Image.asset(
-                "images/logo.png",
-                width: screenWidth - 40,
-                height: screenWidth - 40,
+        child: SingleChildScrollView(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Container(
+                margin: const EdgeInsets.only(top: 50),
+                child: Image.asset(
+                  "images/logo.png",
+                  width: screenWidth - 40,
+                  height: screenWidth - 40,
+                ),
               ),
-            ),
-            const SizedBox(height: 20), // Jarak antara logo dan tombol
-            ElevatedButton(
-              onPressed: () {
+              const SizedBox(height: 20), // Jarak antara logo dan tombol
+              Text(
+                "Sistem Absensi Wajah",
+                style: TextStyle(
+                  fontSize: 24,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.blue[800], // Warna teks
+                ),
+              ),
+              const SizedBox(height: 20),
+              _buildButton("Register", () {
                 Navigator.push(
                     context,
                     MaterialPageRoute(
                         builder: (context) => const RegistrationScreen()));
-              },
-              style: ElevatedButton.styleFrom(
-                  minimumSize: Size(screenWidth - 30, 50)),
-              child: const Text("Register"),
-            ),
-            const SizedBox(height: 20),
-            ElevatedButton(
-              onPressed: () {
+              }),
+              const SizedBox(height: 20),
+              _buildButton("Recognize", () {
                 Navigator.push(
                     context,
                     MaterialPageRoute(
                         builder: (context) => const RecognitionScreen()));
-              },
-              style: ElevatedButton.styleFrom(
-                  minimumSize: Size(screenWidth - 30, 50)),
-              child: const Text("Recognize"),
-            ),
-            const SizedBox(height: 20),
-            ElevatedButton(
-              onPressed: () {
+              }),
+              const SizedBox(height: 20),
+              _buildButton("User List", () {
                 Navigator.push(
                     context,
                     MaterialPageRoute(
                         builder: (context) => UserListScreen()));
-              },
-              style: ElevatedButton.styleFrom(
-                  minimumSize: Size(screenWidth - 30, 50)),
-              child: const Text("User List"),
-            ),
-            // const SizedBox(height: 20),
-            // ElevatedButton(
-            //   onPressed: () {
-            //     Navigator.push(
-            //         context,
-            //         MaterialPageRoute(
-            //             builder: (context) => realtime()));
-            //   },
-            //   style: ElevatedButton.styleFrom(
-            //       minimumSize: Size(screenWidth - 30, 50)),
-            //   child: const Text("Test Realtime"),
-            // ),
-            const SizedBox(height: 50), // Jarak bawah untuk padding bottom
-          ],
+              }),
+              const SizedBox(height: 50), // Jarak bawah untuk padding bottom
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildButton(String title, VoidCallback onPressed) {
+    return ElevatedButton(
+      onPressed: onPressed,
+      style: ElevatedButton.styleFrom(
+        backgroundColor: Colors.blue[600], // Warna tombol
+        minimumSize: const Size(200, 50),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(10), // Sudut tombol
+        ),
+        elevation: 5, // Bayangan tombol
+      ),
+      child: Text(
+        title,
+        style: const TextStyle(
+          fontSize: 18,
+          fontWeight: FontWeight.bold,
+          color: Colors.white,
         ),
       ),
     );

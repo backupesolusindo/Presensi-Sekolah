@@ -6,7 +6,7 @@ import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:image/image.dart' as img;
 import 'package:google_mlkit_face_detection/google_mlkit_face_detection.dart';
-import 'package:http/http.dart' as http; // Tambahkan ini
+import 'package:http/http.dart' as http;
 import 'ML/Recognition.dart';
 import 'ML/Recognizer.dart';
 
@@ -27,7 +27,7 @@ class _RecognitionScreenState extends State<RecognitionScreen> {
   List<Recognition> recognitions = [];
   List<Face> faces = [];
   var image;
-  String detectedNIS = ""; // Simpan NIS yang terdeteksi
+  String detectedNIS = "";
 
   @override
   void initState() {
@@ -95,9 +95,8 @@ class _RecognitionScreenState extends State<RecognitionScreen> {
 
           Recognition recognition = recognizer.recognize(croppedFace, faceRect);
           recognitions.add(recognition);
-          
-          // Simpan NIS yang terdeteksi (misalnya, dari recognition.name)
-          detectedNIS = recognition.nis; // Asumsi bahwa recognition.name adalah NIS
+
+          detectedNIS = recognition.nis;
         }
       }
 
@@ -131,13 +130,22 @@ class _RecognitionScreenState extends State<RecognitionScreen> {
 
   Future<void> verifyAttendance() async {
     if (detectedNIS.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('NIS tidak terdeteksi')),
+      showDialog(
+        context: context,
+        builder: (BuildContext context) {
+          return _buildDialog(
+            title: 'Gagal',
+            message: 'NIS tidak terdeteksi',
+            icon: Icons.error,
+            iconColor: Colors.red,
+          );
+        },
       );
       return;
     }
 
-    final url = 'https://presensi-smp1.esolusindo.com/ApiGerbang/Gerbang/uploadAbsen';
+    final url =
+        'https://presensi-smp1.esolusindo.com/ApiGerbang/Gerbang/uploadAbsen';
     final response = await http.post(
       Uri.parse(url),
       headers: {'Content-Type': 'application/json'},
@@ -146,16 +154,75 @@ class _RecognitionScreenState extends State<RecognitionScreen> {
 
     if (response.statusCode == 200) {
       final responseData = json.decode(response.body);
-      // Tampilkan hasilnya
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(responseData['message'])),
+      showDialog(
+        context: context,
+        builder: (BuildContext context) {
+          return _buildDialog(
+            title: 'Sukses',
+            message: responseData['message'],
+            icon: Icons.check_circle,
+            iconColor: Colors.green,
+          );
+        },
       );
     } else {
-      // Tangani error
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Gagal mengirim data')),
+      showDialog(
+        context: context,
+        builder: (BuildContext context) {
+          return _buildDialog(
+            title: 'Gagal',
+            message: 'Gagal mengirim data',
+            icon: Icons.error,
+            iconColor: Colors.red,
+          );
+        },
       );
     }
+  }
+
+  Widget _buildDialog({
+    required String title,
+    required String message,
+    required IconData icon,
+    required Color iconColor,
+  }) {
+    return AlertDialog(
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(20.0),
+      ),
+      title: Row(
+        children: [
+          Icon(icon, color: iconColor),
+          SizedBox(width: 10),
+          Text(
+            title,
+            style: TextStyle(
+              color: Colors.black,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+        ],
+      ),
+      content: Text(
+        message,
+        style: TextStyle(
+          color: Colors.black54,
+        ),
+      ),
+      actions: <Widget>[
+        TextButton(
+          child: const Text(
+            'OK',
+            style: TextStyle(color: Colors.blue),
+          ),
+          onPressed: () {
+            Navigator.of(context).pop();
+          },
+        ),
+      ],
+      backgroundColor: Colors.white,
+      elevation: 24.0,
+    );
   }
 
   TextEditingController textEditingController = TextEditingController();
@@ -165,6 +232,7 @@ class _RecognitionScreenState extends State<RecognitionScreen> {
     double screenWidth = MediaQuery.of(context).size.width;
 
     return Scaffold(
+      backgroundColor: Colors.blue[50], // Sesuaikan dengan warna latar belakang
       resizeToAvoidBottomInset: false,
       body: Column(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -199,44 +267,98 @@ class _RecognitionScreenState extends State<RecognitionScreen> {
             onPressed: verifyAttendance,
             child: Text("Verifikasi"),
             style: ElevatedButton.styleFrom(
+              foregroundColor: Colors.white, backgroundColor: Colors.blue, // Mengatur warna teks tombol
               padding: EdgeInsets.symmetric(horizontal: 40, vertical: 20),
+              shape: RoundedRectangleBorder(
+                borderRadius:
+                    BorderRadius.circular(20), // Mengatur bentuk tombol
+              ),
             ),
           ),
-          Container(height: 50),
           Container(
             margin: const EdgeInsets.only(bottom: 50),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
               children: [
                 Card(
-                  shape: const RoundedRectangleBorder(
-                      borderRadius: BorderRadius.all(Radius.circular(200))),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(20),
+                  ),
+                  elevation: 5,
                   child: InkWell(
+                    borderRadius: BorderRadius.circular(20),
                     onTap: _imgFromGallery,
-                    child: SizedBox(
-                      width: screenWidth / 2 - 70,
-                      height: screenWidth / 2 - 70,
-                      child: Icon(Icons.image,
-                          color: Colors.blue, size: screenWidth / 7),
+                    child: Container(
+                      width: screenWidth / 2 - 50,
+                      height: screenWidth / 2 - 50,
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(20),
+                        gradient: const LinearGradient(
+                          colors: [Colors.blue, Colors.blueAccent],
+                          begin: Alignment.topLeft,
+                          end: Alignment.bottomRight,
+                        ),
+                      ),
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Icon(Icons.image,
+                              color: Colors.white, size: screenWidth / 7),
+                          const SizedBox(height: 10),
+                          const Text(
+                            "Galeri",
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontSize: 18,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ],
+                      ),
                     ),
                   ),
                 ),
                 Card(
-                  shape: const RoundedRectangleBorder(
-                      borderRadius: BorderRadius.all(Radius.circular(200))),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(20),
+                  ),
+                  elevation: 5,
                   child: InkWell(
+                    borderRadius: BorderRadius.circular(20),
                     onTap: _imgFromCamera,
-                    child: SizedBox(
-                      width: screenWidth / 2 - 70,
-                      height: screenWidth / 2 - 70,
-                      child: Icon(Icons.camera,
-                          color: Colors.blue, size: screenWidth / 7),
+                    child: Container(
+                      width: screenWidth / 2 - 50,
+                      height: screenWidth / 2 - 50,
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(20),
+                        gradient: const LinearGradient(
+                          colors: [Colors.green, Colors.greenAccent],
+                          begin: Alignment.topLeft,
+                          end: Alignment.bottomRight,
+                        ),
+                      ),
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Icon(Icons.camera_alt,
+                              color: Colors.white, size: screenWidth / 7),
+                          const SizedBox(height: 10),
+                          const Text(
+                            "Kamera",
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontSize: 18,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ],
+                      ),
                     ),
                   ),
                 ),
               ],
             ),
-          )
+          ),
         ],
       ),
     );
@@ -244,43 +366,56 @@ class _RecognitionScreenState extends State<RecognitionScreen> {
 }
 
 class FacePainter extends CustomPainter {
-  List<Recognition> facesList;
-  dynamic imageFile;
+  final List<Recognition> facesList;
+  final img.Image imageFile;
+  final double maxWidth;
 
-  FacePainter({required this.facesList, @required this.imageFile});
+  FacePainter({
+    required this.facesList,
+    required this.imageFile,
+    this.maxWidth = 800,
+  });
 
   @override
   void paint(Canvas canvas, Size size) {
-    if (imageFile != null) {
-      canvas.drawImage(imageFile, Offset.zero, Paint());
-    }
+    double scale = size.width / maxWidth;
+    Paint paint = Paint()
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 2.0
+      ..color = Colors.red;
 
-    Paint p = Paint();
-    p.color = Colors.red;
-    p.style = PaintingStyle.stroke;
-    p.strokeWidth = 3;
-
-    for (Recognition rectangle in facesList) {
-      canvas.drawRect(rectangle.location, p);
-      // TEKS DIKOTAK WAJAH
-      TextSpan span = TextSpan(
-        style: const TextStyle(color: Colors.white, fontSize: 130),
-        text:
-            "${rectangle.name} ${(rectangle.confidence).toStringAsFixed(2)}%",
+    for (var face in facesList) {
+      canvas.drawRect(
+        Rect.fromLTWH(
+          face.rect.left.toDouble() * scale,
+          face.rect.top.toDouble() * scale,
+          face.rect.width.toDouble() * scale,
+          face.rect.height.toDouble() * scale,
+        ),
+        paint,
       );
-
-      TextPainter tp = TextPainter(
-        text: span,
-        textAlign: TextAlign.left,
-        textDirection: TextDirection.ltr,
-      );
-      tp.layout();
-      tp.paint(canvas, Offset(rectangle.location.left, rectangle.location.top));
     }
   }
 
   @override
   bool shouldRepaint(covariant CustomPainter oldDelegate) {
     return true;
+  }
+}
+
+class Recognition {
+  final String nis;
+  final Rect rect;
+
+  Recognition({
+    required this.nis,
+    required this.rect,
+  });
+}
+
+class Recognizer {
+  Recognition recognize(img.Image faceImg, Rect faceRect) {
+    String recognizedNIS = "123456"; // Replace with your recognition logic
+    return Recognition(nis: recognizedNIS, rect: faceRect);
   }
 }
