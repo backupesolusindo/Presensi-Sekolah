@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:mguru/data_murid_page.dart';
-// import 'data_murid_page.dart' as data_murid; // Gunakan prefix
-import 'api_service.dart'; // Import the API service
-import 'student_model.dart' as student_model; // Gunakan prefix
+import 'data_murid_page.dart';
+import 'history_page.dart'; // Import halaman riwayat
+import 'api_service.dart';
+import 'student_model.dart' as student_model;
 
 class SubjectDetailPage extends StatefulWidget {
-  final dynamic subject; // Data for the selected subject
+  final dynamic subject;
 
   SubjectDetailPage({required this.subject});
 
@@ -15,8 +15,9 @@ class SubjectDetailPage extends StatefulWidget {
 }
 
 class _SubjectDetailPageState extends State<SubjectDetailPage> {
-  List<student_model.Student> _students = []; // Gunakan prefix
+  List<student_model.Student> _students = [];
   bool _isLoading = true;
+  int _selectedIndex = 0;
 
   @override
   void initState() {
@@ -40,21 +41,22 @@ class _SubjectDetailPageState extends State<SubjectDetailPage> {
     }
   }
 
-  int _selectedIndex = 0;
-
   void _onItemTapped(int index) {
     setState(() {
       _selectedIndex = index;
     });
 
-    // Handle navigation based on index
     if (index == 0) {
       // Stay on the current page (SubjectDetailPage)
     } else if (index == 1) {
       Navigator.pushReplacement(
         context,
-        MaterialPageRoute(
-            builder: (context) => DataMuridPage()), // Navigate to DataMuridPage
+        MaterialPageRoute(builder: (context) => HistoryPage()), // Navigasi ke Riwayat
+      );
+    } else if (index == 2) {
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (context) => DataMuridPage()), // Navigasi ke DataMuridPage
       );
     }
   }
@@ -89,8 +91,7 @@ class _SubjectDetailPageState extends State<SubjectDetailPage> {
                       itemBuilder: (context, index) {
                         var student = _students[index];
                         return GestureDetector(
-                          onTap: () => _showAttendanceDialog(
-                              context, student), // Show dialog on tap
+                          onTap: () => _showAttendanceDialog(context, student),
                           child: Column(
                             children: [
                               CircleAvatar(
@@ -122,6 +123,10 @@ class _SubjectDetailPageState extends State<SubjectDetailPage> {
             label: 'Absensi',
           ),
           BottomNavigationBarItem(
+            icon: Icon(Icons.history),
+            label: 'Riwayat',
+          ),
+          BottomNavigationBarItem(
             icon: Icon(Icons.account_circle),
             label: 'Data Murid',
           ),
@@ -130,10 +135,7 @@ class _SubjectDetailPageState extends State<SubjectDetailPage> {
     );
   }
 
-  // Attendance dialog
-  void _showAttendanceDialog(
-      BuildContext context, student_model.Student student) {
-    // Gunakan prefix
+  void _showAttendanceDialog(BuildContext context, student_model.Student student) {
     showDialog(
       context: context,
       builder: (context) {
@@ -144,7 +146,7 @@ class _SubjectDetailPageState extends State<SubjectDetailPage> {
 }
 
 class AttendanceDialog extends StatefulWidget {
-  final student_model.Student student; // Gunakan prefix
+  final student_model.Student student;
 
   AttendanceDialog({required this.student});
 
@@ -233,9 +235,7 @@ class _AttendanceDialogState extends State<AttendanceDialog> {
                 ),
                 ElevatedButton(
                   onPressed: () {
-                    // Logic to save attendance data goes here
-                    print(
-                        'Attendance for ${widget.student.name}: $attendanceStatus, Reason: $reason');
+                    print('Attendance for ${widget.student.name}: $attendanceStatus, Reason: $reason');
                     Navigator.pop(context);
                   },
                   child: Text('Kirim', style: GoogleFonts.roboto(fontSize: 16)),

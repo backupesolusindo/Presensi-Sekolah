@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'subject_detail_page.dart'; // Import the SubjectDetailPage
+import 'history_page.dart'; // Import the HistoryPage
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 
@@ -35,7 +36,7 @@ class _DataMuridPageState extends State<DataMuridPage> {
 
   Future<void> _fetchStudents() async {
     try {
-      final response = await http.get(Uri.parse('https://presensi-smp1.esolusindo.com/ApiGuru/Guru/SyncGuru'));
+      final response = await http.get(Uri.parse('https://presensi-smp1.esolusindo.com/ApiSiswa/Siswa/SyncSiswa'));
       if (response.statusCode == 200) {
         List<dynamic> data = json.decode(response.body);
         setState(() {
@@ -53,6 +54,35 @@ class _DataMuridPageState extends State<DataMuridPage> {
       setState(() {
         _isLoading = false;
       });
+    }
+  }
+
+  int _selectedIndex = 1; // Set default index to Data Murid
+
+  void _onItemTapped(int index) {
+    setState(() {
+      _selectedIndex = index;
+    });
+
+    if (index == 0) {
+      // Navigate to Absensi (SubjectDetailPage with sample data)
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(
+          builder: (context) => SubjectDetailPage(subject: {
+            'name': 'Matematika', // Replace with actual subject data
+            'details': 'Detail Subject', // Replace with actual details
+          }),
+        ),
+      );
+    } else if (index == 1) {
+      // Stay on the current page (Data Murid)
+    } else if (index == 2) {
+      // Navigate to Riwayat
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (context) => HistoryPage()),
+      );
     }
   }
 
@@ -80,21 +110,8 @@ class _DataMuridPageState extends State<DataMuridPage> {
                   },
                 ),
       bottomNavigationBar: BottomNavigationBar(
-        currentIndex: 1, // Highlight the current index for Data Murid
-        onTap: (index) {
-          if (index == 0) {
-            // Pass the selected subject details to SubjectDetailPage
-            Navigator.pushReplacement(
-              context,
-              MaterialPageRoute(
-                builder: (context) => SubjectDetailPage(subject: {
-                  'name': 'Matematika', // Replace with actual subject data
-                  'details': 'Detail Subject', // Replace with actual details
-                }),
-              ),
-            );
-          }
-        },
+        currentIndex: _selectedIndex,
+        onTap: _onItemTapped,
         items: [
           BottomNavigationBarItem(
             icon: Icon(Icons.class_),
@@ -103,6 +120,10 @@ class _DataMuridPageState extends State<DataMuridPage> {
           BottomNavigationBarItem(
             icon: Icon(Icons.account_circle),
             label: 'Data Murid',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.history),
+            label: 'Riwayat',
           ),
         ],
       ),
