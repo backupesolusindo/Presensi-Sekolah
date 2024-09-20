@@ -1,6 +1,7 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:nyobarai/UserListScreen.dart'; // Pastikan path ini sesuai
+// import 'package:nyobarai/realtime.dart';
 
 import 'RecognitionScreen.dart';
 import 'RegistrationScreen.dart';
@@ -66,6 +67,18 @@ class _HomePageState extends State<HomeScreen> {
                   minimumSize: Size(screenWidth - 30, 50)),
               child: const Text("User List"),
             ),
+            // const SizedBox(height: 20),
+            // ElevatedButton(
+            //   onPressed: () {
+            //     Navigator.push(
+            //         context,
+            //         MaterialPageRoute(
+            //             builder: (context) => realtime()));
+            //   },
+            //   style: ElevatedButton.styleFrom(
+            //       minimumSize: Size(screenWidth - 30, 50)),
+            //   child: const Text("Test Realtime"),
+            // ),
             const SizedBox(height: 50), // Jarak bawah untuk padding bottom
           ],
         ),
