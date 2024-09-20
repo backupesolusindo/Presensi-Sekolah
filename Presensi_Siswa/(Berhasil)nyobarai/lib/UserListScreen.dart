@@ -151,14 +151,14 @@ class _UserListScreenState extends State<UserListScreen> {
                                   fontSize:
                                       16), // Sesuaikan ukuran font sesuai kebutuhan
                             ),
-                            TextSpan(
-                              text:
-                                  'Face: ${user[DatabaseHelper.columnEmbedding]}',
-                              style: TextStyle(
-                                  fontSize: 8,
-                                  color: const Color.fromARGB(255, 38, 0,
-                                      255)), // Ukuran font lebih kecil dan warna berbeda
-                            ),
+                            // TextSpan(
+                            //   text:
+                            //       'Face: ${user[DatabaseHelper.columnEmbedding]}',
+                            //   style: TextStyle(
+                            //       fontSize: 8,
+                            //       color: const Color.fromARGB(255, 38, 0,
+                            //           255)), // Ukuran font lebih kecil dan warna berbeda
+                            // ),
                           ],
                         ),
                       ),
