@@ -10,8 +10,8 @@ class UserListScreen extends StatefulWidget {
 
 class _UserListScreenState extends State<UserListScreen> {
   late Future<List<Map<String, dynamic>>> _users;
-  bool _isSyncing =
-      false; // Variabel untuk menandai apakah proses sinkronisasi sedang berjalan
+  bool _isSyncing = false; // Menandai proses sinkronisasi
+  String _sortCriteria = 'nama'; // Kriteria pengurutan default
 
   @override
   void initState() {
@@ -47,7 +47,7 @@ class _UserListScreenState extends State<UserListScreen> {
     try {
       final response = await http.post(
         Uri.parse(
-            'https://presensi-smp1.esolusindo.com/ApiSiswa/Siswa/SyncSiswa'), // Ganti dengan URL API Anda
+            'https://presensi-smp1.esolusindo.com/ApiSiswa/Siswa/SyncSiswa'),
         headers: <String, String>{
           'Content-Type': 'application/json; charset=UTF-8',
         },
@@ -55,15 +55,11 @@ class _UserListScreenState extends State<UserListScreen> {
       );
 
       if (response.statusCode == 200) {
-        print(response.body);
         final responseData = jsonDecode(response.body);
-        print('Upload response: ${responseData['message']}');
         if (responseData['message']['status'] == 200) {
           final List<dynamic> users = responseData['data'];
-          // Menghapus data lama
           await dbHelper.deleteAll();
 
-          // Menyimpan data baru
           for (var user in users) {
             await dbHelper.insert({
               DatabaseHelper.columnName: user['nama'],
@@ -73,18 +69,15 @@ class _UserListScreenState extends State<UserListScreen> {
             });
           }
 
-          // Refresh data
           setState(() {
             _users = _fetchUsers();
           });
         }
       } else {
-        print('Failed to upload data');
         _showErrorDialog(
             'Gagal mengupload data, status: ${response.statusCode}');
       }
     } catch (e) {
-      print('Error: $e');
       _showErrorDialog('Koneksi gagal. Pastikan Anda terhubung ke internet.');
     } finally {
       setState(() {
@@ -113,10 +106,24 @@ class _UserListScreenState extends State<UserListScreen> {
     );
   }
 
-  @override
-  void dispose() {
-    // Jika ada proses async atau timer, pastikan untuk membatalkannya di sini
-    super.dispose();
+  List<Map<String, dynamic>> _sortUsers(List<Map<String, dynamic>> users) {
+    // Membuat salinan dari daftar agar tidak mengubah daftar asli
+    List<Map<String, dynamic>> sortedUsers = List.from(users);
+
+    sortedUsers.sort((a, b) {
+      if (_sortCriteria == 'nama') {
+        return a[DatabaseHelper.columnName]
+            .compareTo(b[DatabaseHelper.columnName]);
+      } else if (_sortCriteria == 'kelas') {
+        return a[DatabaseHelper.columnKelas]
+            .compareTo(b[DatabaseHelper.columnKelas]);
+      } else {
+        return a[DatabaseHelper.columnNIS]
+            .compareTo(b[DatabaseHelper.columnNIS]);
+      }
+    });
+
+    return sortedUsers;
   }
 
   @override
@@ -125,8 +132,7 @@ class _UserListScreenState extends State<UserListScreen> {
       backgroundColor: Colors.blue[50],
       appBar: AppBar(
         title: Text('Daftar Murid'),
-        automaticallyImplyLeading:
-            false, // Menghilangkan tanda panah pada AppBar
+        automaticallyImplyLeading: false,
         actions: [
           _isSyncing
               ? Padding(
@@ -137,14 +143,13 @@ class _UserListScreenState extends State<UserListScreen> {
                   ),
                 )
               : Padding(
-                  padding: const EdgeInsets.only(
-                      right: 16.0), // Menambahkan jarak di sebelah kiri
+                  padding: const EdgeInsets.only(right: 16.0),
                   child: ElevatedButton(
                     onPressed: _syncDatabro,
                     child: Text('Sync Data'),
                     style: ElevatedButton.styleFrom(
-                      foregroundColor: Colors.white, // Warna teks tombol
-                      backgroundColor: Colors.blue, // Warna latar tombol
+                      foregroundColor: Colors.white,
+                      backgroundColor: Colors.blue,
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(20),
                       ),
@@ -155,6 +160,30 @@ class _UserListScreenState extends State<UserListScreen> {
       ),
       body: Column(
         children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Text(
+                "Urutkan : ",
+                style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+              ),
+              DropdownButton<String>(
+                value: _sortCriteria,
+                onChanged: (String? newValue) {
+                  setState(() {
+                    _sortCriteria = newValue!;
+                  });
+                },
+                items: <String>['nama', 'kelas', 'nis']
+                    .map<DropdownMenuItem<String>>((String value) {
+                  return DropdownMenuItem<String>(
+                    value: value,
+                    child: Text(value[0].toUpperCase() + value.substring(1)),
+                  );
+                }).toList(),
+              ),
+            ],
+          ),
           Expanded(
             child: FutureBuilder<List<Map<String, dynamic>>>(
               future: _users,
@@ -167,7 +196,7 @@ class _UserListScreenState extends State<UserListScreen> {
                   return Center(child: Text('No users found.'));
                 }
 
-                final users = snapshot.data!;
+                final users = _sortUsers(snapshot.data!); // Mengurutkan user
 
                 return ListView.builder(
                   itemCount: users.length,

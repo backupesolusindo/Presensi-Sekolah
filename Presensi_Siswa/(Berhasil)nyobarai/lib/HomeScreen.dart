@@ -6,7 +6,7 @@ import 'RegistrationScreen.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({Key? key}) : super(key: key);
-  
+
   @override
   State<HomeScreen> createState() => _HomePageState();
 }
@@ -15,7 +15,7 @@ class _HomePageState extends State<HomeScreen> {
   @override
   Widget build(BuildContext context) {
     double screenWidth = MediaQuery.of(context).size.width;
-    
+
     return Scaffold(
       backgroundColor: Colors.blue[50], // Warna latar belakang
       body: Center(
@@ -41,25 +41,23 @@ class _HomePageState extends State<HomeScreen> {
                 ),
               ),
               const SizedBox(height: 20),
-              _buildButton("Register", () {
+              _buildButton("Daftar", () {
                 Navigator.push(
                     context,
                     MaterialPageRoute(
                         builder: (context) => const RegistrationScreen()));
               }),
               const SizedBox(height: 20),
-              _buildButton("Recognize", () {
+              _buildButton("Absen", () {
                 Navigator.push(
                     context,
                     MaterialPageRoute(
                         builder: (context) => const RecognitionScreen()));
               }),
               const SizedBox(height: 20),
-              _buildButton("User List", () {
-                Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                        builder: (context) => UserListScreen()));
+              _buildButton("Murid Terdaftar", () {
+                Navigator.push(context,
+                    MaterialPageRoute(builder: (context) => UserListScreen()));
               }),
               const SizedBox(height: 50), // Jarak bawah untuk padding bottom
             ],
