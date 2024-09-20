@@ -95,9 +95,10 @@ class _RecognitionScreenState extends State<RecognitionScreen> {
 
           Recognition recognition = recognizer.recognize(croppedFace, faceRect);
           recognitions.add(recognition);
-          
+
           // Simpan NIS yang terdeteksi (misalnya, dari recognition.name)
-          detectedNIS = recognition.nis; // Asumsi bahwa recognition.name adalah NIS
+          detectedNIS =
+              recognition.nis; // Asumsi bahwa recognition.name adalah NIS
         }
       }
 
@@ -155,6 +156,7 @@ class _RecognitionScreenState extends State<RecognitionScreen> {
 
     if (response.statusCode == 200) {
       final responseData = json.decode(response.body);
+      // Tampilkan hasilnya
       showDialog(
         context: context,
         builder: (BuildContext context) {
@@ -233,7 +235,7 @@ class _RecognitionScreenState extends State<RecognitionScreen> {
     double screenWidth = MediaQuery.of(context).size.width;
 
     return Scaffold(
-      backgroundColor: Colors.blue[50], // Sesuaikan dengan warna latar belakang
+      backgroundColor: Colors.blue[50],
       resizeToAvoidBottomInset: false,
       body: Column(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -241,7 +243,7 @@ class _RecognitionScreenState extends State<RecognitionScreen> {
           image != null
               ? Container(
                   margin: const EdgeInsets.only(
-                      top: 60, left: 30, right: 30, bottom: 0),
+                      top: 30, left: 30, right: 30, bottom: 0),
                   child: FittedBox(
                     child: SizedBox(
                       width: image.width.toDouble(),
@@ -264,18 +266,19 @@ class _RecognitionScreenState extends State<RecognitionScreen> {
                   ),
                 ),
           Container(height: 20),
-          ElevatedButton(
-            onPressed: verifyAttendance,
-            child: Text("Verifikasi"),
-            style: ElevatedButton.styleFrom(
-              foregroundColor: Colors.white, backgroundColor: Colors.blue, // Mengatur warna teks tombol
-              padding: EdgeInsets.symmetric(horizontal: 40, vertical: 20),
-              shape: RoundedRectangleBorder(
-                borderRadius:
-                    BorderRadius.circular(20), // Mengatur bentuk tombol
+          if (image != null)
+            ElevatedButton(
+              onPressed: verifyAttendance,
+              child: Text("Verifikasi"),
+              style: ElevatedButton.styleFrom(
+                foregroundColor: Colors.white,
+                backgroundColor: Colors.blue,
+                padding: EdgeInsets.symmetric(horizontal: 40, vertical: 20),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(20),
+                ),
               ),
             ),
-          ),
           Container(
             margin: const EdgeInsets.only(bottom: 50),
             child: Row(
@@ -367,56 +370,42 @@ class _RecognitionScreenState extends State<RecognitionScreen> {
 }
 
 class FacePainter extends CustomPainter {
-  final List<Recognition> facesList;
-  final img.Image imageFile;
-  final double maxWidth;
+  List<Recognition> facesList;
+  dynamic imageFile;
 
-  FacePainter({
-    required this.facesList,
-    required this.imageFile,
-    this.maxWidth = 800,
-  });
+  FacePainter({required this.facesList, @required this.imageFile});
 
   @override
   void paint(Canvas canvas, Size size) {
-    double scale = size.width / maxWidth;
-    Paint paint = Paint()
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = 2.0
-      ..color = Colors.red;
+    if (imageFile != null) {
+      canvas.drawImage(imageFile, Offset.zero, Paint());
+    }
 
-    for (var face in facesList) {
-      canvas.drawRect(
-        Rect.fromLTWH(
-          face.rect.left.toDouble() * scale,
-          face.rect.top.toDouble() * scale,
-          face.rect.width.toDouble() * scale,
-          face.rect.height.toDouble() * scale,
-        ),
-        paint,
+    Paint p = Paint();
+    p.color = Colors.red;
+    p.style = PaintingStyle.stroke;
+    p.strokeWidth = 3;
+
+    for (Recognition rectangle in facesList) {
+      canvas.drawRect(rectangle.location, p);
+      // TEKS DIKOTAK WAJAH
+      TextSpan span = TextSpan(
+        style: const TextStyle(color: Colors.white, fontSize: 130),
+        text: "${rectangle.name} ${(rectangle.confidence).toStringAsFixed(2)}%",
       );
+
+      TextPainter tp = TextPainter(
+        text: span,
+        textAlign: TextAlign.left,
+        textDirection: TextDirection.ltr,
+      );
+      tp.layout();
+      tp.paint(canvas, Offset(rectangle.location.left, rectangle.location.top));
     }
   }
 
   @override
   bool shouldRepaint(covariant CustomPainter oldDelegate) {
     return true;
-  }
-}
-
-class Recognition {
-  final String nis;
-  final Rect rect;
-
-  Recognition({
-    required this.nis,
-    required this.rect,
-  });
-}
-
-class Recognizer {
-  Recognition recognize(img.Image faceImg, Rect faceRect) {
-    String recognizedNIS = "123456"; // Replace with your recognition logic
-    return Recognition(nis: recognizedNIS, rect: faceRect);
   }
 }

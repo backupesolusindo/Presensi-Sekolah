@@ -298,25 +298,19 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
               children: [
                 Card(
                   shape: RoundedRectangleBorder(
-                    borderRadius:
-                        BorderRadius.circular(20), // Sudut yang lebih lembut
+                    borderRadius: BorderRadius.circular(20),
                   ),
-                  elevation: 5, // Memberikan efek bayangan
+                  elevation: 5,
                   child: InkWell(
-                    borderRadius:
-                        BorderRadius.circular(20), // Respons saat ditekan
+                    borderRadius: BorderRadius.circular(20),
                     onTap: _imgFromGallery,
                     child: Container(
                       width: screenWidth / 2 - 50,
                       height: screenWidth / 2 - 50,
                       decoration: BoxDecoration(
-                        borderRadius:
-                            BorderRadius.circular(20), // Sudut yang membulat
+                        borderRadius: BorderRadius.circular(20),
                         gradient: const LinearGradient(
-                          colors: [
-                            Colors.blue,
-                            Colors.blueAccent
-                          ], // Gradasi warna
+                          colors: [Colors.blue, Colors.blueAccent],
                           begin: Alignment.topLeft,
                           end: Alignment.bottomRight,
                         ),
@@ -324,7 +318,7 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
                       child: Column(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          Icon(Icons.photo_album,
+                          Icon(Icons.image,
                               color: Colors.white, size: screenWidth / 7),
                           const SizedBox(height: 10),
                           const Text(
@@ -342,25 +336,19 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
                 ),
                 Card(
                   shape: RoundedRectangleBorder(
-                    borderRadius:
-                        BorderRadius.circular(20), // Sudut yang lebih lembut
+                    borderRadius: BorderRadius.circular(20),
                   ),
-                  elevation: 5, // Memberikan efek bayangan
+                  elevation: 5,
                   child: InkWell(
-                    borderRadius:
-                        BorderRadius.circular(20), // Respons saat ditekan
+                    borderRadius: BorderRadius.circular(20),
                     onTap: _imgFromCamera,
                     child: Container(
                       width: screenWidth / 2 - 50,
                       height: screenWidth / 2 - 50,
                       decoration: BoxDecoration(
-                        borderRadius:
-                            BorderRadius.circular(20), // Sudut yang membulat
+                        borderRadius: BorderRadius.circular(20),
                         gradient: const LinearGradient(
-                          colors: [
-                            Colors.green,
-                            Colors.greenAccent
-                          ], // Gradasi warna
+                          colors: [Colors.green, Colors.greenAccent],
                           begin: Alignment.topLeft,
                           end: Alignment.bottomRight,
                         ),
@@ -386,7 +374,7 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
                 ),
               ],
             ),
-          )
+          ),
         ],
       ),
     );
