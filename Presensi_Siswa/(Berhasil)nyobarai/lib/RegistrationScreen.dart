@@ -206,7 +206,7 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
                             const Icon(Icons.check_circle,
                                 color: Colors.green, size: 100),
                             const SizedBox(height: 20),
-                            const Text("Face Registered Successfully!",
+                            const Text("Berhasil Mendaftar",
                                 textAlign: TextAlign.center),
                           ],
                         ),
