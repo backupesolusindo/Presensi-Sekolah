@@ -1,29 +1,13 @@
 class Student {
-  final String id;
   final String name;
-  final String dob;
+  final String dob; // Tambahkan field sesuai dengan data dari API
 
-  Student({
-    required this.id,
-    required this.name,
-    required this.dob,
-  });
+  Student({required this.name, required this.dob});
 
-  // Factory constructor untuk membuat instance Student dari JSON
   factory Student.fromJson(Map<String, dynamic> json) {
     return Student(
-      id: json['id'] ?? '',
-      name: json['name'] ?? '',
-      dob: json['dob'] ?? '',
+      name: json['nama'],
+      dob: json['tanggal_lahir'], // Sesuaikan dengan nama field dari API
     );
-  }
-
-  // Method untuk mengubah instance Student menjadi JSON
-  Map<String, dynamic> toJson() {
-    return {
-      'id': id,
-      'name': name,
-      'dob': dob,
-    };
   }
 }

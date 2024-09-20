@@ -48,15 +48,16 @@ class _SubjectDetailPageState extends State<SubjectDetailPage> {
 
     if (index == 0) {
       // Stay on the current page (SubjectDetailPage)
-    } else if (index == 1) {
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(builder: (context) => HistoryPage()), // Navigasi ke Riwayat
-      );
     } else if (index == 2) {
       Navigator.pushReplacement(
         context,
         MaterialPageRoute(builder: (context) => DataMuridPage()), // Navigasi ke DataMuridPage
+      );
+      
+    } else if (index == 1) {
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (context) => HistoryPage()), // Navigasi ke Riwayat
       );
     }
   }

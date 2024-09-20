@@ -6,7 +6,7 @@ import 'subject_detail_page.dart'; // Import SubjectDetailPage
 class HistoryPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    int _selectedIndex = 2; // Set default index to Riwayat
+    int _selectedIndex = 1; // Set default index to Riwayat
 
     void _onItemTapped(int index) {
       if (index == 0) {
@@ -15,19 +15,17 @@ class HistoryPage extends StatelessWidget {
           context,
           MaterialPageRoute(
             builder: (context) => SubjectDetailPage(subject: {
-              'name': 'Matematika', // Replace with actual subject data
-              'details': 'Detail Subject', // Replace with actual details
+              'name': 'Matematika',
+              'details': 'Detail Subject',
             }),
           ),
         );
-      } else if (index == 1) {
+      } else if (index == 2) {
         // Navigate to Data Murid
         Navigator.pushReplacement(
           context,
           MaterialPageRoute(builder: (context) => DataMuridPage()),
         );
-      } else if (index == 2) {
-        // Stay on the current page (Riwayat)
       }
     }
 
@@ -48,12 +46,12 @@ class HistoryPage extends StatelessWidget {
             label: 'Absensi',
           ),
           BottomNavigationBarItem(
-            icon: Icon(Icons.account_circle),
-            label: 'Data Murid',
-          ),
-          BottomNavigationBarItem(
             icon: Icon(Icons.history),
             label: 'Riwayat',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.account_circle),
+            label: 'Data Murid',
           ),
         ],
       ),
