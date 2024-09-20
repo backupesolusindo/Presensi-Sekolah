@@ -90,6 +90,42 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
         showFaceRegistrationDialogue(
             Uint8List.fromList(img.encodeBmp(croppedFace)), recognition);
       }
+    } else {
+      // Jika wajah tidak terdeteksi, tampilkan dialog peringatan dengan X besar
+      showDialog(
+        context: context,
+        builder: (ctx) => AlertDialog(
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+          title: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const Icon(Icons.error_outline, color: Colors.red, size: 80), // Ikon X merah besar
+              const SizedBox(height: 10),
+              const Text(
+                "Wajah Tidak Terdeteksi",
+                style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
+                textAlign: TextAlign.center,
+              ),
+            ],
+          ),
+          content: const Text(
+            "Pastikan wajah terlihat jelas dan coba lagi.",
+            style: TextStyle(fontSize: 16),
+            textAlign: TextAlign.center,
+          ),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.pop(ctx); // Tutup dialog dan kembali
+              },
+              style: TextButton.styleFrom(
+                foregroundColor: Colors.red,
+              ),
+              child: const Text("Coba Lagi"),
+            ),
+          ],
+        ),
+      );
     }
     drawRectangleAroundFaces();
   }
@@ -142,8 +178,7 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
                       kelasController.text.isEmpty) {
                     // Tampilkan Snackbar jika ada field yang kosong
                     ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(
-                          content: Text("Please fill in all fields")),
+                      const SnackBar(content: Text("Please fill in all fields")),
                     );
                   } else if (await DatabaseHelper.instance
                       .isNisExists(nisController.text)) {
@@ -158,12 +193,40 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
                         nisController.text,
                         kelasController.text,
                         recognition.embeddings);
+
                     nameController.clear();
                     nisController.clear();
                     kelasController.clear();
-                    Navigator.pop(context);
+
+                    // Tampilkan dialog sukses dengan centang
+                    showDialog(
+                      context: context,
+                      builder: (ctx) => AlertDialog(
+                        title: const Text("Success", textAlign: TextAlign.center),
+                        content: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            const Icon(Icons.check_circle, color: Colors.green, size: 100),
+                            const SizedBox(height: 20),
+                            const Text("Face Registered Successfully!",
+                                textAlign: TextAlign.center),
+                          ],
+                        ),
+                        actions: [
+                          TextButton(
+                            onPressed: () {
+                              Navigator.pop(ctx); // Tutup dialog setelah diklik OK
+                            },
+                            child: const Text("OK"),
+                          ),
+                        ],
+                      ),
+                    );
+
+                    // Tampilkan snackbar konfirmasi
                     ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(content: Text("Face Registered")));
+                      const SnackBar(content: Text("Face Registered")),
+                    );
                   }
                 },
                 style: ElevatedButton.styleFrom(
@@ -229,32 +292,25 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
           Container(
             margin: const EdgeInsets.only(bottom: 50),
             child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                _buildIconButton(screenWidth, Icons.image, "Pick from Gallery",
-                    _imgFromGallery),
-                _buildIconButton(
-                    screenWidth, Icons.camera, "Capture Image", _imgFromCamera),
+                FloatingActionButton(
+                  onPressed: _imgFromGallery,
+                  backgroundColor: Colors.blue,
+                  heroTag: 'gallery',
+                  child: const Icon(Icons.photo_album),
+                ),
+                const SizedBox(width: 30),
+                FloatingActionButton(
+                  onPressed: _imgFromCamera,
+                  backgroundColor: Colors.blue,
+                  heroTag: 'camera',
+                  child: const Icon(Icons.camera_alt),
+                ),
               ],
             ),
-          )
+          ),
         ],
-      ),
-    );
-  }
-
-  Widget _buildIconButton(
-      double screenWidth, IconData icon, String label, Function onTap) {
-    return Card(
-      shape: const RoundedRectangleBorder(
-          borderRadius: BorderRadius.all(Radius.circular(200))),
-      child: InkWell(
-        onTap: () => onTap(),
-        child: SizedBox(
-          width: screenWidth / 2 - 70,
-          height: screenWidth / 2 - 70,
-          child: Icon(icon, color: Colors.blue, size: screenWidth / 7),
-        ),
       ),
     );
   }
@@ -262,26 +318,26 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
 
 class FacePainter extends CustomPainter {
   List<Face> facesList;
-  dynamic imageFile;
+  var imageFile;
 
-  FacePainter({required this.facesList, this.imageFile});
+  FacePainter({required this.facesList, required this.imageFile});
 
   @override
   void paint(Canvas canvas, Size size) {
-    if (imageFile != null) {
-      canvas.drawImage(imageFile, Offset.zero, Paint());
-    }
-
-    Paint p = Paint()
-      ..color = Colors.red
+    final paint = Paint()
       ..style = PaintingStyle.stroke
-      ..strokeWidth = 3;
+      ..strokeWidth = 3.0
+      ..color = Colors.lightGreen;
+
+    canvas.drawImage(imageFile, Offset.zero, Paint());
 
     for (Face face in facesList) {
-      canvas.drawRect(face.boundingBox, p);
+      canvas.drawRect(face.boundingBox, paint);
     }
   }
 
   @override
-  bool shouldRepaint(CustomPainter oldDelegate) => true;
+  bool shouldRepaint(covariant CustomPainter oldDelegate) {
+    return true;
+  }
 }
