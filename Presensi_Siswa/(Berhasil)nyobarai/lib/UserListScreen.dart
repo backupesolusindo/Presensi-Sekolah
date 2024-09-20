@@ -10,7 +10,8 @@ class UserListScreen extends StatefulWidget {
 
 class _UserListScreenState extends State<UserListScreen> {
   late Future<List<Map<String, dynamic>>> _users;
-  bool _isSyncing = false; // Variabel untuk menandai apakah proses sinkronisasi sedang berjalan
+  bool _isSyncing =
+      false; // Variabel untuk menandai apakah proses sinkronisasi sedang berjalan
 
   @override
   void initState() {
@@ -23,92 +24,94 @@ class _UserListScreenState extends State<UserListScreen> {
     return await dbHelper.queryAllRows();
   }
 
-Future<void> _syncDatabro() async {
-  setState(() {
-    _isSyncing = true; // Tandai bahwa sinkronisasi sedang berlangsung
-  });
-
-  final dbHelper = DatabaseHelper.instance;
-  final users = await dbHelper.queryAllRows();
-  List<Map<String, dynamic>> arData = [];
-
-  for (var user in users) {
-    arData.add({
-      'nama': user[DatabaseHelper.columnName],
-      'nis': user[DatabaseHelper.columnNIS],
-      'kelas': user[DatabaseHelper.columnKelas],
-      'model': user[DatabaseHelper.columnEmbedding],
+  Future<void> _syncDatabro() async {
+    setState(() {
+      _isSyncing = true; // Tandai bahwa sinkronisasi sedang berlangsung
     });
-  }
-  String bodyraw = jsonEncode(<String, dynamic>{'data': arData});
-  print(bodyraw);
 
-  try {
-    final response = await http.post(
-      Uri.parse('https://presensi-smp1.esolusindo.com/ApiSiswa/Siswa/SyncSiswa'), // Ganti dengan URL API Anda
-      headers: <String, String>{
-        'Content-Type': 'application/json; charset=UTF-8',
-      },
-      body: bodyraw,
-    );
+    final dbHelper = DatabaseHelper.instance;
+    final users = await dbHelper.queryAllRows();
+    List<Map<String, dynamic>> arData = [];
 
-    if (response.statusCode == 200) {
-      print(response.body);
-      final responseData = jsonDecode(response.body);
-      print('Upload response: ${responseData['message']}');
-      if (responseData['message']['status'] == 200) {
-        final List<dynamic> users = responseData['data'];
-        // Menghapus data lama
-        await dbHelper.deleteAll();
+    for (var user in users) {
+      arData.add({
+        'nama': user[DatabaseHelper.columnName],
+        'nis': user[DatabaseHelper.columnNIS],
+        'kelas': user[DatabaseHelper.columnKelas],
+        'model': user[DatabaseHelper.columnEmbedding],
+      });
+    }
+    String bodyraw = jsonEncode(<String, dynamic>{'data': arData});
+    print(bodyraw);
 
-        // Menyimpan data baru
-        for (var user in users) {
-          await dbHelper.insert({
-            DatabaseHelper.columnName: user['nama'],
-            DatabaseHelper.columnNIS: user['nis'],
-            DatabaseHelper.columnKelas: user['kelas'],
-            DatabaseHelper.columnEmbedding: user['model'],
+    try {
+      final response = await http.post(
+        Uri.parse(
+            'https://presensi-smp1.esolusindo.com/ApiSiswa/Siswa/SyncSiswa'), // Ganti dengan URL API Anda
+        headers: <String, String>{
+          'Content-Type': 'application/json; charset=UTF-8',
+        },
+        body: bodyraw,
+      );
+
+      if (response.statusCode == 200) {
+        print(response.body);
+        final responseData = jsonDecode(response.body);
+        print('Upload response: ${responseData['message']}');
+        if (responseData['message']['status'] == 200) {
+          final List<dynamic> users = responseData['data'];
+          // Menghapus data lama
+          await dbHelper.deleteAll();
+
+          // Menyimpan data baru
+          for (var user in users) {
+            await dbHelper.insert({
+              DatabaseHelper.columnName: user['nama'],
+              DatabaseHelper.columnNIS: user['nis'],
+              DatabaseHelper.columnKelas: user['kelas'],
+              DatabaseHelper.columnEmbedding: user['model'],
+            });
+          }
+
+          // Refresh data
+          setState(() {
+            _users = _fetchUsers();
           });
         }
-
-        // Refresh data
-        setState(() {
-          _users = _fetchUsers();
-        });
+      } else {
+        print('Failed to upload data');
+        _showErrorDialog(
+            'Gagal mengupload data, status: ${response.statusCode}');
       }
-    } else {
-      print('Failed to upload data');
-      _showErrorDialog('Gagal mengupload data, status: ${response.statusCode}');
+    } catch (e) {
+      print('Error: $e');
+      _showErrorDialog('Koneksi gagal. Pastikan Anda terhubung ke internet.');
+    } finally {
+      setState(() {
+        _isSyncing = false; // Tandai bahwa sinkronisasi sudah selesai
+      });
     }
-  } catch (e) {
-    print('Error: $e');
-    _showErrorDialog('Koneksi gagal. Pastikan Anda terhubung ke internet.');
-  } finally {
-    setState(() {
-      _isSyncing = false; // Tandai bahwa sinkronisasi sudah selesai
-    });
   }
-}
 
-void _showErrorDialog(String message) {
-  showDialog(
-    context: context,
-    builder: (BuildContext context) {
-      return AlertDialog(
-        title: Text('Kesalahan'),
-        content: Text(message),
-        actions: <Widget>[
-          TextButton(
-            onPressed: () {
-              Navigator.of(context).pop();
-            },
-            child: Text('OK'),
-          ),
-        ],
-      );
-    },
-  );
-}
+  void _showErrorDialog(String message) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text('Kesalahan'),
+          content: Text(message),
+          actions: <Widget>[
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+              child: Text('OK'),
+            ),
+          ],
+        );
+      },
+    );
+  }
 
   @override
   void dispose() {
@@ -120,17 +123,40 @@ void _showErrorDialog(String message) {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.blue[50],
-      appBar: AppBar(title: Text('Daftar User')),
+      appBar: AppBar(
+        title: Text('Daftar Murid'),
+        automaticallyImplyLeading:
+            false, // Menghilangkan tanda panah pada AppBar
+        actions: [
+          _isSyncing
+              ? Padding(
+                  padding: const EdgeInsets.all(12.0),
+                  child: CircularProgressIndicator(
+                    strokeWidth: 2,
+                    valueColor: AlwaysStoppedAnimation<Color>(Colors.blue),
+                  ),
+                )
+              : Padding(
+                  padding: const EdgeInsets.only(
+                      right: 16.0), // Menambahkan jarak di sebelah kiri
+                  child: ElevatedButton(
+                    onPressed: _syncDatabro,
+                    child: Text('Sync Data'),
+                    style: ElevatedButton.styleFrom(
+                      foregroundColor: Colors.white, // Warna teks tombol
+                      backgroundColor: Colors.blue, // Warna latar tombol
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(20),
+                      ),
+                    ),
+                  ),
+                ),
+        ],
+      ),
       body: Column(
         children: [
-          ElevatedButton(
-            onPressed: _isSyncing ? null : _syncDatabro, // Nonaktifkan tombol saat proses sinkronisasi
-            child: _isSyncing
-                ? CircularProgressIndicator() // Tampilkan indikator saat sedang sinkronisasi
-                : Text('Sync Data'),
-          ),
           Expanded(
-            child: FutureBuilder<List<Map<String, dynamic>>>( 
+            child: FutureBuilder<List<Map<String, dynamic>>>(
               future: _users,
               builder: (context, snapshot) {
                 if (snapshot.connectionState == ConnectionState.waiting) {
@@ -154,8 +180,9 @@ void _showErrorDialog(String message) {
                           style: DefaultTextStyle.of(context).style,
                           children: [
                             TextSpan(
-                              text: 'NIS: ${user[DatabaseHelper.columnNIS]}, Kelas: ${user[DatabaseHelper.columnKelas]}\n',
-                              style: TextStyle(fontSize: 16), 
+                              text:
+                                  'NIS: ${user[DatabaseHelper.columnNIS]}, Kelas: ${user[DatabaseHelper.columnKelas]}\n',
+                              style: TextStyle(fontSize: 16),
                             ),
                           ],
                         ),
