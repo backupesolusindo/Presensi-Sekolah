@@ -119,6 +119,7 @@ void _showErrorDialog(String message) {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Colors.blue[50],
       appBar: AppBar(title: Text('Daftar User')),
       body: Column(
         children: [
