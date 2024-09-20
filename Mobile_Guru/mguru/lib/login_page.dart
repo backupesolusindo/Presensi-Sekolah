@@ -12,40 +12,46 @@ class _LoginPageState extends State<LoginPage> {
   TextEditingController passwordController = TextEditingController();
 
   Future<void> login() async {
-    try {
-      final response = await http.post(
-        Uri.parse('http://192.168.1.14/login.php'),
-        body: jsonEncode({
-          'nip': nipController.text,
-          'password': passwordController.text,
-        }),
-        headers: {'Content-Type': 'application/json'},
-      );
-
-      // Log the response
-      print('Response status: ${response.statusCode}');
-      print('Response body: ${response.body}');
-
-      final data = jsonDecode(response.body);
-      if (data['success'] == true) {
-        String userName = data['name'];
-        List<String> subjects = List<String>.from(data['subjects']);
-
-        Navigator.pushReplacementNamed(
-          context,
-          '/home',
-          arguments: {'name': userName, 'subjects': subjects},
+    if (nipController.text == 'admin' && passwordController.text == 'admin') {
+      try {
+        final response = await http.post(
+          Uri.parse('https://presensi-smp1.esolusindo.com/ApiGuru/Guru/SyncGuru'),
+          body: jsonEncode({
+            'nip': nipController.text,
+            'password': passwordController.text,
+          }),
+          headers: {'Content-Type': 'application/json'},
         );
-      } else {
+
+        // Log the response
+        print('Response status: ${response.statusCode}');
+        print('Response body: ${response.body}');
+
+        final data = jsonDecode(response.body);
+        if (data['success'] == true) {
+          String userName = data['name'];
+          List<String> subjects = List<String>.from(data['subjects']);
+
+          Navigator.pushReplacementNamed(
+            context,
+            '/home',
+            arguments: {'name': userName, 'subjects': subjects},
+          );
+        } else {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text(data['error'])),
+          );
+        }
+      } catch (e) {
+        // Log the exception
+        print('Exception occurred: $e');
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(data['error'])),
+          SnackBar(content: Text('Terjadi kesalahan saat login')),
         );
       }
-    } catch (e) {
-      // Log the exception
-      print('Exception occurred: $e');
+    } else {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Terjadi kesalahan saat login')),
+        SnackBar(content: Text('NIP atau password salah')),
       );
     }
   }
@@ -61,7 +67,7 @@ class _LoginPageState extends State<LoginPage> {
             TextField(
               controller: nipController,
               decoration: InputDecoration(labelText: 'NIP'),
-              keyboardType: TextInputType.number,
+              keyboardType: TextInputType.text,
             ),
             TextField(
               controller: passwordController,
