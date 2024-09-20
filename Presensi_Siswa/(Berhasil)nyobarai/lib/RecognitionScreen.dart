@@ -27,7 +27,7 @@ class _RecognitionScreenState extends State<RecognitionScreen> {
   List<Recognition> recognitions = [];
   List<Face> faces = [];
   var image;
-  String detectedNIS = "";
+  List<String> detectedNISList = []; // Ubah menjadi List
 
   @override
   void initState() {
@@ -63,6 +63,7 @@ class _RecognitionScreenState extends State<RecognitionScreen> {
 
   Future<void> doFaceDetection() async {
     recognitions.clear();
+    detectedNISList.clear(); // Kosongkan list sebelum deteksi
     _image = await removeRotation(_image!);
 
     if (_image != null) {
@@ -96,9 +97,10 @@ class _RecognitionScreenState extends State<RecognitionScreen> {
           Recognition recognition = recognizer.recognize(croppedFace, faceRect);
           recognitions.add(recognition);
 
-          // Simpan NIS yang terdeteksi (misalnya, dari recognition.name)
-          detectedNIS =
-              recognition.nis; // Asumsi bahwa recognition.name adalah NIS
+          // Simpan NIS yang terdeteksi (jika belum ada dalam list)
+          if (!detectedNISList.contains(recognition.nis)) {
+            detectedNISList.add(recognition.nis);
+          }
         }
       }
 
@@ -131,13 +133,13 @@ class _RecognitionScreenState extends State<RecognitionScreen> {
   }
 
   Future<void> verifyAttendance() async {
-    if (detectedNIS.isEmpty) {
+    if (detectedNISList.isEmpty) {
       showDialog(
         context: context,
         builder: (BuildContext context) {
           return _buildDialog(
             title: 'Gagal',
-            message: 'NIS tidak terdeteksi',
+            message: 'Wajah tidak terdeteksi',
             icon: Icons.error,
             iconColor: Colors.red,
           );
@@ -148,39 +150,46 @@ class _RecognitionScreenState extends State<RecognitionScreen> {
 
     final url =
         'https://presensi-smp1.esolusindo.com/ApiGerbang/Gerbang/uploadAbsen';
-    final response = await http.post(
-      Uri.parse(url),
-      headers: {'Content-Type': 'application/json'},
-      body: json.encode({'nis': detectedNIS, 'status': 'absen'}),
+
+    // Mengirim semua NIS yang terdeteksi
+    for (String nis in detectedNISList) {
+      final response = await http.post(
+        Uri.parse(url),
+        headers: {'Content-Type': 'application/json'},
+        body: json.encode({'nis': nis, 'status': 'absen'}),
+      );
+
+      if (response.statusCode != 200) {
+        // Tangani jika ada kesalahan
+        showDialog(
+          context: context,
+          builder: (BuildContext context) {
+            return _buildDialog(
+              title: 'Gagal',
+              message: 'Gagal Absen $nis',
+              icon: Icons.error,
+              iconColor: Colors.red,
+            );
+          },
+        );
+      }
+    }
+
+    // Tampilkan dialog sukses setelah semua NIS berhasil dikirim
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return _buildDialog(
+          title: 'Sukses',
+          message: 'Absen Berhasil',
+          icon: Icons.check_circle,
+          iconColor: Colors.green,
+        );
+      },
     );
 
-    if (response.statusCode == 200) {
-      final responseData = json.decode(response.body);
-      // Tampilkan hasilnya
-      showDialog(
-        context: context,
-        builder: (BuildContext context) {
-          return _buildDialog(
-            title: 'Sukses',
-            message: responseData['message'],
-            icon: Icons.check_circle,
-            iconColor: Colors.green,
-          );
-        },
-      );
-    } else {
-      showDialog(
-        context: context,
-        builder: (BuildContext context) {
-          return _buildDialog(
-            title: 'Gagal',
-            message: 'Gagal mengirim data',
-            icon: Icons.error,
-            iconColor: Colors.red,
-          );
-        },
-      );
-    }
+    // Kosongkan list setelah verifikasi
+    detectedNISList.clear();
   }
 
   Widget _buildDialog({

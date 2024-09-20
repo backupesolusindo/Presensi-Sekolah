@@ -178,14 +178,13 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
                       kelasController.text.isEmpty) {
                     // Tampilkan Snackbar jika ada field yang kosong
                     ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(
-                          content: Text("Please fill in all fields")),
+                      const SnackBar(content: Text("Isi dengan lengkap")),
                     );
                   } else if (await DatabaseHelper.instance
                       .isNisExists(nisController.text)) {
                     // Tampilkan Snackbar jika NIS sudah ada
                     ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(content: Text("NIS already exists")),
+                      const SnackBar(content: Text("NIS telah terdaftar")),
                     );
                   } else {
                     // Simpan data ke database
