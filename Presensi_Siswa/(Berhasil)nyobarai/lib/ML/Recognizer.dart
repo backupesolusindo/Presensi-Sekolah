@@ -16,7 +16,7 @@ class Recognizer {
 
   // Nama model
   String get modelName => 'assets/mobile_face_net.tflite';
-
+  double threshold = 0.8; // Contoh ambang batas, dapat diubah sesuai kebutuhan
   // Konstruktor
   Recognizer({int? numThreads}) {
     _interpreterOptions = InterpreterOptions();
@@ -38,7 +38,7 @@ class Recognizer {
           .map((e) => double.parse(e))
           .toList()
           .cast<double>();
-      Recognition recognition = Recognition(row[DatabaseHelper.columnName], Rect.zero, embd, 0);
+      Recognition recognition = Recognition(row[DatabaseHelper.columnName], Rect.zero, embd, 0, 0);
       registered.putIfAbsent(name, () => recognition);
     }
   }
@@ -107,13 +107,22 @@ class Recognizer {
     // Mencari embedding terdekat di database
     Pair pair = findNearest(outputArray);
     print("distance= ${pair.distance}");
+    // Jika "Tidak dikenali", set distance = 1 (100% tidak dikenali)
+    double confidence;
+    if (pair.name == "Tidak dikenali") {
+      confidence = 0.0; // Set confidence to 0% if not recognized
+    } else {
+      // Hitung confidence sebagai kebalikan dari jarak, jika dikenali
+      confidence = (1.0 - (pair.distance / threshold)) * 100;
+      //confidence = confidence.clamp(0.0, 100.0); // Pastikan dalam range 0-100
+    }
 
-    return Recognition(pair.name, location, outputArray, pair.distance);
+    return Recognition(pair.name, location, outputArray, pair.distance, confidence);
   }
 
   // Mencari embedding terdekat
   Pair findNearest(List<double> emb) {
-    Pair pair = Pair("Unknown", double.infinity);
+    Pair pair = Pair("Tidak dikenali", double.infinity);
     for (MapEntry<String, Recognition> item in registered.entries) {
       final String name = item.key;
       List<double> knownEmb = item.value.embeddings;
@@ -127,6 +136,9 @@ class Recognizer {
         pair.distance = distance;
         pair.name = name;
       }
+    }
+    if (pair.distance > threshold) {
+      pair.name = "Tidak dikenali";
     }
     return pair;
   }

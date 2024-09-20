@@ -100,10 +100,12 @@ class _RecognitionScreenState extends State<RecognitionScreen> {
   }
 
   Future<File> removeRotation(File inputImage) async {
-    final img.Image? capturedImage = img.decodeImage(await File(inputImage.path).readAsBytes());
+    final img.Image? capturedImage =
+        img.decodeImage(await File(inputImage.path).readAsBytes());
     if (capturedImage != null) {
       final img.Image orientedImage = img.bakeOrientation(capturedImage);
-      return await File(_image!.path).writeAsBytes(img.encodeJpg(orientedImage));
+      return await File(_image!.path)
+          .writeAsBytes(img.encodeJpg(orientedImage));
     }
     return inputImage;
   }
@@ -171,7 +173,8 @@ class _RecognitionScreenState extends State<RecognitionScreen> {
                     child: SizedBox(
                       width: screenWidth / 2 - 70,
                       height: screenWidth / 2 - 70,
-                      child: Icon(Icons.image, color: Colors.blue, size: screenWidth / 7),
+                      child: Icon(Icons.image,
+                          color: Colors.blue, size: screenWidth / 7),
                     ),
                   ),
                 ),
@@ -183,7 +186,8 @@ class _RecognitionScreenState extends State<RecognitionScreen> {
                     child: SizedBox(
                       width: screenWidth / 2 - 70,
                       height: screenWidth / 2 - 70,
-                      child: Icon(Icons.camera, color: Colors.blue, size: screenWidth / 7),
+                      child: Icon(Icons.camera,
+                          color: Colors.blue, size: screenWidth / 7),
                     ),
                   ),
                 ),
@@ -215,11 +219,13 @@ class FacePainter extends CustomPainter {
 
     for (Recognition rectangle in facesList) {
       canvas.drawRect(rectangle.location, p);
-
+//TEKS DIKOTAK WAJAH
       TextSpan span = TextSpan(
         style: const TextStyle(color: Colors.white, fontSize: 130),
-        text: "${rectangle.name}  ${rectangle.distance.toStringAsFixed(2)}",
+        text:
+            "${rectangle.name} ${(rectangle.confidence).toStringAsFixed(2)}%",
       );
+
       TextPainter tp = TextPainter(
         text: span,
         textAlign: TextAlign.left,
