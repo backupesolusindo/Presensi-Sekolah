@@ -96,8 +96,8 @@ class _RecognitionScreenState extends State<RecognitionScreen> {
           Recognition recognition = recognizer.recognize(croppedFace, faceRect);
           recognitions.add(recognition);
           
-          // Simpan NIS yang terdeteksi (misalnya, dari recognition.name)
-          detectedNIS = recognition.nis; // Asumsi bahwa recognition.name adalah NIS
+          // Simpan NIS yang terdeteksi 
+          detectedNIS = recognition.nis; 
         }
       }
 

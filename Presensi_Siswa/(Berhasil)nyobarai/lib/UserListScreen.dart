@@ -10,6 +10,7 @@ class UserListScreen extends StatefulWidget {
 
 class _UserListScreenState extends State<UserListScreen> {
   late Future<List<Map<String, dynamic>>> _users;
+  bool _isSyncing = false; // Variabel untuk menandai apakah proses sinkronisasi sedang berjalan
 
   @override
   void initState() {
@@ -22,25 +23,29 @@ class _UserListScreenState extends State<UserListScreen> {
     return await dbHelper.queryAllRows();
   }
 
-  Future<void> _syncDatabro() async {
-    final dbHelper = DatabaseHelper.instance;
-    final users = await dbHelper.queryAllRows();
-    List<Map<String, dynamic>> arData = [];
+Future<void> _syncDatabro() async {
+  setState(() {
+    _isSyncing = true; // Tandai bahwa sinkronisasi sedang berlangsung
+  });
 
-    for (var user in users) {
-      arData.add({
-        'nama': user[DatabaseHelper.columnName],
-        'nis': user[DatabaseHelper.columnNIS],
-        'kelas': user[DatabaseHelper.columnKelas],
-        'model': user[DatabaseHelper.columnEmbedding],
-      });
-    }
-    String bodyraw = jsonEncode(<String, dynamic>{'data': arData});
-    print(bodyraw);
+  final dbHelper = DatabaseHelper.instance;
+  final users = await dbHelper.queryAllRows();
+  List<Map<String, dynamic>> arData = [];
 
+  for (var user in users) {
+    arData.add({
+      'nama': user[DatabaseHelper.columnName],
+      'nis': user[DatabaseHelper.columnNIS],
+      'kelas': user[DatabaseHelper.columnKelas],
+      'model': user[DatabaseHelper.columnEmbedding],
+    });
+  }
+  String bodyraw = jsonEncode(<String, dynamic>{'data': arData});
+  print(bodyraw);
+
+  try {
     final response = await http.post(
-      Uri.parse(
-          'https://presensi-smp1.esolusindo.com/ApiSiswa/Siswa/SyncSiswa'), // Ganti dengan URL API Anda
+      Uri.parse('https://presensi-smp1.esolusindo.com/ApiSiswa/Siswa/SyncSiswa'), // Ganti dengan URL API Anda
       headers: <String, String>{
         'Content-Type': 'application/json; charset=UTF-8',
       },
@@ -65,49 +70,51 @@ class _UserListScreenState extends State<UserListScreen> {
             DatabaseHelper.columnEmbedding: user['model'],
           });
         }
-      }
 
-      // Refresh data
-      setState(() {
-        _users = _fetchUsers();
-      });
+        // Refresh data
+        setState(() {
+          _users = _fetchUsers();
+        });
+      }
     } else {
       print('Failed to upload data');
+      _showErrorDialog('Gagal mengupload data, status: ${response.statusCode}');
     }
+  } catch (e) {
+    print('Error: $e');
+    _showErrorDialog('Koneksi gagal. Pastikan Anda terhubung ke internet.');
+  } finally {
+    setState(() {
+      _isSyncing = false; // Tandai bahwa sinkronisasi sudah selesai
+    });
   }
+}
 
-  // Future<void> _downloadData() async {
-  //   final response = await http.get(Uri.parse(
-  //       'https://presensi-smp1.esolusindo.com/ApiSiswa/Siswa/getSiswa')); // Ganti dengan URL API Anda
-  //   if (_uploadCompleted) {
-  //     if (response.statusCode == 200) {
-  //       final List<dynamic> users = jsonDecode(response.body);
-  //       final dbHelper = DatabaseHelper.instance;
+void _showErrorDialog(String message) {
+  showDialog(
+    context: context,
+    builder: (BuildContext context) {
+      return AlertDialog(
+        title: Text('Kesalahan'),
+        content: Text(message),
+        actions: <Widget>[
+          TextButton(
+            onPressed: () {
+              Navigator.of(context).pop();
+            },
+            child: Text('OK'),
+          ),
+        ],
+      );
+    },
+  );
+}
 
-  //       // Menghapus data lama
-  //       await dbHelper.deleteAll();
-
-  //       // Menyimpan data baru
-  //       for (var user in users) {
-  //         await dbHelper.insert({
-  //           DatabaseHelper.columnName: user['name'],
-  //           DatabaseHelper.columnNIS: user['nis'],
-  //           DatabaseHelper.columnKelas: user['kelas'],
-  //           DatabaseHelper.columnEmbedding: user['embedding'],
-  //         });
-  //       }
-
-  //       // Refresh data
-  //       setState(() {
-  //         _users = _fetchUsers();
-  //       });
-
-  //       print('Data downloaded and synchronized successfully');
-  //     }
-  //   } else {
-  //     print('Failed to download data');
-  //   }
-  // }
+  @override
+  void dispose() {
+    // Jika ada proses async atau timer, pastikan untuk membatalkannya di sini
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -116,11 +123,13 @@ class _UserListScreenState extends State<UserListScreen> {
       body: Column(
         children: [
           ElevatedButton(
-            onPressed: _syncDatabro,
-            child: Text('Sync Data'),
+            onPressed: _isSyncing ? null : _syncDatabro, // Nonaktifkan tombol saat proses sinkronisasi
+            child: _isSyncing
+                ? CircularProgressIndicator() // Tampilkan indikator saat sedang sinkronisasi
+                : Text('Sync Data'),
           ),
           Expanded(
-            child: FutureBuilder<List<Map<String, dynamic>>>(
+            child: FutureBuilder<List<Map<String, dynamic>>>( 
               future: _users,
               builder: (context, snapshot) {
                 if (snapshot.connectionState == ConnectionState.waiting) {
@@ -144,20 +153,9 @@ class _UserListScreenState extends State<UserListScreen> {
                           style: DefaultTextStyle.of(context).style,
                           children: [
                             TextSpan(
-                              text:
-                                  'NIS: ${user[DatabaseHelper.columnNIS]}, Kelas: ${user[DatabaseHelper.columnKelas]}\n',
-                              style: TextStyle(
-                                  fontSize:
-                                      16), // Sesuaikan ukuran font sesuai kebutuhan
+                              text: 'NIS: ${user[DatabaseHelper.columnNIS]}, Kelas: ${user[DatabaseHelper.columnKelas]}\n',
+                              style: TextStyle(fontSize: 16), 
                             ),
-                            // TextSpan(
-                            //   text:
-                            //       'Face: ${user[DatabaseHelper.columnEmbedding]}',
-                            //   style: TextStyle(
-                            //       fontSize: 8,
-                            //       color: const Color.fromARGB(255, 38, 0,
-                            //           255)), // Ukuran font lebih kecil dan warna berbeda
-                            // ),
                           ],
                         ),
                       ),
