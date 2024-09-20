@@ -146,7 +146,7 @@ class _UserListScreenState extends State<UserListScreen> {
                           children: [
                             TextSpan(
                               text:
-                                  'ID: ${user[DatabaseHelper.columnId]}, NIS: ${user[DatabaseHelper.columnNIS]}, Kelas: ${user[DatabaseHelper.columnKelas]}\n',
+                                  'NIS: ${user[DatabaseHelper.columnNIS]}, Kelas: ${user[DatabaseHelper.columnKelas]}\n',
                               style: TextStyle(
                                   fontSize:
                                       16), // Sesuaikan ukuran font sesuai kebutuhan
