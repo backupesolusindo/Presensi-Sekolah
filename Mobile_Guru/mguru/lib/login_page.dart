@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
+import 'subject_page.dart'; // Import the subject page
 
 class LoginPage extends StatefulWidget {
   @override
@@ -8,51 +9,66 @@ class LoginPage extends StatefulWidget {
 }
 
 class _LoginPageState extends State<LoginPage> {
-  TextEditingController nipController = TextEditingController();
-  TextEditingController passwordController = TextEditingController();
+  final TextEditingController nipController = TextEditingController();
+  final TextEditingController passwordController = TextEditingController();
+  bool _isLoading = false; // To show loading indicator
 
   Future<void> login() async {
-    if (nipController.text == 'admin' && passwordController.text == 'admin') {
-      try {
-        final response = await http.post(
-          Uri.parse('https://presensi-smp1.esolusindo.com/ApiGuru/Guru/SyncGuru'),
-          body: jsonEncode({
-            'nip': nipController.text,
-            'password': passwordController.text,
-          }),
-          headers: {'Content-Type': 'application/json'},
-        );
+    // Validasi input
+    if (nipController.text.isEmpty || passwordController.text.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Harap isi NIP dan password')),
+      );
+      return;
+    }
 
-        // Log the response
-        print('Response status: ${response.statusCode}');
-        print('Response body: ${response.body}');
+    setState(() {
+      _isLoading = true; // Show loading when login starts
+    });
 
+    try {
+      final response = await http.post(
+        Uri.parse('https://presensi-smp1.esolusindo.com/ApiGuru/Guru/login'),
+        body: jsonEncode({
+          'nip': nipController.text,
+          'password': passwordController.text,
+        }),
+        headers: {'Content-Type': 'application/json'},
+      );
+
+      // Logging response for debugging
+      print('Response status: ${response.statusCode}');
+      print('Response body: ${response.body}');
+
+      if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
         if (data['success'] == true) {
-          String userName = data['name'];
-          List<String> subjects = List<String>.from(data['subjects']);
-
-          Navigator.pushReplacementNamed(
+          // Navigate to SubjectPage if login is successful
+          Navigator.pushReplacement(
             context,
-            '/home',
-            arguments: {'name': userName, 'subjects': subjects},
+            MaterialPageRoute(
+              builder: (context) => SubjectPage(nip: nipController.text), // Pass the NIP
+            ),
           );
         } else {
           ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text(data['error'])),
+            SnackBar(content: Text(data['error'] ?? 'Login gagal')),
           );
         }
-      } catch (e) {
-        // Log the exception
-        print('Exception occurred: $e');
+      } else {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Terjadi kesalahan saat login')),
+          SnackBar(content: Text('Login gagal: ${response.reasonPhrase}')),
         );
       }
-    } else {
+    } catch (e) {
+      print('Exception occurred: $e');
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('NIP atau password salah')),
+        SnackBar(content: Text('Terjadi kesalahan saat login')),
       );
+    } finally {
+      setState(() {
+        _isLoading = false; // Hide loading when login is complete
+      });
     }
   }
 
@@ -63,6 +79,7 @@ class _LoginPageState extends State<LoginPage> {
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
           children: [
             TextField(
               controller: nipController,
@@ -75,10 +92,12 @@ class _LoginPageState extends State<LoginPage> {
               decoration: InputDecoration(labelText: 'Password'),
             ),
             SizedBox(height: 20),
-            ElevatedButton(
-              onPressed: login,
-              child: Text('Login'),
-            ),
+            _isLoading
+                ? CircularProgressIndicator()
+                : ElevatedButton(
+                    onPressed: login,
+                    child: Text('Login'),
+                  ),
           ],
         ),
       ),

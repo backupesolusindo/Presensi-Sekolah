@@ -1,8 +1,8 @@
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:nyobarai/UserListScreen.dart';
+import 'package:lottie/lottie.dart';
 import 'RecognitionScreen.dart';
 import 'RegistrationScreen.dart';
+import 'UserListScreen.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({Key? key}) : super(key: key);
@@ -12,6 +12,8 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomeScreen> {
+  bool _isLoading = false; // Untuk menandai proses loading
+
   @override
   Widget build(BuildContext context) {
     double screenWidth = MediaQuery.of(context).size.width;
@@ -19,50 +21,46 @@ class _HomePageState extends State<HomeScreen> {
     return Scaffold(
       backgroundColor: Colors.blue[50], // Warna latar belakang
       body: Center(
-        child: SingleChildScrollView(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Container(
-                margin: const EdgeInsets.only(top: 50),
-                child: Image.asset(
-                  "images/logo.png",
-                  width: screenWidth - 40,
-                  height: screenWidth - 40,
+        child: _isLoading
+            ? Lottie.asset('assets/loading.json', width: 150, height: 150)
+            : SingleChildScrollView(
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Container(
+                      margin: const EdgeInsets.only(top: 50),
+                      child: Image.asset(
+                        "images/logo.png",
+                        width: screenWidth - 40,
+                        height: screenWidth - 40,
+                      ),
+                    ),
+                    const SizedBox(height: 20), // Jarak antara logo dan tombol
+                    Text(
+                      "Sistem Absensi Wajah",
+                      style: TextStyle(
+                        fontSize: 24,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.blue[800], // Warna teks
+                      ),
+                    ),
+                    const SizedBox(height: 20),
+                    _buildButton("Daftar", () {
+                      _navigateWithLoading(
+                          context, const RegistrationScreen());
+                    }),
+                    const SizedBox(height: 20),
+                    _buildButton("Absen", () {
+                      _navigateWithLoading(context, const RecognitionScreen());
+                    }),
+                    const SizedBox(height: 20),
+                    _buildButton("Murid Terdaftar", () {
+                      _navigateWithLoading(context, UserListScreen());
+                    }),
+                    const SizedBox(height: 50), // Jarak bawah untuk padding bottom
+                  ],
                 ),
               ),
-              const SizedBox(height: 20), // Jarak antara logo dan tombol
-              Text(
-                "Sistem Absensi Wajah",
-                style: TextStyle(
-                  fontSize: 24,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.blue[800], // Warna teks
-                ),
-              ),
-              const SizedBox(height: 20),
-              _buildButton("Daftar", () {
-                Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                        builder: (context) => const RegistrationScreen()));
-              }),
-              const SizedBox(height: 20),
-              _buildButton("Absen", () {
-                Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                        builder: (context) => const RecognitionScreen()));
-              }),
-              const SizedBox(height: 20),
-              _buildButton("Murid Terdaftar", () {
-                Navigator.push(context,
-                    MaterialPageRoute(builder: (context) => UserListScreen()));
-              }),
-              const SizedBox(height: 50), // Jarak bawah untuk padding bottom
-            ],
-          ),
-        ),
       ),
     );
   }
@@ -86,6 +84,20 @@ class _HomePageState extends State<HomeScreen> {
           color: Colors.white,
         ),
       ),
+    );
+  }
+
+  Future<void> _navigateWithLoading(BuildContext context, Widget page) async {
+    setState(() {
+      _isLoading = true; // Mulai loading
+    });
+    await Future.delayed(const Duration(seconds: 1)); // Simulasi loading
+    setState(() {
+      _isLoading = false; // Selesai loading
+    });
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (context) => page),
     );
   }
 }

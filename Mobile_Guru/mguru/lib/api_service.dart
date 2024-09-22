@@ -3,7 +3,7 @@ import 'package:http/http.dart' as http;
 import 'student_model.dart'; // Import the student model
 
 // Replace this URL with your actual API endpoint
-const String apiUrl = 'https://presensi-smp1.esolusindo.com/ApiGuru/Guru/SyncGuru';
+const String apiUrl = 'https://presensi-smp1.esolusindo.com/ApiSiswa/Siswa/Sync';
 
 // Fetch the list of students from the API based on the subject
 Future<List<Student>> fetchStudents(String subjectId) async {
