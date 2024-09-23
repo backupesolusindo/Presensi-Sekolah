@@ -262,7 +262,17 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
     double screenWidth = MediaQuery.of(context).size.width;
 
     return Scaffold(
-      backgroundColor: Colors.blue[50], // Atur warna latar belakang di sini
+      appBar: AppBar(
+        title: Text('Sistem absensi Wajah'),
+        leading: IconButton(
+          icon: Icon(Icons.arrow_back),
+          onPressed: () {
+            Navigator.pop(context); // Navigate back to the previous screen
+          },
+        ),
+        backgroundColor: Colors.blueAccent,
+      ),
+      backgroundColor: Colors.blue[50],
       resizeToAvoidBottomInset: false,
       body: Column(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,

@@ -10,8 +10,8 @@ class UserListScreen extends StatefulWidget {
 
 class _UserListScreenState extends State<UserListScreen> {
   late Future<List<Map<String, dynamic>>> _users;
-  bool _isSyncing = false; // Menandai proses sinkronisasi
-  String _sortCriteria = 'nama'; // Kriteria pengurutan default
+  bool _isSyncing = false;
+  String _sortCriteria = 'nama';
 
   @override
   void initState() {
@@ -26,7 +26,7 @@ class _UserListScreenState extends State<UserListScreen> {
 
   Future<void> _syncDatabro() async {
     setState(() {
-      _isSyncing = true; // Tandai bahwa sinkronisasi sedang berlangsung
+      _isSyncing = true;
     });
 
     final dbHelper = DatabaseHelper.instance;
@@ -46,8 +46,7 @@ class _UserListScreenState extends State<UserListScreen> {
 
     try {
       final response = await http.post(
-        Uri.parse(
-            'https://presensi-smp1.esolusindo.com/ApiSiswa/Siswa/SyncSiswa'),
+        Uri.parse('https://presensi-smp1.esolusindo.com/ApiSiswa/Siswa/SyncSiswa'),
         headers: <String, String>{
           'Content-Type': 'application/json; charset=UTF-8',
         },
@@ -74,14 +73,13 @@ class _UserListScreenState extends State<UserListScreen> {
           });
         }
       } else {
-        _showErrorDialog(
-            'Gagal mengupload data, status: ${response.statusCode}');
+        _showErrorDialog('Gagal mengupload data, status: ${response.statusCode}');
       }
     } catch (e) {
       _showErrorDialog('Koneksi gagal. Pastikan Anda terhubung ke internet.');
     } finally {
       setState(() {
-        _isSyncing = false; // Tandai bahwa sinkronisasi sudah selesai
+        _isSyncing = false;
       });
     }
   }
@@ -107,39 +105,34 @@ class _UserListScreenState extends State<UserListScreen> {
   }
 
   List<Map<String, dynamic>> _sortUsers(List<Map<String, dynamic>> users) {
-    // Membuat salinan dari daftar agar tidak mengubah daftar asli
     List<Map<String, dynamic>> sortedUsers = List.from(users);
-
     sortedUsers.sort((a, b) {
       if (_sortCriteria == 'nama') {
-        return a[DatabaseHelper.columnName]
-            .compareTo(b[DatabaseHelper.columnName]);
+        return a[DatabaseHelper.columnName].compareTo(b[DatabaseHelper.columnName]);
       } else if (_sortCriteria == 'kelas') {
-        return a[DatabaseHelper.columnKelas]
-            .compareTo(b[DatabaseHelper.columnKelas]);
+        return a[DatabaseHelper.columnKelas].compareTo(b[DatabaseHelper.columnKelas]);
       } else {
-        return a[DatabaseHelper.columnNIS]
-            .compareTo(b[DatabaseHelper.columnNIS]);
+        return a[DatabaseHelper.columnNIS].compareTo(b[DatabaseHelper.columnNIS]);
       }
     });
-
     return sortedUsers;
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.blue[50],
+      backgroundColor: Colors.grey[100],
       appBar: AppBar(
-        title: Text('Daftar Murid'),
+        title: Text('Daftar Murid', style: TextStyle(fontSize: 24)),
         automaticallyImplyLeading: false,
+        shadowColor: Colors.black54,
         actions: [
           _isSyncing
               ? Padding(
                   padding: const EdgeInsets.all(12.0),
                   child: CircularProgressIndicator(
                     strokeWidth: 2,
-                    valueColor: AlwaysStoppedAnimation<Color>(Colors.blue),
+                    valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
                   ),
                 )
               : Padding(
@@ -148,7 +141,6 @@ class _UserListScreenState extends State<UserListScreen> {
                     onPressed: _syncDatabro,
                     child: Text('Sync Data'),
                     style: ElevatedButton.styleFrom(
-                      foregroundColor: Colors.white,
                       backgroundColor: Colors.blue,
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(20),
@@ -163,10 +155,8 @@ class _UserListScreenState extends State<UserListScreen> {
           Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Text(
-                "Urutkan : ",
-                style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-              ),
+              Text("Urutkan: ", style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+              SizedBox(width: 10),
               DropdownButton<String>(
                 value: _sortCriteria,
                 onChanged: (String? newValue) {
@@ -178,9 +168,13 @@ class _UserListScreenState extends State<UserListScreen> {
                     .map<DropdownMenuItem<String>>((String value) {
                   return DropdownMenuItem<String>(
                     value: value,
-                    child: Text(value[0].toUpperCase() + value.substring(1)),
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 8.0),
+                      child: Text(value[0].toUpperCase() + value.substring(1)),
+                    ),
                   );
                 }).toList(),
+                icon: Icon(Icons.arrow_drop_down),
               ),
             ],
           ),
@@ -196,22 +190,63 @@ class _UserListScreenState extends State<UserListScreen> {
                   return Center(child: Text('No users found.'));
                 }
 
-                final users = _sortUsers(snapshot.data!); // Mengurutkan user
+                final users = _sortUsers(snapshot.data!);
 
                 return ListView.builder(
                   itemCount: users.length,
                   itemBuilder: (context, index) {
                     final user = users[index];
-                    return ListTile(
-                      title: Text(user[DatabaseHelper.columnName]),
-                      subtitle: RichText(
-                        text: TextSpan(
-                          style: DefaultTextStyle.of(context).style,
+                    return Card(
+                      margin: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(16.0),
+                      ),
+                      elevation: 5,
+                      child: Padding(
+                        padding: const EdgeInsets.all(16.0),
+                        child: Row(
                           children: [
-                            TextSpan(
-                              text:
-                                  'NIS: ${user[DatabaseHelper.columnNIS]}, Kelas: ${user[DatabaseHelper.columnKelas]}\n',
-                              style: TextStyle(fontSize: 16),
+                            CircleAvatar(
+                              backgroundColor: Colors.blueAccent,
+                              child: Text(
+                                user[DatabaseHelper.columnName][0].toUpperCase(),
+                                style: TextStyle(color: Colors.white),
+                              ),
+                            ),
+                            SizedBox(width: 16),
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    user[DatabaseHelper.columnName],
+                                    style: TextStyle(
+                                      fontSize: 20,
+                                      fontWeight: FontWeight.bold,
+                                      color: Colors.black87,
+                                    ),
+                                  ),
+                                  SizedBox(height: 4),
+                                  RichText(
+                                    text: TextSpan(
+                                      style: DefaultTextStyle.of(context).style,
+                                      children: [
+                                        TextSpan(
+                                          text: 'NIS: ${user[DatabaseHelper.columnNIS]}, ',
+                                          style: TextStyle(color: Colors.black54),
+                                        ),
+                                        TextSpan(
+                                          text: 'Kelas: ${user[DatabaseHelper.columnKelas]}',
+                                          style: TextStyle(
+                                            fontWeight: FontWeight.bold,
+                                            color: Colors.blueAccent,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                ],
+                              ),
                             ),
                           ],
                         ),

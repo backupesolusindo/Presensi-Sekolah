@@ -242,8 +242,17 @@ class _RecognitionScreenState extends State<RecognitionScreen> {
   @override
   Widget build(BuildContext context) {
     double screenWidth = MediaQuery.of(context).size.width;
-
     return Scaffold(
+      appBar: AppBar(
+        title: Text('Sistem Absensi Wajah'),
+        leading: IconButton(
+          icon: Icon(Icons.arrow_back),
+          onPressed: () {
+            Navigator.pop(context); // Navigate back to the previous screen
+          },
+        ),
+        backgroundColor: Colors.blueAccent,
+      ),
       backgroundColor: Colors.blue[50],
       resizeToAvoidBottomInset: false,
       body: Column(
@@ -280,12 +289,13 @@ class _RecognitionScreenState extends State<RecognitionScreen> {
               onPressed: verifyAttendance,
               child: Text("Verifikasi"),
               style: ElevatedButton.styleFrom(
-                foregroundColor: Colors.white,
-                backgroundColor: Colors.blue,
                 padding: EdgeInsets.symmetric(horizontal: 40, vertical: 20),
                 shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(20),
+                  borderRadius: BorderRadius.circular(30),
                 ),
+                backgroundColor: Colors.blueAccent,
+                shadowColor: Colors.blue.withOpacity(0.5),
+                elevation: 5,
               ),
             ),
           Container(
@@ -293,44 +303,44 @@ class _RecognitionScreenState extends State<RecognitionScreen> {
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
               children: [
-                Card(
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(20),
-                  ),
-                  elevation: 5,
-                  child: InkWell(
-                    borderRadius: BorderRadius.circular(20),
-                    onTap: _imgFromGallery,
-                    child: Container(
-                      width: screenWidth / 2 - 50,
-                      height: screenWidth / 2 - 50,
-                      decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(20),
-                        gradient: const LinearGradient(
-                          colors: [Colors.blue, Colors.blueAccent],
-                          begin: Alignment.topLeft,
-                          end: Alignment.bottomRight,
-                        ),
-                      ),
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Icon(Icons.image,
-                              color: Colors.white, size: screenWidth / 7),
-                          const SizedBox(height: 10),
-                          const Text(
-                            "Galeri",
-                            style: TextStyle(
-                              color: Colors.white,
-                              fontSize: 18,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-                ),
+                // Card(
+                //   shape: RoundedRectangleBorder(
+                //     borderRadius: BorderRadius.circular(20),
+                //   ),
+                //   elevation: 5,
+                //   child: InkWell(
+                //     borderRadius: BorderRadius.circular(20),
+                //     onTap: _imgFromGallery,
+                //     child: Container(
+                //       width: screenWidth / 2 - 50,
+                //       height: screenWidth / 2 - 50,
+                //       decoration: BoxDecoration(
+                //         borderRadius: BorderRadius.circular(20),
+                //         gradient: const LinearGradient(
+                //           colors: [Colors.blue, Colors.blueAccent],
+                //           begin: Alignment.topLeft,
+                //           end: Alignment.bottomRight,
+                //         ),
+                //       ),
+                //       child: Column(
+                //         mainAxisAlignment: MainAxisAlignment.center,
+                //         children: [
+                //           Icon(Icons.image,
+                //               color: Colors.white, size: screenWidth / 7),
+                //           const SizedBox(height: 10),
+                //           const Text(
+                //             "Galeri",
+                //             style: TextStyle(
+                //               color: Colors.white,
+                //               fontSize: 18,
+                //               fontWeight: FontWeight.bold,
+                //             ),
+                //           ),
+                //         ],
+                //       ),
+                //     ),
+                //   ),
+                // ),
                 Card(
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(20),
