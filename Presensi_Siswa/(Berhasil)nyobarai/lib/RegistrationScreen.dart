@@ -7,6 +7,7 @@ import 'package:google_mlkit_face_detection/google_mlkit_face_detection.dart';
 import 'ML/Recognition.dart';
 import 'ML/Recognizer.dart';
 import 'DB/DatabaseHelper.dart'; // Pastikan path ini sesuai
+import 'package:lottie/lottie.dart';
 
 class RegistrationScreen extends StatefulWidget {
   const RegistrationScreen({Key? key}) : super(key: key);
@@ -22,6 +23,7 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
   late Recognizer recognizer;
   List<Face> faces = [];
   var image;
+  bool isLoading = false; // Tambahkan isLoading
   TextEditingController nameController = TextEditingController();
   TextEditingController nisController = TextEditingController();
   TextEditingController kelasController = TextEditingController();
@@ -58,6 +60,10 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
   }
 
   doFaceDetection() async {
+    setState(() {
+      isLoading = true; // Mulai proses loading
+    });
+
     if (_image == null) return;
 
     _image = await removeRotation(_image!);
@@ -65,6 +71,10 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
     image = await decodeImageFromList(image);
     InputImage inputImage = InputImage.fromFile(_image!);
     faces = await faceDetector.processImage(inputImage);
+
+    setState(() {
+      isLoading = false; // Hentikan proses loading
+    });
 
     if (faces.isNotEmpty) {
       for (Face face in faces) {
@@ -257,6 +267,7 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
     return await File(_image!.path).writeAsBytes(img.encodeJpg(orientedImage));
   }
 
+  // build method
   @override
   Widget build(BuildContext context) {
     double screenWidth = MediaQuery.of(context).size.width;
@@ -274,118 +285,135 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
       ),
       backgroundColor: Colors.blue[50],
       resizeToAvoidBottomInset: false,
-      body: Column(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          image != null
-              ? Container(
-                  margin: const EdgeInsets.only(top: 60, left: 30, right: 30),
-                  child: FittedBox(
-                    child: SizedBox(
-                      width: image.width.toDouble(),
-                      height: image.width.toDouble(),
-                      child: CustomPaint(
-                        painter:
-                            FacePainter(facesList: faces, imageFile: image),
-                      ),
-                    ),
+      body: isLoading // Tampilkan loading animasi saat isLoading true
+          ? Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Lottie.asset('assets/loading1.json', width: 150, height: 150),
+                  const SizedBox(height: 20),
+                  const Text(
+                    'Mohon Ditunggu...',
+                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                   ),
-                )
-              : Container(
-                  margin: const EdgeInsets.only(top: 100),
-                  child: Image.asset(
-                    "images/logo.png",
-                    width: screenWidth - 100,
-                    height: screenWidth - 100,
-                  ),
-                ),
-          const SizedBox(height: 50),
-          Container(
-            margin: const EdgeInsets.only(bottom: 50),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                ],
+              ),
+            )
+          : Column(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Card(
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(20),
-                  ),
-                  elevation: 5,
-                  child: InkWell(
-                    borderRadius: BorderRadius.circular(20),
-                    onTap: _imgFromGallery,
-                    child: Container(
-                      width: screenWidth / 2 - 50,
-                      height: screenWidth / 2 - 50,
-                      decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(20),
-                        gradient: const LinearGradient(
-                          colors: [Colors.blue, Colors.blueAccent],
-                          begin: Alignment.topLeft,
-                          end: Alignment.bottomRight,
-                        ),
-                      ),
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Icon(Icons.image,
-                              color: Colors.white, size: screenWidth / 7),
-                          const SizedBox(height: 10),
-                          const Text(
-                            "Galeri",
-                            style: TextStyle(
-                              color: Colors.white,
-                              fontSize: 18,
-                              fontWeight: FontWeight.bold,
+                image != null
+                    ? Container(
+                        margin: const EdgeInsets.only(
+                            top: 60, left: 30, right: 30),
+                        child: FittedBox(
+                          child: SizedBox(
+                            width: image.width.toDouble(),
+                            height: image.width.toDouble(),
+                            child: CustomPaint(
+                              painter: FacePainter(
+                                  facesList: faces, imageFile: image),
                             ),
                           ),
-                        ],
-                      ),
-                    ),
-                  ),
-                ),
-                Card(
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(20),
-                  ),
-                  elevation: 5,
-                  child: InkWell(
-                    borderRadius: BorderRadius.circular(20),
-                    onTap: _imgFromCamera,
-                    child: Container(
-                      width: screenWidth / 2 - 50,
-                      height: screenWidth / 2 - 50,
-                      decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(20),
-                        gradient: const LinearGradient(
-                          colors: [Colors.green, Colors.greenAccent],
-                          begin: Alignment.topLeft,
-                          end: Alignment.bottomRight,
+                        ),
+                      )
+                    : Container(
+                        margin: const EdgeInsets.only(top: 100),
+                        child: Image.asset(
+                          "images/logo.png",
+                          width: screenWidth - 100,
+                          height: screenWidth - 100,
                         ),
                       ),
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Icon(Icons.camera_alt,
-                              color: Colors.white, size: screenWidth / 7),
-                          const SizedBox(height: 10),
-                          const Text(
-                            "Kamera",
-                            style: TextStyle(
-                              color: Colors.white,
-                              fontSize: 18,
-                              fontWeight: FontWeight.bold,
+                const SizedBox(height: 50),
+                Container(
+                  margin: const EdgeInsets.only(bottom: 50),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                    children: [
+                      Card(
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(20),
+                        ),
+                        elevation: 5,
+                        child: InkWell(
+                          borderRadius: BorderRadius.circular(20),
+                          onTap: _imgFromGallery,
+                          child: Container(
+                            width: screenWidth / 2 - 50,
+                            height: screenWidth / 2 - 50,
+                            decoration: BoxDecoration(
+                              borderRadius: BorderRadius.circular(20),
+                              gradient: const LinearGradient(
+                                colors: [Colors.blue, Colors.blueAccent],
+                                begin: Alignment.topLeft,
+                                end: Alignment.bottomRight,
+                              ),
+                            ),
+                            child: Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Icon(Icons.image,
+                                    color: Colors.white,
+                                    size: screenWidth / 7),
+                                const SizedBox(height: 10),
+                                const Text(
+                                  "Galeri",
+                                  style: TextStyle(
+                                    color: Colors.white,
+                                    fontSize: 18,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                              ],
                             ),
                           ),
-                        ],
+                        ),
                       ),
-                    ),
+                      Card(
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(20),
+                        ),
+                        elevation: 5,
+                        child: InkWell(
+                          borderRadius: BorderRadius.circular(20),
+                          onTap: _imgFromCamera,
+                          child: Container(
+                            width: screenWidth / 2 - 50,
+                            height: screenWidth / 2 - 50,
+                            decoration: BoxDecoration(
+                              borderRadius: BorderRadius.circular(20),
+                              gradient: const LinearGradient(
+                                colors: [Colors.green, Colors.greenAccent],
+                                begin: Alignment.topLeft,
+                                end: Alignment.bottomRight,
+                              ),
+                            ),
+                            child: Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Icon(Icons.camera_alt,
+                                    color: Colors.white,
+                                    size: screenWidth / 7),
+                                const SizedBox(height: 10),
+                                const Text(
+                                  "Kamera",
+                                  style: TextStyle(
+                                    color: Colors.white,
+                                    fontSize: 18,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
                   ),
                 ),
               ],
             ),
-          ),
-        ],
-      ),
     );
   }
 }
