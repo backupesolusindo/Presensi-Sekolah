@@ -274,7 +274,7 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        title: Text('Sistem absensi Wajah'),
+        title: Text('Sistem Absensi Wajah'),
         leading: IconButton(
           icon: Icon(Icons.arrow_back),
           onPressed: () {
@@ -304,8 +304,8 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
               children: [
                 image != null
                     ? Container(
-                        margin: const EdgeInsets.only(
-                            top: 60, left: 30, right: 30),
+                        margin:
+                            const EdgeInsets.only(top: 60, left: 30, right: 30),
                         child: FittedBox(
                           child: SizedBox(
                             width: image.width.toDouble(),
@@ -331,50 +331,52 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                     children: [
+                      // Uncomment this section if you want to include the gallery card
+                      // Card(
+                      //   shape: RoundedRectangleBorder(
+                      //     borderRadius: BorderRadius.circular(20),
+                      //   ),
+                      //   elevation: 10, // Increased elevation for a more pronounced shadow
+                      //   child: InkWell(
+                      //     borderRadius: BorderRadius.circular(20),
+                      //     onTap: _imgFromGallery,
+                      //     child: Container(
+                      //       width: screenWidth / 2 - 50,
+                      //       height: screenWidth / 2 - 50,
+                      //       decoration: BoxDecoration(
+                      //         borderRadius: BorderRadius.circular(20),
+                      //         gradient: const LinearGradient(
+                      //           colors: [Colors.blue, Colors.blueAccent],
+                      //           begin: Alignment.topLeft,
+                      //           end: Alignment.bottomRight,
+                      //         ),
+                      //       ),
+                      //       child: Column(
+                      //         mainAxisAlignment: MainAxisAlignment.center,
+                      //         children: [
+                      //           Icon(Icons.image,
+                      //               color: Colors.white,
+                      //               size: screenWidth / 6), // Slightly larger icon
+                      //           const SizedBox(height: 10),
+                      //           const Text(
+                      //             "Galeri",
+                      //             style: TextStyle(
+                      //               color: Colors.white,
+                      //               fontSize: 20, // Increased font size for better readability
+                      //               fontWeight: FontWeight.w600, // Change to a lighter weight
+                      //             ),
+                      //           ),
+                      //         ],
+                      //       ),
+                      //     ),
+                      //   ),
+                      // ),
                       Card(
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(20),
                         ),
-                        elevation: 5,
-                        child: InkWell(
-                          borderRadius: BorderRadius.circular(20),
-                          onTap: _imgFromGallery,
-                          child: Container(
-                            width: screenWidth / 2 - 50,
-                            height: screenWidth / 2 - 50,
-                            decoration: BoxDecoration(
-                              borderRadius: BorderRadius.circular(20),
-                              gradient: const LinearGradient(
-                                colors: [Colors.blue, Colors.blueAccent],
-                                begin: Alignment.topLeft,
-                                end: Alignment.bottomRight,
-                              ),
-                            ),
-                            child: Column(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                Icon(Icons.image,
-                                    color: Colors.white,
-                                    size: screenWidth / 7),
-                                const SizedBox(height: 10),
-                                const Text(
-                                  "Galeri",
-                                  style: TextStyle(
-                                    color: Colors.white,
-                                    fontSize: 18,
-                                    fontWeight: FontWeight.bold,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                        ),
-                      ),
-                      Card(
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(20),
-                        ),
-                        elevation: 5,
+                        elevation:
+                            10, // Increased elevation for a more pronounced shadow
                         child: InkWell(
                           borderRadius: BorderRadius.circular(20),
                           onTap: _imgFromCamera,
@@ -384,7 +386,10 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
                             decoration: BoxDecoration(
                               borderRadius: BorderRadius.circular(20),
                               gradient: const LinearGradient(
-                                colors: [Colors.green, Colors.greenAccent],
+                                colors: [
+                                  Colors.blue,
+                                  Colors.lightBlueAccent
+                                ], // Updated to a blue gradient
                                 begin: Alignment.topLeft,
                                 end: Alignment.bottomRight,
                               ),
@@ -394,14 +399,17 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
                               children: [
                                 Icon(Icons.camera_alt,
                                     color: Colors.white,
-                                    size: screenWidth / 7),
+                                    size: screenWidth /
+                                        6), // Slightly larger icon
                                 const SizedBox(height: 10),
                                 const Text(
                                   "Kamera",
                                   style: TextStyle(
                                     color: Colors.white,
-                                    fontSize: 18,
-                                    fontWeight: FontWeight.bold,
+                                    fontSize:
+                                        20, // Increased font size for better readability
+                                    fontWeight: FontWeight
+                                        .w600, // Change to a lighter weight
                                   ),
                                 ),
                               ],

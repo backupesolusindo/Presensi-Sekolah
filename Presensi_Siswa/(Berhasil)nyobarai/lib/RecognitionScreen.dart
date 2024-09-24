@@ -357,7 +357,10 @@ class _RecognitionScreenState extends State<RecognitionScreen> {
                         decoration: BoxDecoration(
                           borderRadius: BorderRadius.circular(20),
                           gradient: const LinearGradient(
-                            colors: [Colors.green, Colors.greenAccent],
+                            colors: [
+                              Colors.blue,
+                              Colors.lightBlueAccent
+                            ], // Updated to a blue gradient
                             begin: Alignment.topLeft,
                             end: Alignment.bottomRight,
                           ),
