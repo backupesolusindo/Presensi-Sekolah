@@ -343,6 +343,44 @@ class _RecognitionScreenState extends State<RecognitionScreen> {
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                 children: [
+                  //   Card(
+                  //   shape: RoundedRectangleBorder(
+                  //     borderRadius: BorderRadius.circular(20),
+                  //   ),
+                  //   elevation: 5,
+                  //   child: InkWell(
+                  //     borderRadius: BorderRadius.circular(20),
+                  //     onTap: _imgFromGallery,
+                  //     child: Container(
+                  //       width: screenWidth / 2 - 50,
+                  //       height: screenWidth / 2 - 50,
+                  //       decoration: BoxDecoration(
+                  //         borderRadius: BorderRadius.circular(20),
+                  //         gradient: const LinearGradient(
+                  //           colors: [Colors.blue, Colors.blueAccent],
+                  //           begin: Alignment.topLeft,
+                  //           end: Alignment.bottomRight,
+                  //         ),
+                  //       ),
+                  //       child: Column(
+                  //         mainAxisAlignment: MainAxisAlignment.center,
+                  //         children: [
+                  //           Icon(Icons.image,
+                  //               color: Colors.white, size: screenWidth / 7),
+                  //           const SizedBox(height: 10),
+                  //           const Text(
+                  //             "Galeri",
+                  //             style: TextStyle(
+                  //               color: Colors.white,
+                  //               fontSize: 18,
+                  //               fontWeight: FontWeight.bold,
+                  //             ),
+                  //           ),
+                  //         ],
+                  //       ),
+                  //     ),
+                  //   ),
+                  // ),
                   Card(
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(20),
