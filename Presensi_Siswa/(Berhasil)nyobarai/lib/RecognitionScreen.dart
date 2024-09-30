@@ -369,7 +369,7 @@ class _RecognitionScreenState extends State<RecognitionScreen> {
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
                             Icon(Icons.camera_alt,
-                                color: Colors.white, size: screenWidth / 7),
+                                color: Colors.white, size: screenWidth / 6),
                             const SizedBox(height: 10),
                             const Text(
                               "Kamera",

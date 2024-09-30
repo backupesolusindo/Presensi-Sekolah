@@ -403,15 +403,14 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
                                         6), // Slightly larger icon
                                 const SizedBox(height: 10),
                                 const Text(
-                                  "Kamera",
-                                  style: TextStyle(
-                                    color: Colors.white,
-                                    fontSize:
-                                        20, // Increased font size for better readability
-                                    fontWeight: FontWeight
-                                        .w600, // Change to a lighter weight
-                                  ),
-                                ),
+                                  
+                              "Kamera",
+                              style: TextStyle(
+                                color: Colors.white,
+                                fontSize: 18,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
                               ],
                             ),
                           ),
