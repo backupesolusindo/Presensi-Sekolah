@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
+import 'login_page.dart'; // Import halaman login
 import 'subject_detail_page.dart'; // Import the subject detail page
 
 class SubjectPage extends StatefulWidget {
@@ -81,6 +82,14 @@ class _SubjectPageState extends State<SubjectPage> {
     });
   }
 
+  // Fungsi untuk menangani logout
+  void _logout() {
+    Navigator.pushReplacement(
+      context,
+      MaterialPageRoute(builder: (context) => LoginPage()), // Mengarahkan ke halaman login
+    );
+  }
+
   // Navigate to Subject Detail Page
   void _onSubjectTap(dynamic subject) {
     Navigator.push(
@@ -101,11 +110,10 @@ class _SubjectPageState extends State<SubjectPage> {
           ],
         ),
         actions: [
-          Padding(
-            padding: const EdgeInsets.all(8.0),
-            child: CircleAvatar(
-              backgroundImage: AssetImage('avatar.png'),
-            ),
+          IconButton(
+            icon: Icon(Icons.logout),
+            onPressed: _logout, // Tombol logout
+            tooltip: 'Logout',
           ),
         ],
       ),
