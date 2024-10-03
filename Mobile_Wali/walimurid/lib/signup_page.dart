@@ -1,107 +1,128 @@
+import 'dart:async';
 import 'dart:convert';
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:http/http.dart' as http;
-import 'dashboard_page.dart'; // Replace with your dashboard file
-import 'signup_page.dart';    // Replace with your signup file
+import 'package:google_fonts/google_fonts.dart'; // Make sure to add google_fonts to your pubspec.yaml
 
-class LoginPage extends StatefulWidget {
+class SignupPage extends StatefulWidget {
   @override
-  _LoginPageState createState() => _LoginPageState();
+  _SignupPageState createState() => _SignupPageState();
 }
 
-class _LoginPageState extends State<LoginPage> with SingleTickerProviderStateMixin {
+class _SignupPageState extends State<SignupPage> {
   final TextEditingController nomorTeleponController = TextEditingController();
   final TextEditingController passwordController = TextEditingController();
+  final TextEditingController namaController = TextEditingController();
   bool _isLoading = false;
   bool _isPasswordVisible = false; // New variable for password visibility
-  late AnimationController _controller;
-  late Animation<double> _animation;
 
-  @override
-  void initState() {
-    super.initState();
-    _controller = AnimationController(
-      duration: const Duration(seconds: 2),
-      vsync: this,
-    );
-    _animation = CurvedAnimation(parent: _controller, curve: Curves.bounceOut);
-    _controller.forward();
+  Future<void> signup() async {
+  final String nomorTelepon = nomorTeleponController.text.trim();
+  final String password = passwordController.text.trim();
+  final String nama = namaController.text.trim();
+
+  String? validationMessage = _validateInputs(nomorTelepon, password, nama);
+  if (validationMessage != null) {
+    _showSnackbar(validationMessage, isError: true);
+    return;
   }
 
-  Future<void> login() async {
-    final String nomorTelepon = nomorTeleponController.text;
-    final String password = passwordController.text;
+  final url = Uri.parse('https://presensi-smp1.esolusindo.com/ApiWali/Wali/login');
+  setState(() {
+    _isLoading = true;
+  });
 
-    if (nomorTelepon.isEmpty || password.isEmpty) {
-      _showErrorSnackbar('Nomor telepon dan password tidak boleh kosong');
-      return;
-    }
+  int maxRetries = 3;
+  int retryCount = 0;
+  bool success = false;
 
-    final url = Uri.parse('https://presensi-smp1.esolusindo.com/ApiWali/Wali/login');
-    setState(() {
-      _isLoading = true;
-    });
-
+  while (retryCount < maxRetries && !success) {
     try {
       final response = await http.post(
         url,
         body: {
           'nomor_telepon': nomorTelepon,
           'password': password,
+          'nama': nama,
         },
-      );
+      ).timeout(Duration(seconds: 30));
 
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
 
         if (data['status'] == 'success') {
-          // Navigate to DashboardPage with received data
-          Navigator.pushReplacement(
-            context,
-            MaterialPageRoute(
-              builder: (context) => DashboardPage(nama_wali: data['nama'], nis_anak: data['anak']),
-            ),
-          );
+          Navigator.pop(context);
+          _showSnackbar('Registrasi berhasil! Silakan login.', isError: false);
+          success = true;
         } else {
-          _showErrorSnackbar('Nomor telepon atau password salah');
+          _showSnackbar('Gagal mendaftar: ${data['message']}', isError: true);
+          success = true; // Exit loop
         }
       } else {
-        _showErrorSnackbar('Gagal menghubungi server. Coba lagi nanti.');
+        _showSnackbar('Gagal menghubungi server. Coba lagi nanti.', isError: true);
+        success = true; // Exit loop
       }
     } catch (e) {
-      _showErrorSnackbar('Terjadi kesalahan. Cek koneksi internet Anda.');
+      retryCount++;
+      if (retryCount < maxRetries) {
+        await Future.delayed(Duration(seconds: 2));
+      } else {
+        if (e is TimeoutException) {
+          _showSnackbar('Waktu habis saat menghubungi server. Coba lagi nanti.', isError: true);
+        } else {
+          _showSnackbar('Terjadi kesalahan: ${e.toString()}', isError: true);
+        }
+      }
     } finally {
       setState(() {
         _isLoading = false;
       });
     }
   }
+}
 
-  void _showErrorSnackbar(String message) {
+
+  String? _validateInputs(String nomorTelepon, String password, String nama) {
+    // Validate Nama
+    if (nama.isEmpty || !RegExp(r'^[a-zA-Z\s]+$').hasMatch(nama)) {
+      return 'Nama tidak valid (hanya huruf dan spasi)';
+    }
+
+    // Validate Nomor Telepon
+    if (nomorTelepon.isEmpty || !RegExp(r'^\d{10,15}$').hasMatch(nomorTelepon)) {
+      return 'Nomor telepon tidak valid (10-15 digit)';
+    }
+
+    // Validate Password
+    if (password.isEmpty || password.length < 6) {
+      return 'Password harus memiliki minimal 6 karakter';
+    }
+    if (!RegExp(r'^(?=.*?[A-Z])(?=.*?[a-z])(?=.*?[0-9])(?=.*?[#?!@$%^&*-]).{6,}$').hasMatch(password)) {
+      return 'Password harus mengandung huruf besar, huruf kecil, angka, dan simbol';
+    }
+
+    return null; // No validation errors
+  }
+
+  void _showSnackbar(String message, {bool isError = true}) {
     final snackBar = SnackBar(
       content: Row(
         children: [
-          Icon(Icons.error_outline, color: Colors.white),
+          Icon(
+            isError ? Icons.error_outline : Icons.check_circle,
+            color: Colors.white,
+          ),
           SizedBox(width: 10),
           Expanded(child: Text(message)),
         ],
       ),
-      backgroundColor: Colors.redAccent,
+      backgroundColor: isError ? Colors.redAccent : Colors.green,
       behavior: SnackBarBehavior.floating,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
       margin: EdgeInsets.all(10),
       duration: Duration(seconds: 3),
     );
     ScaffoldMessenger.of(context).showSnackBar(snackBar);
-  }
-
-  @override
-  void dispose() {
-    _controller.dispose();
-    nomorTeleponController.dispose();
-    passwordController.dispose(); // Dispose controllers
-    super.dispose();
   }
 
   @override
@@ -120,17 +141,23 @@ class _LoginPageState extends State<LoginPage> with SingleTickerProviderStateMix
             ),
           ),
           SafeArea(
-            child: SingleChildScrollView(
-              child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 24.0),
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 24.0),
+              child: SingleChildScrollView(
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: <Widget>[
+                  children: [
                     SizedBox(height: 60.0),
                     _buildLogo(),
                     SizedBox(height: 40.0),
                     _buildTitle(),
+                    SizedBox(height: 20.0),
+                    _buildTextField(
+                      controller: namaController,
+                      labelText: 'Nama',
+                      icon: Icons.person,
+                    ),
                     SizedBox(height: 20.0),
                     _buildTextField(
                       controller: nomorTeleponController,
@@ -145,9 +172,13 @@ class _LoginPageState extends State<LoginPage> with SingleTickerProviderStateMix
                       isPassword: true,
                     ),
                     SizedBox(height: 30.0),
-                    _isLoading ? _buildLoadingIndicator() : _buildLoginButton(),
-                    SizedBox(height: 20),
-                    _buildSignupButton(),
+                    Column(
+                      children: <Widget>[
+                        _isLoading ? _buildLoadingIndicator() : _buildSignupButton(),
+                        SizedBox(height: 20),
+                        _buildBackToLoginButton(),
+                      ],
+                    ),
                     SizedBox(height: 20.0),
                   ],
                 ),
@@ -160,18 +191,15 @@ class _LoginPageState extends State<LoginPage> with SingleTickerProviderStateMix
   }
 
   Widget _buildLogo() {
-    return ScaleTransition(
-      scale: _animation,
-      child: Image.asset(
-        'assets/logo.png', // Update the path for your logo image
-        height: 120,
-      ),
+    return Image.asset(
+      'assets/logo.png', // Ensure this path matches your assets
+      height: 120,
     );
   }
 
   Widget _buildTitle() {
     return Text(
-      'ABSENSI SMPN 1 JEMBER',
+      'DAFTAR AKUN',
       style: GoogleFonts.poppins(
         textStyle: TextStyle(
           fontSize: 26.0,
@@ -198,19 +226,6 @@ class _LoginPageState extends State<LoginPage> with SingleTickerProviderStateMix
       decoration: InputDecoration(
         labelText: labelText,
         prefixIcon: Icon(icon, color: Colors.black54),
-        suffixIcon: isPassword
-            ? IconButton(
-                icon: Icon(
-                  _isPasswordVisible ? Icons.visibility : Icons.visibility_off,
-                  color: Colors.black54,
-                ),
-                onPressed: () {
-                  setState(() {
-                    _isPasswordVisible = !_isPasswordVisible; // Toggle password visibility
-                  });
-                },
-              )
-            : null,
         labelStyle: GoogleFonts.raleway(
           textStyle: TextStyle(color: Colors.black87),
         ),
@@ -223,13 +238,26 @@ class _LoginPageState extends State<LoginPage> with SingleTickerProviderStateMix
         ),
         filled: true,
         fillColor: Colors.white.withOpacity(0.8),
+        suffixIcon: isPassword
+            ? IconButton(
+                icon: Icon(
+                  _isPasswordVisible ? Icons.visibility : Icons.visibility_off,
+                  color: Colors.black54,
+                ),
+                onPressed: () {
+                  setState(() {
+                    _isPasswordVisible = !_isPasswordVisible; // Toggle visibility
+                  });
+                },
+              )
+            : null,
       ),
     );
   }
 
-  Widget _buildLoginButton() {
+  Widget _buildSignupButton() {
     return ElevatedButton(
-      onPressed: login, // Call the login function
+      onPressed: signup,
       style: ElevatedButton.styleFrom(
         padding: EdgeInsets.symmetric(vertical: 16.0, horizontal: 24.0), backgroundColor: Colors.blueAccent,
         shape: RoundedRectangleBorder(
@@ -237,7 +265,7 @@ class _LoginPageState extends State<LoginPage> with SingleTickerProviderStateMix
         ),
       ),
       child: Text(
-        'Login',
+        'Daftar',
         style: GoogleFonts.poppins(
           textStyle: TextStyle(
             fontSize: 18.0,
@@ -250,16 +278,13 @@ class _LoginPageState extends State<LoginPage> with SingleTickerProviderStateMix
     );
   }
 
-  Widget _buildSignupButton() {
+  Widget _buildBackToLoginButton() {
     return TextButton(
       onPressed: () {
-        Navigator.push(
-          context,
-          MaterialPageRoute(builder: (context) => SignupPage()), // Navigate to signup page
-        );
+        Navigator.pop(context); // Go back to the login page
       },
       child: Text(
-        'Belum punya akun? Daftar di sini',
+        'Sudah punya akun? Kembali ke Login',
         style: GoogleFonts.raleway(
           textStyle: TextStyle(color: Colors.blueGrey[700], fontSize: 16),
         ),
