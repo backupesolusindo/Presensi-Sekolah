@@ -16,6 +16,7 @@ class MyApp extends StatelessWidget {
         visualDensity: VisualDensity.adaptivePlatformDensity,
       ),
       home: LoginPage(), // Set LoginPage as the initial page
+      // home: DashboardPage(nama_wali: 'Wali Murid', nis_anak: '12345678'),
     );
   }
 }

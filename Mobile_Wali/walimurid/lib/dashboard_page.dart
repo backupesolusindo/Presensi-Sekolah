@@ -1,55 +1,55 @@
 import 'package:flutter/material.dart';
+import 'dashboard_content.dart';
+import 'riwayat_page.dart';
+import 'account_page.dart';
 
-class DashboardPage extends StatelessWidget {
+class DashboardPage extends StatefulWidget {
   final String nama_wali;
-  final String nis_anak; // Sekarang menggunakan String
+  final String nis_anak;
 
   DashboardPage({required this.nama_wali, required this.nis_anak});
 
   @override
-  Widget build(BuildContext context) {
-    // Memeriksa apakah terdapat lebih dari satu NIS berdasarkan adanya koma
-    bool isMultipleAnak = nis_anak.contains(',');
+  _DashboardPageState createState() => _DashboardPageState();
+}
 
+class _DashboardPageState extends State<DashboardPage> {
+  int _selectedIndex = 0;
+
+  static List<Widget> _pages = <Widget>[
+    DashboardContent(), // Halaman Dashboard
+    RiwayatPage(),      // Halaman Riwayat
+    AccountPage(),      // Halaman Account
+  ];
+
+  void _onItemTapped(int index) {
+    setState(() {
+      _selectedIndex = index;
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: Text('Dashboard'),
-        backgroundColor: Colors.blue,
-      ),
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              'Selamat Datang, $nama_wali!',
-              style: TextStyle(
-                fontSize: 24.0,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-            SizedBox(height: 20.0),
-            Text(
-              isMultipleAnak 
-                ? 'NIS Anak-anak: $nis_anak'
-                : 'NIS Anak: $nis_anak',
-              style: TextStyle(
-                fontSize: 20.0,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-            SizedBox(height: 20.0),
-            ElevatedButton(
-              onPressed: () {
-                // Tambahkan aksi ketika tombol ditekan
-              },
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.blue,
-              ),
-              child: Text('Fitur Lainnya'),
-            ),
-          ],
-        ),
+      body: _pages[_selectedIndex], // Menampilkan halaman berdasarkan index
+      bottomNavigationBar: BottomNavigationBar(
+        items: const <BottomNavigationBarItem>[
+          BottomNavigationBarItem(
+            icon: Icon(Icons.dashboard),
+            label: 'Dashboard',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.history),
+            label: 'Riwayat',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.account_circle),
+            label: 'Account',
+          ),
+        ],
+        currentIndex: _selectedIndex,
+        selectedItemColor: Colors.blue,
+        onTap: _onItemTapped,
       ),
     );
   }
