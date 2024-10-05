@@ -14,7 +14,7 @@ class _LoginPageState extends State<LoginPage> with SingleTickerProviderStateMix
   final TextEditingController nomorTeleponController = TextEditingController();
   final TextEditingController passwordController = TextEditingController();
   bool _isLoading = false;
-  bool _isPasswordVisible = false; // New variable for password visibility
+  bool _isPasswordVisible = false;
   late AnimationController _controller;
   late Animation<double> _animation;
 
@@ -56,7 +56,6 @@ class _LoginPageState extends State<LoginPage> with SingleTickerProviderStateMix
         final data = json.decode(response.body);
 
         if (data['status'] == 'success') {
-          // Navigate to DashboardPage with received data
           Navigator.pushReplacement(
             context,
             MaterialPageRoute(
@@ -100,7 +99,7 @@ class _LoginPageState extends State<LoginPage> with SingleTickerProviderStateMix
   void dispose() {
     _controller.dispose();
     nomorTeleponController.dispose();
-    passwordController.dispose(); // Dispose controllers
+    passwordController.dispose();
     super.dispose();
   }
 
@@ -109,7 +108,6 @@ class _LoginPageState extends State<LoginPage> with SingleTickerProviderStateMix
     return Scaffold(
       body: Stack(
         children: [
-          // Background gradient
           Container(
             decoration: BoxDecoration(
               gradient: LinearGradient(
@@ -163,7 +161,7 @@ class _LoginPageState extends State<LoginPage> with SingleTickerProviderStateMix
     return ScaleTransition(
       scale: _animation,
       child: Image.asset(
-        'assets/logo.png', // Update the path for your logo image
+        'assets/logo.png',
         height: 120,
       ),
     );
@@ -191,7 +189,7 @@ class _LoginPageState extends State<LoginPage> with SingleTickerProviderStateMix
   }) {
     return TextField(
       controller: controller,
-      obscureText: isPassword && !_isPasswordVisible, // Toggle password visibility
+      obscureText: isPassword && !_isPasswordVisible,
       style: GoogleFonts.raleway(
         textStyle: TextStyle(color: Colors.black87),
       ),
@@ -206,7 +204,7 @@ class _LoginPageState extends State<LoginPage> with SingleTickerProviderStateMix
                 ),
                 onPressed: () {
                   setState(() {
-                    _isPasswordVisible = !_isPasswordVisible; // Toggle password visibility
+                    _isPasswordVisible = !_isPasswordVisible;
                   });
                 },
               )
@@ -229,9 +227,10 @@ class _LoginPageState extends State<LoginPage> with SingleTickerProviderStateMix
 
   Widget _buildLoginButton() {
     return ElevatedButton(
-      onPressed: login, // Call the login function
+      onPressed: login,
       style: ElevatedButton.styleFrom(
-        padding: EdgeInsets.symmetric(vertical: 16.0, horizontal: 24.0), backgroundColor: Colors.blueAccent,
+        padding: EdgeInsets.symmetric(vertical: 16.0, horizontal: 24.0), 
+        backgroundColor: Colors.blueAccent,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(12.0),
         ),
@@ -255,13 +254,13 @@ class _LoginPageState extends State<LoginPage> with SingleTickerProviderStateMix
       onPressed: () {
         Navigator.push(
           context,
-          MaterialPageRoute(builder: (context) => SignupPage()), // Navigate to signup page
+          MaterialPageRoute(builder: (context) => SignupPage()), // Update with your signup page
         );
       },
       child: Text(
         'Belum punya akun? Daftar di sini',
         style: GoogleFonts.raleway(
-          textStyle: TextStyle(color: Colors.blueGrey[700], fontSize: 16),
+          textStyle: TextStyle(color: Colors.blueAccent),
         ),
       ),
     );
@@ -269,9 +268,7 @@ class _LoginPageState extends State<LoginPage> with SingleTickerProviderStateMix
 
   Widget _buildLoadingIndicator() {
     return Center(
-      child: CircularProgressIndicator(
-        color: Colors.blueGrey,
-      ),
+      child: CircularProgressIndicator(),
     );
   }
 }
