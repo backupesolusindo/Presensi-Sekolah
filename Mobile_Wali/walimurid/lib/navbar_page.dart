@@ -7,7 +7,7 @@ import 'login_page.dart';
 class DashboardPage extends StatefulWidget {
   final String nama_wali;
   final String no_hp;
-  final List<dynamic> siswaData;  // Terima data siswa
+  final List<dynamic> siswaData; // Terima data siswa
 
   DashboardPage({required this.nama_wali, required this.no_hp, required this.siswaData});
 
@@ -19,9 +19,10 @@ class _DashboardPageState extends State<DashboardPage> {
   int _selectedIndex = 0;
 
   static List<Widget> _pages = <Widget>[
-    DashboardContent(), // Halaman Dashboard
-    RiwayatPage(),      // Halaman Riwayat
-    AccountPage(),      // Halaman Account
+    // Kirimkan nama_wali ke DashboardContent
+    DashboardContent(namaWali: '', siswaData: []), // Placeholder, akan diganti di build
+    RiwayatPage(), // Halaman Riwayat
+    AccountPage(), // Halaman Account
   ];
 
   void _onItemTapped(int index) {
@@ -40,11 +41,14 @@ class _DashboardPageState extends State<DashboardPage> {
 
   @override
   Widget build(BuildContext context) {
+    // Update halaman dashboard dengan nama_wali dan siswaData
+    _pages[0] = DashboardContent(namaWali: widget.nama_wali, siswaData: widget.siswaData);
+
     return Scaffold(
-      backgroundColor: Colors.grey.shade100, 
+      backgroundColor: Colors.grey.shade100,
       body: Stack(
         children: [
-          _pages[_selectedIndex], 
+          _pages[_selectedIndex],
           Positioned(
             top: 20,
             right: 20,
@@ -65,28 +69,6 @@ class _DashboardPageState extends State<DashboardPage> {
                   ),
                 ),
               ),
-            ),
-          ),
-          // Tampilkan data siswa di dashboard
-          Positioned(
-            top: 80,
-            left: 20,
-            right: 20,
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text('Selamat datang, ${widget.nama_wali}!', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
-                SizedBox(height: 10),
-                Text('No HP: ${widget.no_hp}', style: TextStyle(fontSize: 16)),
-                SizedBox(height: 20),
-                Text('Data Siswa:', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-                for (var siswa in widget.siswaData) ...[
-                  Text('Nama: ${siswa['nama_siswa']}'),
-                  Text('NIS: ${siswa['nis']}'),
-                  Text('Kelas: ${siswa['kelas']}'),
-                  SizedBox(height: 10),
-                ]
-              ],
             ),
           ),
         ],
