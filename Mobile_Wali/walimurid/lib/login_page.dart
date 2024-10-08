@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:http/http.dart' as http;
+import 'package:walimurid/Utilities/BaseUrl.dart';
 import 'dashboard_page.dart'; // Ganti dengan file dashboard kamu
 import 'signup_page.dart'; // Ganti dengan file signup kamu
 
@@ -39,8 +40,7 @@ class _LoginPageState extends State<LoginPage>
       return;
     }
 
-    final url =
-        Uri.parse('https://presensi-smp1.esolusindo.com/ApiWali/WaliAPI/login');
+    final url = Uri.parse(UrlApi +'/WaliAPI/login');
     setState(() {
       _isLoading = true;
     });
@@ -48,13 +48,10 @@ class _LoginPageState extends State<LoginPage>
     try {
       final response = await http.post(
         url,
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: jsonEncode({
+        body: {
           'no_hp': no_hp,
           'password': password,
-        }),
+        },
       );
 
       if (response.statusCode == 200) {
@@ -63,6 +60,7 @@ class _LoginPageState extends State<LoginPage>
         if (data['status'] == 'success') {
           List<dynamic> siswaData = data['siswa']; // Data siswa dari API
 
+          // Navigasi ke DashboardPage sambil mengirimkan data siswa
           Navigator.pushReplacement(
             context,
             MaterialPageRoute(
@@ -265,9 +263,7 @@ class _LoginPageState extends State<LoginPage>
       onPressed: () {
         Navigator.push(
           context,
-          MaterialPageRoute(
-              builder: (context) =>
-                  SignupPage()), // Ganti dengan halaman signup
+          MaterialPageRoute(builder: (context) => SignupPage()), // Ganti dengan halaman signup
         );
       },
       child: Text(

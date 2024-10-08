@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:google_fonts/google_fonts.dart';
+import 'package:walimurid/Utilities/BaseUrl.dart';
 
 class SignupPage extends StatefulWidget {
   @override
@@ -10,88 +11,87 @@ class SignupPage extends StatefulWidget {
 }
 
 class _SignupPageState extends State<SignupPage> {
-  final TextEditingController nomorTeleponController = TextEditingController();
+  final TextEditingController no_hpController = TextEditingController();
   final TextEditingController passwordController = TextEditingController();
   final TextEditingController namaController = TextEditingController();
-  final TextEditingController nisAnakController = TextEditingController(); // NIS Anak
 
   bool _isLoading = false;
   bool _isPasswordVisible = false;
 
-Future<bool> isPhoneNumberUsed(String nomorTelepon) async {
-  final url = Uri.parse('https://presensi-smp1.esolusindo.com/ApiWali/Wali/check_phone?nomor_telepon=$nomorTelepon');
-  
-  try {
-    final response = await http.get(url);
-    
-    if (response.statusCode == 200) {
-      final data = json.decode(response.body);
-      if (data['status'] == 'error') {
-        return true; // Nomor telepon sudah digunakan
+  Future<bool> isPhoneNumberUsed(String no_hp) async {
+    final url = Uri.parse(UrlApi + '/WaliAPI/check_phone?no_hp=$no_hp');
+
+    try {
+      final response = await http.get(url);
+
+      if (response.statusCode == 200) {
+        final data = json.decode(response.body);
+        if (data['status'] == 'error') {
+          return true; // Nomor telepon sudah digunakan
+        }
       }
+    } catch (e) {
+      print('Error checking phone number: $e');
     }
-  } catch (e) {
-    // Handle error if needed
-    print('Error checking phone number: $e');
-  }
-  
-  return false; // Nomor telepon belum digunakan
-}
 
-Future<void> signup() async {
-  final String nomorTelepon = nomorTeleponController.text.trim();
-  final String password = passwordController.text.trim();
-  final String namaWali = namaController.text.trim();
-  final String nisAnak = nisAnakController.text.trim();
-
-  if (namaWali.isEmpty || nisAnak.isEmpty) {
-    _showSnackbar('Nama dan NIS Anak tidak boleh kosong', isError: true);
-    return;
+    return false; // Nomor telepon belum digunakan
   }
 
-  // Cek apakah nomor telepon sudah digunakan
-  final isUsed = await isPhoneNumberUsed(nomorTelepon);
-  if (isUsed) {
-    _showSnackbar('Nomor telepon sudah digunakan', isError: true);
-    return;
-  }
+  Future<void> signup() async {
+    final String no_hp = no_hpController.text.trim();
+    final String password = passwordController.text.trim();
+    final String namaWali = namaController.text.trim();
 
-  final url = Uri.parse('https://presensi-smp1.esolusindo.com/ApiWali/Wali/create');
-  setState(() {
-    _isLoading = true;
-  });
-
-  try {
-    final response = await http.post(
-      url,
-      body: {
-        'nama_wali': namaWali,
-        'nomor_telepon': nomorTelepon,
-        'nis_anak': nisAnak,
-        'password': password,
-      },
-    ).timeout(Duration(seconds: 30));
-
-    if (response.statusCode == 200) {
-      final data = json.decode(response.body);
-
-      if (data['status'] == 'success') {
-        Navigator.pop(context);
-        _showSnackbar('Registrasi berhasil! Silakan login.', isError: false);
-      } else {
-        _showSnackbar('Gagal mendaftar: ${data['message']}', isError: true);
-      }
-    } else {
-      _showSnackbar('Gagal menghubungi server. Coba lagi nanti.', isError: true);
+    // Validasi input untuk memastikan tidak ada yang kosong
+    if (namaWali.isEmpty || no_hp.isEmpty || password.isEmpty) {
+      _showSnackbar('Nama, nomor telepon, dan password tidak boleh kosong',
+          isError: true);
+      return;
     }
-  } catch (e) {
-    _showSnackbar('Terjadi kesalahan: ${e.toString()}', isError: true);
-  } finally {
+
+    // Cek apakah nomor telepon sudah digunakan
+    final isUsed = await isPhoneNumberUsed(no_hp);
+    if (isUsed) {
+      _showSnackbar('Nomor telepon sudah digunakan', isError: true);
+      return;
+    }
+
+    final url = Uri.parse(UrlApi + '/WaliAPI/create');
     setState(() {
-      _isLoading = false;
+      _isLoading = true;
     });
+
+    try {
+      final response = await http.post(
+        url,
+        body: {
+          'nama_wali': namaWali,
+          'no_hp': no_hp,
+          'password': password,
+        },
+      ).timeout(Duration(seconds: 30));
+
+      if (response.statusCode == 200) {
+        final data = json.decode(response.body);
+
+        if (data['status'] == 'success') {
+          Navigator.pop(context);
+          _showSnackbar('Registrasi berhasil! Silakan login.', isError: false);
+        } else {
+          _showSnackbar('Gagal mendaftar: ${data['message']}', isError: true);
+        }
+      } else {
+        _showSnackbar('Gagal menghubungi server. Coba lagi nanti.',
+            isError: true);
+      }
+    } catch (e) {
+      _showSnackbar('Terjadi kesalahan: ${e.toString()}', isError: true);
+    } finally {
+      setState(() {
+        _isLoading = false;
+      });
+    }
   }
-}
 
   void _showSnackbar(String message, {bool isError = true}) {
     final snackBar = SnackBar(
@@ -148,15 +148,9 @@ Future<void> signup() async {
                     ),
                     SizedBox(height: 20.0),
                     _buildTextField(
-                      controller: nomorTeleponController,
+                      controller: no_hpController,
                       labelText: 'Nomor Telepon',
                       icon: Icons.phone,
-                    ),
-                    SizedBox(height: 20.0),
-                    _buildTextField(
-                      controller: nisAnakController,
-                      labelText: 'NIS Anak',
-                      icon: Icons.school,
                     ),
                     SizedBox(height: 20.0),
                     _buildTextField(
@@ -168,7 +162,9 @@ Future<void> signup() async {
                     SizedBox(height: 30.0),
                     Column(
                       children: <Widget>[
-                        _isLoading ? _buildLoadingIndicator() : _buildSignupButton(),
+                        _isLoading
+                            ? _buildLoadingIndicator()
+                            : _buildSignupButton(),
                         SizedBox(height: 20),
                         _buildBackToLoginButton(),
                       ],
