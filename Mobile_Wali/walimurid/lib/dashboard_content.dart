@@ -2,9 +2,10 @@ import 'package:flutter/material.dart';
 
 class DashboardContent extends StatelessWidget {
   final String namaWali; // Parameter yang diperlukan
+  final String no_hp;
   final List<dynamic> siswaData; // Data siswa yang diterima
 
-  DashboardContent({required this.namaWali, required this.siswaData}); // Konstruktor
+  DashboardContent({required this.namaWali, required this.siswaData, required this.no_hp}); // Konstruktor
 
   @override
   Widget build(BuildContext context) {
@@ -15,7 +16,7 @@ class DashboardContent extends StatelessWidget {
         children: [
           Text('Selamat datang, $namaWali!', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
           SizedBox(height: 10),
-          Text('No HP: ', style: TextStyle(fontSize: 16)), // No HP tidak disertakan di sini
+          Text('No HP: $no_hp ', style: TextStyle(fontSize: 16)), 
           SizedBox(height: 20),
           Text('Data Siswa:', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
           for (var siswa in siswaData) ...[

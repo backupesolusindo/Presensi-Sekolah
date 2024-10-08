@@ -2,77 +2,52 @@ import 'package:flutter/material.dart';
 import 'dashboard_content.dart';
 import 'riwayat_page.dart';
 import 'account_page.dart';
-import 'login_page.dart';
 
-class DashboardPage extends StatefulWidget {
-  final String nama_wali;
-  final String no_hp;
-  final List<dynamic> siswaData; // Terima data siswa
+class NavbarPage extends StatefulWidget {
+  final String nama_wali; // Menyimpan nama wali
+  final String no_hp; // Menyimpan nomor telepon wali
+  final List<dynamic> siswaData; // Menyimpan data siswa
 
-  DashboardPage({required this.nama_wali, required this.no_hp, required this.siswaData});
+  NavbarPage({required this.nama_wali, required this.no_hp, required this.siswaData});
 
   @override
-  _DashboardPageState createState() => _DashboardPageState();
+  _NavbarPageState createState() => _NavbarPageState();
 }
 
-class _DashboardPageState extends State<DashboardPage> {
-  int _selectedIndex = 0;
+class _NavbarPageState extends State<NavbarPage> {
+  int _selectedIndex = 0; // Menyimpan indeks halaman yang dipilih
 
+  // Daftar halaman yang akan ditampilkan
   static List<Widget> _pages = <Widget>[
-    // Kirimkan nama_wali ke DashboardContent
-    DashboardContent(namaWali: '', siswaData: []), // Placeholder, akan diganti di build
-    RiwayatPage(), // Halaman Riwayat
-    AccountPage(), // Halaman Account
+    DashboardContent(namaWali: '', siswaData: [], no_hp: ''), // Placeholder
+    RiwayatPage(siswaData: []), // Halaman Riwayat
+    AccountPage(namaWali: '', no_hp: ''), // Halaman Akun
   ];
 
   void _onItemTapped(int index) {
     setState(() {
-      _selectedIndex = index;
+      _selectedIndex = index; // Mengupdate halaman yang dipilih
     });
-  }
-
-  void _logout(BuildContext context) {
-    Navigator.pushAndRemoveUntil(
-      context,
-      MaterialPageRoute(builder: (context) => LoginPage()),
-      (Route<dynamic> route) => false,
-    );
   }
 
   @override
   Widget build(BuildContext context) {
-    // Update halaman dashboard dengan nama_wali dan siswaData
-    _pages[0] = DashboardContent(namaWali: widget.nama_wali, siswaData: widget.siswaData);
+    // Mengupdate halaman dashboard dengan nama wali dan data siswa
+    _pages[0] = DashboardContent(
+      namaWali: widget.nama_wali,
+      siswaData: widget.siswaData,
+      no_hp: widget.no_hp,
+    );
+
+    // Mengupdate halaman akun dengan nama wali dan nomor telepon
+    _pages[2] = AccountPage(
+      namaWali: widget.nama_wali,
+      no_hp: widget.no_hp,
+    );
 
     return Scaffold(
-      backgroundColor: Colors.grey.shade100,
-      body: Stack(
-        children: [
-          _pages[_selectedIndex],
-          Positioned(
-            top: 20,
-            right: 20,
-            child: Container(
-              decoration: BoxDecoration(
-                color: Colors.blueAccent,
-                borderRadius: BorderRadius.circular(8),
-              ),
-              child: TextButton(
-                onPressed: () {
-                  _logout(context);
-                },
-                child: Text(
-                  'Logout',
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-              ),
-            ),
-          ),
-        ],
-      ),
+      backgroundColor: Colors.grey.shade100, // Warna latar belakang
+      body: _pages[_selectedIndex], // Menampilkan halaman yang dipilih
       bottomNavigationBar: BottomNavigationBar(
         items: const <BottomNavigationBarItem>[
           BottomNavigationBarItem(
@@ -88,9 +63,9 @@ class _DashboardPageState extends State<DashboardPage> {
             label: 'Akun',
           ),
         ],
-        currentIndex: _selectedIndex,
-        selectedItemColor: Colors.blueAccent,
-        unselectedItemColor: Colors.grey,
+        currentIndex: _selectedIndex, // Indeks halaman yang aktif
+        selectedItemColor: Colors.blueAccent, // Warna untuk item yang dipilih
+        unselectedItemColor: Colors.grey, // Warna untuk item yang tidak dipilih
         showUnselectedLabels: true,
         selectedLabelStyle: TextStyle(
           fontWeight: FontWeight.bold,
@@ -99,7 +74,7 @@ class _DashboardPageState extends State<DashboardPage> {
         unselectedLabelStyle: TextStyle(
           fontSize: 12,
         ),
-        onTap: _onItemTapped,
+        onTap: _onItemTapped, // Callback ketika item dipilih
       ),
     );
   }

@@ -60,14 +60,14 @@ class _LoginPageState extends State<LoginPage>
         if (data['status'] == 'success') {
           List<dynamic> siswaData = data['siswa']; // Data siswa dari API
 
-          // Navigasi ke DashboardPage sambil mengirimkan data siswa
+          // Navigasi ke NavbarPage sambil mengirimkan data siswa
           Navigator.pushReplacement(
             context,
             MaterialPageRoute(
-              builder: (context) => DashboardPage(
+              builder: (context) => NavbarPage(
                 nama_wali: data['nama_wali'],
                 no_hp: data['no_hp'],
-                siswaData: siswaData, // Kirimkan data siswa ke DashboardPage
+                siswaData: siswaData, // Kirimkan data siswa ke NavbarPage
               ),
             ),
           );
