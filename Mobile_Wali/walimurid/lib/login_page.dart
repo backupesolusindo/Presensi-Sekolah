@@ -2,16 +2,17 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:http/http.dart' as http;
-import 'dashboard_page.dart'; // Replace with your dashboard file
-import 'signup_page.dart';    // Replace with your signup file
+import 'dashboard_page.dart'; // Ganti dengan file dashboard kamu
+import 'signup_page.dart'; // Ganti dengan file signup kamu
 
 class LoginPage extends StatefulWidget {
   @override
   _LoginPageState createState() => _LoginPageState();
 }
 
-class _LoginPageState extends State<LoginPage> with SingleTickerProviderStateMixin {
-  final TextEditingController nomorTeleponController = TextEditingController();
+class _LoginPageState extends State<LoginPage>
+    with SingleTickerProviderStateMixin {
+  final TextEditingController no_hpController = TextEditingController();
   final TextEditingController passwordController = TextEditingController();
   bool _isLoading = false;
   bool _isPasswordVisible = false;
@@ -30,15 +31,16 @@ class _LoginPageState extends State<LoginPage> with SingleTickerProviderStateMix
   }
 
   Future<void> login() async {
-    final String nomorTelepon = nomorTeleponController.text;
+    final String no_hp = no_hpController.text;
     final String password = passwordController.text;
 
-    if (nomorTelepon.isEmpty || password.isEmpty) {
+    if (no_hp.isEmpty || password.isEmpty) {
       _showErrorSnackbar('Nomor telepon dan password tidak boleh kosong');
       return;
     }
 
-    final url = Uri.parse('https://presensi-smp1.esolusindo.com/ApiWali/Wali/login');
+    final url =
+        Uri.parse('https://presensi-smp1.esolusindo.com/ApiWali/WaliAPI/login');
     setState(() {
       _isLoading = true;
     });
@@ -46,20 +48,29 @@ class _LoginPageState extends State<LoginPage> with SingleTickerProviderStateMix
     try {
       final response = await http.post(
         url,
-        body: {
-          'nomor_telepon': nomorTelepon,
-          'password': password,
+        headers: {
+          'Content-Type': 'application/json',
         },
+        body: jsonEncode({
+          'no_hp': no_hp,
+          'password': password,
+        }),
       );
 
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
 
         if (data['status'] == 'success') {
+          List<dynamic> siswaData = data['siswa']; // Data siswa dari API
+
           Navigator.pushReplacement(
             context,
             MaterialPageRoute(
-              builder: (context) => DashboardPage(nama_wali: data['nama'], nis_anak: data['anak']),
+              builder: (context) => DashboardPage(
+                nama_wali: data['nama_wali'],
+                no_hp: data['no_hp'],
+                siswaData: siswaData, // Kirimkan data siswa ke DashboardPage
+              ),
             ),
           );
         } else {
@@ -98,7 +109,7 @@ class _LoginPageState extends State<LoginPage> with SingleTickerProviderStateMix
   @override
   void dispose() {
     _controller.dispose();
-    nomorTeleponController.dispose();
+    no_hpController.dispose();
     passwordController.dispose();
     super.dispose();
   }
@@ -131,7 +142,7 @@ class _LoginPageState extends State<LoginPage> with SingleTickerProviderStateMix
                     _buildTitle(),
                     SizedBox(height: 20.0),
                     _buildTextField(
-                      controller: nomorTeleponController,
+                      controller: no_hpController,
                       labelText: 'Nomor Telepon',
                       icon: Icons.phone,
                     ),
@@ -229,7 +240,7 @@ class _LoginPageState extends State<LoginPage> with SingleTickerProviderStateMix
     return ElevatedButton(
       onPressed: login,
       style: ElevatedButton.styleFrom(
-        padding: EdgeInsets.symmetric(vertical: 16.0, horizontal: 24.0), 
+        padding: EdgeInsets.symmetric(vertical: 16.0, horizontal: 24.0),
         backgroundColor: Colors.blueAccent,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(12.0),
@@ -254,7 +265,9 @@ class _LoginPageState extends State<LoginPage> with SingleTickerProviderStateMix
       onPressed: () {
         Navigator.push(
           context,
-          MaterialPageRoute(builder: (context) => SignupPage()), // Update with your signup page
+          MaterialPageRoute(
+              builder: (context) =>
+                  SignupPage()), // Ganti dengan halaman signup
         );
       },
       child: Text(

@@ -2,7 +2,7 @@ import 'dart:async';
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
-import 'package:google_fonts/google_fonts.dart'; // Make sure to add google_fonts to your pubspec.yaml
+import 'package:google_fonts/google_fonts.dart';
 
 class SignupPage extends StatefulWidget {
   @override
@@ -13,96 +13,85 @@ class _SignupPageState extends State<SignupPage> {
   final TextEditingController nomorTeleponController = TextEditingController();
   final TextEditingController passwordController = TextEditingController();
   final TextEditingController namaController = TextEditingController();
-  bool _isLoading = false;
-  bool _isPasswordVisible = false; // New variable for password visibility
+  final TextEditingController nisAnakController = TextEditingController(); // NIS Anak
 
-  Future<void> signup() async {
+  bool _isLoading = false;
+  bool _isPasswordVisible = false;
+
+Future<bool> isPhoneNumberUsed(String nomorTelepon) async {
+  final url = Uri.parse('https://presensi-smp1.esolusindo.com/ApiWali/Wali/check_phone?nomor_telepon=$nomorTelepon');
+  
+  try {
+    final response = await http.get(url);
+    
+    if (response.statusCode == 200) {
+      final data = json.decode(response.body);
+      if (data['status'] == 'error') {
+        return true; // Nomor telepon sudah digunakan
+      }
+    }
+  } catch (e) {
+    // Handle error if needed
+    print('Error checking phone number: $e');
+  }
+  
+  return false; // Nomor telepon belum digunakan
+}
+
+Future<void> signup() async {
   final String nomorTelepon = nomorTeleponController.text.trim();
   final String password = passwordController.text.trim();
-  final String nama = namaController.text.trim();
+  final String namaWali = namaController.text.trim();
+  final String nisAnak = nisAnakController.text.trim();
 
-  String? validationMessage = _validateInputs(nomorTelepon, password, nama);
-  if (validationMessage != null) {
-    _showSnackbar(validationMessage, isError: true);
+  if (namaWali.isEmpty || nisAnak.isEmpty) {
+    _showSnackbar('Nama dan NIS Anak tidak boleh kosong', isError: true);
     return;
   }
 
-  final url = Uri.parse('https://presensi-smp1.esolusindo.com/ApiWali/Wali/login');
+  // Cek apakah nomor telepon sudah digunakan
+  final isUsed = await isPhoneNumberUsed(nomorTelepon);
+  if (isUsed) {
+    _showSnackbar('Nomor telepon sudah digunakan', isError: true);
+    return;
+  }
+
+  final url = Uri.parse('https://presensi-smp1.esolusindo.com/ApiWali/Wali/create');
   setState(() {
     _isLoading = true;
   });
 
-  int maxRetries = 3;
-  int retryCount = 0;
-  bool success = false;
+  try {
+    final response = await http.post(
+      url,
+      body: {
+        'nama_wali': namaWali,
+        'nomor_telepon': nomorTelepon,
+        'nis_anak': nisAnak,
+        'password': password,
+      },
+    ).timeout(Duration(seconds: 30));
 
-  while (retryCount < maxRetries && !success) {
-    try {
-      final response = await http.post(
-        url,
-        body: {
-          'nomor_telepon': nomorTelepon,
-          'password': password,
-          'nama': nama,
-        },
-      ).timeout(Duration(seconds: 30));
+    if (response.statusCode == 200) {
+      final data = json.decode(response.body);
 
-      if (response.statusCode == 200) {
-        final data = json.decode(response.body);
-
-        if (data['status'] == 'success') {
-          Navigator.pop(context);
-          _showSnackbar('Registrasi berhasil! Silakan login.', isError: false);
-          success = true;
-        } else {
-          _showSnackbar('Gagal mendaftar: ${data['message']}', isError: true);
-          success = true; // Exit loop
-        }
+      if (data['status'] == 'success') {
+        Navigator.pop(context);
+        _showSnackbar('Registrasi berhasil! Silakan login.', isError: false);
       } else {
-        _showSnackbar('Gagal menghubungi server. Coba lagi nanti.', isError: true);
-        success = true; // Exit loop
+        _showSnackbar('Gagal mendaftar: ${data['message']}', isError: true);
       }
-    } catch (e) {
-      retryCount++;
-      if (retryCount < maxRetries) {
-        await Future.delayed(Duration(seconds: 2));
-      } else {
-        if (e is TimeoutException) {
-          _showSnackbar('Waktu habis saat menghubungi server. Coba lagi nanti.', isError: true);
-        } else {
-          _showSnackbar('Terjadi kesalahan: ${e.toString()}', isError: true);
-        }
-      }
-    } finally {
-      setState(() {
-        _isLoading = false;
-      });
+    } else {
+      _showSnackbar('Gagal menghubungi server. Coba lagi nanti.', isError: true);
     }
+  } catch (e) {
+    _showSnackbar('Terjadi kesalahan: ${e.toString()}', isError: true);
+  } finally {
+    setState(() {
+      _isLoading = false;
+    });
   }
 }
-
-
-  String? _validateInputs(String nomorTelepon, String password, String nama) {
-    // Validate Nama
-    if (nama.isEmpty || !RegExp(r'^[a-zA-Z\s]+$').hasMatch(nama)) {
-      return 'Nama tidak valid (hanya huruf dan spasi)';
-    }
-
-    // Validate Nomor Telepon
-    if (nomorTelepon.isEmpty || !RegExp(r'^\d{10,15}$').hasMatch(nomorTelepon)) {
-      return 'Nomor telepon tidak valid (10-15 digit)';
-    }
-
-    // Validate Password
-    if (password.isEmpty || password.length < 6) {
-      return 'Password harus memiliki minimal 6 karakter';
-    }
-    if (!RegExp(r'^(?=.*?[A-Z])(?=.*?[a-z])(?=.*?[0-9])(?=.*?[#?!@$%^&*-]).{6,}$').hasMatch(password)) {
-      return 'Password harus mengandung huruf besar, huruf kecil, angka, dan simbol';
-    }
-
-    return null; // No validation errors
-  }
 
   void _showSnackbar(String message, {bool isError = true}) {
     final snackBar = SnackBar(
@@ -130,7 +119,6 @@ class _SignupPageState extends State<SignupPage> {
     return Scaffold(
       body: Stack(
         children: [
-          // Background gradient
           Container(
             decoration: BoxDecoration(
               gradient: LinearGradient(
@@ -155,7 +143,7 @@ class _SignupPageState extends State<SignupPage> {
                     SizedBox(height: 20.0),
                     _buildTextField(
                       controller: namaController,
-                      labelText: 'Nama',
+                      labelText: 'Nama Wali',
                       icon: Icons.person,
                     ),
                     SizedBox(height: 20.0),
@@ -163,6 +151,12 @@ class _SignupPageState extends State<SignupPage> {
                       controller: nomorTeleponController,
                       labelText: 'Nomor Telepon',
                       icon: Icons.phone,
+                    ),
+                    SizedBox(height: 20.0),
+                    _buildTextField(
+                      controller: nisAnakController,
+                      labelText: 'NIS Anak',
+                      icon: Icons.school,
                     ),
                     SizedBox(height: 20.0),
                     _buildTextField(
@@ -192,7 +186,7 @@ class _SignupPageState extends State<SignupPage> {
 
   Widget _buildLogo() {
     return Image.asset(
-      'assets/logo.png', // Ensure this path matches your assets
+      'assets/logo.png',
       height: 120,
     );
   }
@@ -219,7 +213,7 @@ class _SignupPageState extends State<SignupPage> {
   }) {
     return TextField(
       controller: controller,
-      obscureText: isPassword && !_isPasswordVisible, // Toggle password visibility
+      obscureText: isPassword && !_isPasswordVisible,
       style: GoogleFonts.raleway(
         textStyle: TextStyle(color: Colors.black87),
       ),
@@ -246,7 +240,7 @@ class _SignupPageState extends State<SignupPage> {
                 ),
                 onPressed: () {
                   setState(() {
-                    _isPasswordVisible = !_isPasswordVisible; // Toggle visibility
+                    _isPasswordVisible = !_isPasswordVisible;
                   });
                 },
               )
@@ -259,7 +253,8 @@ class _SignupPageState extends State<SignupPage> {
     return ElevatedButton(
       onPressed: signup,
       style: ElevatedButton.styleFrom(
-        padding: EdgeInsets.symmetric(vertical: 16.0, horizontal: 24.0), backgroundColor: Colors.blueAccent,
+        padding: EdgeInsets.symmetric(vertical: 16.0, horizontal: 24.0),
+        backgroundColor: Colors.blueAccent,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(12.0),
         ),
@@ -281,7 +276,7 @@ class _SignupPageState extends State<SignupPage> {
   Widget _buildBackToLoginButton() {
     return TextButton(
       onPressed: () {
-        Navigator.pop(context); // Go back to the login page
+        Navigator.pop(context);
       },
       child: Text(
         'Sudah punya akun? Kembali ke Login',

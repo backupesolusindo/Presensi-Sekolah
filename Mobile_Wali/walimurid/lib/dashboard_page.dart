@@ -2,13 +2,14 @@ import 'package:flutter/material.dart';
 import 'dashboard_content.dart';
 import 'riwayat_page.dart';
 import 'account_page.dart';
-import 'login_page.dart'; // Ganti dengan path file login kamu
+import 'login_page.dart';
 
 class DashboardPage extends StatefulWidget {
   final String nama_wali;
-  final String nis_anak;
+  final String no_hp;
+  final List<dynamic> siswaData;  // Terima data siswa
 
-  DashboardPage({required this.nama_wali, required this.nis_anak});
+  DashboardPage({required this.nama_wali, required this.no_hp, required this.siswaData});
 
   @override
   _DashboardPageState createState() => _DashboardPageState();
@@ -30,7 +31,6 @@ class _DashboardPageState extends State<DashboardPage> {
   }
 
   void _logout(BuildContext context) {
-    // Navigasi kembali ke halaman login
     Navigator.pushAndRemoveUntil(
       context,
       MaterialPageRoute(builder: (context) => LoginPage()),
@@ -41,10 +41,10 @@ class _DashboardPageState extends State<DashboardPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.grey.shade100, // Warna latar belakang
+      backgroundColor: Colors.grey.shade100, 
       body: Stack(
         children: [
-          _pages[_selectedIndex], // Menampilkan halaman berdasarkan index
+          _pages[_selectedIndex], 
           Positioned(
             top: 20,
             right: 20,
@@ -65,6 +65,28 @@ class _DashboardPageState extends State<DashboardPage> {
                   ),
                 ),
               ),
+            ),
+          ),
+          // Tampilkan data siswa di dashboard
+          Positioned(
+            top: 80,
+            left: 20,
+            right: 20,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text('Selamat datang, ${widget.nama_wali}!', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
+                SizedBox(height: 10),
+                Text('No HP: ${widget.no_hp}', style: TextStyle(fontSize: 16)),
+                SizedBox(height: 20),
+                Text('Data Siswa:', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+                for (var siswa in widget.siswaData) ...[
+                  Text('Nama: ${siswa['nama_siswa']}'),
+                  Text('NIS: ${siswa['nis']}'),
+                  Text('Kelas: ${siswa['kelas']}'),
+                  SizedBox(height: 10),
+                ]
+              ],
             ),
           ),
         ],
