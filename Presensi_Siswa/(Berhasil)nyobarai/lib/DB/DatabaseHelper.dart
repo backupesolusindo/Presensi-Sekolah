@@ -13,6 +13,8 @@ class DatabaseHelper {
   static final columnNIS = 'nis'; // Kolom baru
   static final columnKelas = 'kelas'; // Kolom baru
   static final columnEmbedding = 'embedding';
+  static final columnNoHpOrtu = 'no_hp_ortu'; // Kolom baru untuk no_hp_ortu
+
 
   // Singleton pattern
   DatabaseHelper._privateConstructor();
@@ -41,11 +43,13 @@ class DatabaseHelper {
       CREATE TABLE $table (
         $columnId INTEGER PRIMARY KEY,
         $columnName TEXT NOT NULL,
-        $columnNIS TEXT, -- Menambahkan kolom NIS
-        $columnKelas TEXT, -- Menambahkan kolom Kelas
+        $columnNIS TEXT, 
+        $columnKelas TEXT,
+        $columnNoHpOrtu TEXT,
         $columnEmbedding TEXT NOT NULL
       )
     ''');
+
   }
 
   // Menambahkan data baru
@@ -65,7 +69,7 @@ class DatabaseHelper {
     final db = await database;
     final List<Map<String, dynamic>> maps = await db.query(
       table,
-      columns: [columnId, columnName, columnNIS, columnKelas, columnEmbedding],
+      columns: [columnId, columnName, columnNIS, columnKelas, columnNoHpOrtu, columnEmbedding],
       where: '$columnId = ?',
       whereArgs: [id],
     );

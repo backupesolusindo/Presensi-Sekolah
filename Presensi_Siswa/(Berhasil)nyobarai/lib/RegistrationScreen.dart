@@ -27,6 +27,7 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
   TextEditingController nameController = TextEditingController();
   TextEditingController nisController = TextEditingController();
   TextEditingController kelasController = TextEditingController();
+  TextEditingController noHpOrtuController = TextEditingController();
 
   @override
   void initState() {
@@ -180,6 +181,14 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
                   hintText: "Kelas",
                 ),
               ),
+              TextField(
+                controller: noHpOrtuController,
+                decoration: const InputDecoration(
+                  fillColor: Colors.white,
+                  filled: true,
+                  hintText: "No HP Orang Tua",
+                ),
+              ),
               const SizedBox(height: 10),
               ElevatedButton(
                 onPressed: () async {
@@ -237,6 +246,8 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
                     nameController.clear();
                     nisController.clear();
                     kelasController.clear();
+                    noHpOrtuController.clear();
+
                   }
                 },
                 style: ElevatedButton.styleFrom(
