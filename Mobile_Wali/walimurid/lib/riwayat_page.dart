@@ -5,6 +5,10 @@ import 'package:http/http.dart' as http;
 import 'dart:convert';
 
 class RiwayatPage extends StatefulWidget {
+  final List<dynamic> siswaData; // Tambahkan parameter siswaData
+
+  const RiwayatPage({Key? key, required this.siswaData}) : super(key: key); // Konstruktor
+
   @override
   _RiwayatPageState createState() => _RiwayatPageState();
 }
@@ -12,24 +16,22 @@ class RiwayatPage extends StatefulWidget {
 class _RiwayatPageState extends State<RiwayatPage> {
   List<dynamic> _absensiList = [];
   bool _isLoading = true;
-  String? _nis;
 
   final DatabaseHelper _dbHelper = DatabaseHelper();
 
   @override
   void initState() {
     super.initState();
-    _getNisFromDatabase(); // Ambil NIS dari database saat pertama kali halaman dibuka
+    _getNisFromSiswaData(); // Ambil NIS dari siswaData saat halaman dibuka
   }
 
-  Future<void> _getNisFromDatabase() async {
-    // Ambil data siswa dari database SQLite
-    List<Map<String, dynamic>> students = await _dbHelper.getStudents();
-    if (students.isNotEmpty) {
-      setState(() {
-        _nis = students[0]['nis']; // Ambil NIS dari data siswa pertama
-      });
-      _fetchData(); // Panggil API setelah mendapatkan NIS
+  void _getNisFromSiswaData() {
+  WidgetsBinding.instance.addPostFrameCallback((_) {
+    if (widget.siswaData.isNotEmpty) {
+      List<String> nisList = widget.siswaData
+          .map((siswa) => siswa['nis'].toString()) // Ubah setiap NIS ke String
+          .toList(); // Ambil semua NIS
+      _fetchData(nisList); // Panggil API dengan semua NIS
     } else {
       setState(() {
         _isLoading = false;
@@ -38,40 +40,47 @@ class _RiwayatPageState extends State<RiwayatPage> {
         SnackBar(content: Text('Data NIS tidak ditemukan')),
       );
     }
-  }
+  });
+}
 
-  Future<void> _fetchData() async {
-    if (_nis == null) return; // Jika NIS kosong, jangan lakukan request
+  Future<void> _fetchData(List<String> nisList) async {
+    setState(() {
+      _isLoading = true; // Set loading true sebelum mulai fetch
+      _absensiList.clear(); // Kosongkan daftar absensi sebelumnya
+    });
 
-    String url = 'https://presensi-smp1.esolusindo.com/ApiGerbang/Gerbang/ambilAbsen'; // Ganti dengan URL yang benar
+    String url = 'https://presensi-smp1.esolusindo.com/ApiGerbang/Gerbang/ambilAbsen';
 
     try {
-      final response = await http.post(
-        Uri.parse(url),
-        body: {'nis': _nis},
-      );
+      // Iterasi melalui semua NIS dan panggil API untuk setiap NIS
+      for (String nis in nisList) {
+        final response = await http.post(
+          Uri.parse(url),
+          body: {'nis': nis},
+        );
 
-      if (response.statusCode == 200) {
-        final data = json.decode(response.body);
-        if (data['status'] == 'success') {
-          setState(() {
-            _absensiList = data['data'];
-            _isLoading = false;
-          });
+        if (response.statusCode == 200) {
+          final data = json.decode(response.body);
+          if (data['status'] == 'success') {
+            setState(() {
+              _absensiList.addAll(data['data']); // Tambahkan data ke _absensiList
+            });
+          } else {
+            throw Exception(data['message'] ?? 'Gagal mengambil data absensi');
+          }
         } else {
-          throw Exception(data['message'] ?? 'Gagal mengambil data absensi');
+          throw Exception('Failed to load data: ${response.statusCode}');
         }
-      } else {
-        throw Exception('Failed to load data: ${response.statusCode}');
       }
     } catch (e) {
       print(e); // Untuk debugging di konsol
-      setState(() {
-        _isLoading = false;
-      });
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Gagal mengambil data absensi: $e')),
       );
+    } finally {
+      setState(() {
+        _isLoading = false; // Set loading false setelah fetch selesai
+      });
     }
   }
 

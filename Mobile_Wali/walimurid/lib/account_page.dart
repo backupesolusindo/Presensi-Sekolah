@@ -1,16 +1,72 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:http/http.dart' as http;
+import 'dart:convert';
+import 'login_page.dart'; // Pastikan untuk mengimpor LoginPage
 
 class AccountPage extends StatefulWidget {
+  final String namaWali; // Menyimpan nama wali
+  final String no_hp; // Menyimpan nomor telepon wali
+
+  // Konstruktor yang menerima parameter
+  AccountPage({required this.namaWali, required this.no_hp});
+
   @override
   _AccountPageState createState() => _AccountPageState();
 }
 
 class _AccountPageState extends State<AccountPage> {
-  String _name = 'Nama Anda'; // Default name for display
-  String _email = 'email@anda.com'; // Default email for display
-  String _password = ''; // Password is not shown for security reasons
+  String? password;
   bool _obscurePassword = true;
+  final String apiUrl = 'https://presensi-smp1.esolusindo.com/Api/ApiWali/WaliAPI'; // URL API
+
+  @override
+  void initState() {
+    super.initState();
+    _loadData(); // Memuat data saat halaman dibuka
+  }
+
+  // Fungsi untuk mengambil data dari API
+  Future<void> _loadData() async {
+    final response = await http.get(Uri.parse('$apiUrl/getData')); // API untuk mengambil data user
+
+    if (response.statusCode == 200) {
+      final data = json.decode(response.body);
+      setState(() {
+        // Menetapkan nama wali dan nomor hp dari parameter
+        password = data['password'];
+      });
+    } else {
+      // Handle error
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Gagal memuat data!')),
+      );
+    }
+  }
+
+  // Fungsi untuk mengupdate data melalui API
+  Future<void> _saveData(String nama, String noHp, String password) async {
+    final response = await http.put(
+      Uri.parse('$apiUrl/edit'),
+      headers: {'Content-Type': 'application/json'},
+      body: json.encode({
+        'namaWali': nama,
+        'no_hp': noHp,
+        'password': password,
+      }),
+    );
+
+    if (response.statusCode == 200) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Perubahan disimpan!')),
+      );
+      _loadData(); // Memuat ulang data setelah update
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Gagal menyimpan perubahan!')),
+      );
+    }
+  }
 
   void _saveChanges(BuildContext context) {
     showDialog(
@@ -28,10 +84,8 @@ class _AccountPageState extends State<AccountPage> {
             ),
             TextButton(
               onPressed: () {
-                // Simpan perubahan di sini, misalnya ke database
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(content: Text('Perubahan disimpan!')),
-                );
+                // Simpan perubahan melalui API
+                _saveData(widget.namaWali, widget.no_hp, password!);
                 Navigator.of(context).pop(); // Tutup dialog
               },
               child: Text('Simpan', style: GoogleFonts.poppins(color: Colors.blueAccent)),
@@ -42,63 +96,100 @@ class _AccountPageState extends State<AccountPage> {
     );
   }
 
-  void _showEditDialog(BuildContext context) {
-    final _formKey = GlobalKey<FormState>();
-    final TextEditingController nameController = TextEditingController(text: _name);
-    final TextEditingController emailController = TextEditingController(text: _email);
-    final TextEditingController passwordController = TextEditingController(text: _password);
+void _showEditDialog(BuildContext context) {
+  final _formKey = GlobalKey<FormState>();
+  final TextEditingController nameController = TextEditingController(text: widget.namaWali);
+  final TextEditingController no_hpController = TextEditingController(text: widget.no_hp);
+  final TextEditingController passwordController = TextEditingController(text: password ?? ''); // Ini sudah benar
 
+  showDialog(
+    context: context,
+    builder: (context) {
+      return AlertDialog(
+        title: Text('Edit Informasi Akun', style: GoogleFonts.poppins(fontSize: 20)),
+        content: SingleChildScrollView(
+          child: Form(
+            key: _formKey,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                _buildTextField('Nama', nameController, (value) {}),
+                SizedBox(height: 16),
+                // _buildTextField('Nomor HP', no_hpController, (value) {}),
+                // SizedBox(height: 16),
+                _buildTextField('Password', passwordController, (value) {
+                  password = value; // Menyimpan password terbaru di state
+                },
+                obscureText: _obscurePassword,
+                suffixIcon: IconButton(
+                  icon: Icon(
+                    _obscurePassword ? Icons.visibility : Icons.visibility_off,
+                  ),
+                  onPressed: () {
+                    setState(() {
+                      _obscurePassword = !_obscurePassword; // Toggle visibility
+                    });
+                  },
+                )),
+              ],
+            ),
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () {
+              Navigator.of(context).pop(); // Tutup dialog
+            },
+            child: Text('Batal', style: GoogleFonts.poppins(color: Colors.red)),
+          ),
+          TextButton(
+            onPressed: () {
+              if (_formKey.currentState!.validate()) {
+                // Simpan data yang telah diedit
+                _saveData(nameController.text, no_hpController.text, passwordController.text); // Pastikan untuk menggunakan passwordController
+                _saveChanges(context); // Panggil fungsi simpan
+                Navigator.of(context).pop(); // Tutup dialog
+              }
+            },
+            child: Text('Simpan', style: GoogleFonts.poppins(color: Colors.blueAccent)),
+          ),
+        ],
+      );
+    },
+  );
+}
+
+  void _showLogoutDialog(BuildContext context) {
     showDialog(
       context: context,
       builder: (context) {
         return AlertDialog(
-          title: Text('Edit Informasi Akun', style: GoogleFonts.poppins(fontSize: 20)),
-          content: SingleChildScrollView(
-            child: Form(
-              key: _formKey,
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  _buildTextField('Nama', nameController, (value) => _name = value),
-                  SizedBox(height: 16),
-                  _buildTextField('Email', emailController, (value) => _email = value,
-                      keyboardType: TextInputType.emailAddress),
-                  SizedBox(height: 16),
-                  _buildTextField('Password', passwordController, (value) => _password = value,
-                      obscureText: _obscurePassword,
-                      suffixIcon: IconButton(
-                        icon: Icon(
-                          _obscurePassword ? Icons.visibility : Icons.visibility_off,
-                        ),
-                        onPressed: () {
-                          setState(() {
-                            _obscurePassword = !_obscurePassword;
-                          });
-                        },
-                      )),
-                ],
-              ),
-            ),
-          ),
+          title: Text('Konfirmasi Logout', style: GoogleFonts.poppins()),
+          content: Text('Apakah Anda ingin logout?', style: GoogleFonts.poppins()),
           actions: [
             TextButton(
               onPressed: () {
                 Navigator.of(context).pop(); // Tutup dialog
               },
-              child: Text('Batal', style: GoogleFonts.poppins(color: Colors.red)),
+              child: Text('Tidak', style: GoogleFonts.poppins(color: Colors.red)),
             ),
             TextButton(
               onPressed: () {
-                if (_formKey.currentState!.validate()) {
-                  _saveChanges(context); // Panggil fungsi simpan
-                  Navigator.of(context).pop(); // Tutup dialog
-                }
+                _logout(context); // Panggil fungsi logout
               },
-              child: Text('Simpan', style: GoogleFonts.poppins(color: Colors.blueAccent)),
+              child: Text('Ya', style: GoogleFonts.poppins(color: Colors.blueAccent)),
             ),
           ],
         );
       },
+    );
+  }
+
+  void _logout(BuildContext context) {
+    Navigator.pushAndRemoveUntil(
+      context,
+      MaterialPageRoute(builder: (context) => LoginPage()),
+      (Route<dynamic> route) => false,
     );
   }
 
@@ -107,6 +198,14 @@ class _AccountPageState extends State<AccountPage> {
     return Scaffold(
       appBar: AppBar(
         title: Text('Akun Saya', style: GoogleFonts.poppins(fontSize: 20)),
+        actions: [
+          IconButton(
+            icon: Icon(Icons.logout),
+            onPressed: () {
+              _showLogoutDialog(context); // Tampilkan dialog konfirmasi logout
+            },
+          ),
+        ],
       ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
@@ -117,8 +216,8 @@ class _AccountPageState extends State<AccountPage> {
               // Menampilkan informasi akun
               Text('Informasi Akun', style: GoogleFonts.poppins(fontSize: 24, fontWeight: FontWeight.bold)),
               SizedBox(height: 16),
-              _buildInfoTile('Nama', _name),
-              _buildInfoTile('Email', _email),
+              _buildInfoTile('Nama', widget.namaWali),
+              _buildInfoTile('Nomor HP', widget.no_hp),
               SizedBox(height: 24),
 
               // Tombol untuk edit informasi akun
