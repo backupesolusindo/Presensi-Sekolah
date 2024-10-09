@@ -34,29 +34,30 @@ class Recognizer {
     for (final row in allRows) {
       String name = row[DatabaseHelper.columnName];
       String nis = row[DatabaseHelper.columnNIS]; // Ambil NIS dari database
-      String kelas =
-          row[DatabaseHelper.columnKelas]; // Ambil Kelas dari database
+      String kelas = row[DatabaseHelper.columnKelas]; // Ambil Kelas dari database
+      String noHpOrtu = row[DatabaseHelper.columnNoHpOrtu]; // Ambil No HP Orang Tua dari database
       List<double> embd = row[DatabaseHelper.columnEmbedding]
           .split(',')
           .map((e) => double.parse(e))
           .toList()
           .cast<double>();
 
-      // Masukkan NIS dan Kelas ke dalam objek Recognition
-      Recognition recognition =
-          Recognition(name, Rect.zero, embd, 0, 0, nis, kelas);
+      // Masukkan NIS, Kelas, dan No HP Orang Tua ke dalam objek Recognition
+      Recognition recognition = Recognition(
+          name, Rect.zero, embd, 0, 0, nis, kelas, noHpOrtu);
       registered.putIfAbsent(name, () => recognition);
     }
   }
 
   // Mendaftarkan wajah ke database
   void registerFaceInDB(
-      String name, String nis, String kelas, List<double> embedding) async {
+      String name, String nis, String kelas, String noHpOrtu, List<double> embedding) async {
     // row to insert
     Map<String, dynamic> row = {
       DatabaseHelper.columnName: name,
       DatabaseHelper.columnNIS: nis, // Menambahkan NIS
       DatabaseHelper.columnKelas: kelas, // Menambahkan Kelas
+      DatabaseHelper.columnNoHpOrtu: noHpOrtu, // Menambahkan No HP Orang Tua
       DatabaseHelper.columnEmbedding: embedding.join(",")
     };
     final id = await dbHelper.insert(row);
@@ -90,8 +91,7 @@ class Recognizer {
         for (int w = 0; w < width; w++) {
           int index = c * height * width + h * width + w;
           reshapedArray[index] =
-              (float32Array[c * height * width + h * width + w] - 127.5) /
-                  127.5;
+              (float32Array[c * height * width + h * width + w] - 127.5) / 127.5;
         }
       }
     }
@@ -124,15 +124,15 @@ class Recognizer {
     if (pair.name == "Tidak dikenali") {
       confidence = 0.0; // Set confidence to 0% if not recognized
       return Recognition(pair.name, location, outputArray, pair.distance,
-          confidence, '', ''); // Jika tidak dikenali, NIS dan kelas kosong
+          confidence, '', '', ''); // Jika tidak dikenali, NIS, kelas, dan No HP Orang Tua kosong
     } else {
       // Hitung confidence sebagai kebalikan dari jarak, jika dikenali
       confidence = (1.0 - (pair.distance / threshold)) * 100;
 
-      // Ambil data NIS dan kelas dari registered map
+      // Ambil data NIS, kelas, dan No HP Orang Tua dari registered map
       Recognition registeredRecognition = registered[pair.name]!;
       return Recognition(pair.name, location, outputArray, pair.distance,
-          confidence, registeredRecognition.nis, registeredRecognition.kelas);
+          confidence, registeredRecognition.nis, registeredRecognition.kelas, registeredRecognition.noHpOrtu);
     }
   }
 

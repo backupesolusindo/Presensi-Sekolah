@@ -38,7 +38,9 @@ class _UserListScreenState extends State<UserListScreen> {
         'nama': user[DatabaseHelper.columnName],
         'nis': user[DatabaseHelper.columnNIS],
         'kelas': user[DatabaseHelper.columnKelas],
+        'no_hp_ortu': user[DatabaseHelper.columnNoHpOrtu], // Tambahkan No HP Orang Tua
         'model': user[DatabaseHelper.columnEmbedding],
+        
       });
     }
     String bodyraw = jsonEncode(<String, dynamic>{'data': arData});
@@ -46,7 +48,8 @@ class _UserListScreenState extends State<UserListScreen> {
 
     try {
       final response = await http.post(
-        Uri.parse('https://presensi-smp1.esolusindo.com/Api/ApiSiswa/Siswa/SyncSiswa'),
+        Uri.parse(
+            'https://presensi-smp1.esolusindo.com/Api/ApiSiswa/Siswa/SyncSiswa'),
         headers: <String, String>{
           'Content-Type': 'application/json; charset=UTF-8',
         },
@@ -55,7 +58,8 @@ class _UserListScreenState extends State<UserListScreen> {
 
       if (response.statusCode == 200) {
         final responseData = jsonDecode(response.body);
-        if (responseData['message']['status'] == 200) {
+        if (responseData['message']['status'] == 200 ||
+            responseData['message']['status'] == 201) {
           final List<dynamic> users = responseData['data'];
           await dbHelper.deleteAll();
 
@@ -64,7 +68,9 @@ class _UserListScreenState extends State<UserListScreen> {
               DatabaseHelper.columnName: user['nama'],
               DatabaseHelper.columnNIS: user['nis'],
               DatabaseHelper.columnKelas: user['kelas'],
+              DatabaseHelper.columnNoHpOrtu: user['no_hp_ortu'], // Menyimpan No HP Orang Tua
               DatabaseHelper.columnEmbedding: user['model'],
+              
             });
           }
 
@@ -73,7 +79,8 @@ class _UserListScreenState extends State<UserListScreen> {
           });
         }
       } else {
-        _showErrorDialog('Gagal mengupload data, status: ${response.statusCode}');
+        _showErrorDialog(
+            'Gagal mengupload data, status: ${response.statusCode}');
       }
     } catch (e) {
       _showErrorDialog('Koneksi gagal. Pastikan Anda terhubung ke internet.');
@@ -108,11 +115,14 @@ class _UserListScreenState extends State<UserListScreen> {
     List<Map<String, dynamic>> sortedUsers = List.from(users);
     sortedUsers.sort((a, b) {
       if (_sortCriteria == 'nama') {
-        return a[DatabaseHelper.columnName].compareTo(b[DatabaseHelper.columnName]);
+        return a[DatabaseHelper.columnName]
+            .compareTo(b[DatabaseHelper.columnName]);
       } else if (_sortCriteria == 'kelas') {
-        return a[DatabaseHelper.columnKelas].compareTo(b[DatabaseHelper.columnKelas]);
+        return a[DatabaseHelper.columnKelas]
+            .compareTo(b[DatabaseHelper.columnKelas]);
       } else {
-        return a[DatabaseHelper.columnNIS].compareTo(b[DatabaseHelper.columnNIS]);
+        return a[DatabaseHelper.columnNIS]
+            .compareTo(b[DatabaseHelper.columnNIS]);
       }
     });
     return sortedUsers;
@@ -155,7 +165,8 @@ class _UserListScreenState extends State<UserListScreen> {
           Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Text("Urutkan: ", style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+              Text("Urutkan: ",
+                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
               SizedBox(width: 10),
               DropdownButton<String>(
                 value: _sortCriteria,
@@ -197,7 +208,8 @@ class _UserListScreenState extends State<UserListScreen> {
                   itemBuilder: (context, index) {
                     final user = users[index];
                     return Card(
-                      margin: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+                      margin: const EdgeInsets.symmetric(
+                          horizontal: 16.0, vertical: 8.0),
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(16.0),
                       ),
@@ -209,7 +221,8 @@ class _UserListScreenState extends State<UserListScreen> {
                             CircleAvatar(
                               backgroundColor: Colors.blueAccent,
                               child: Text(
-                                user[DatabaseHelper.columnName][0].toUpperCase(),
+                                user[DatabaseHelper.columnName][0]
+                                    .toUpperCase(),
                                 style: TextStyle(color: Colors.white),
                               ),
                             ),
@@ -232,14 +245,26 @@ class _UserListScreenState extends State<UserListScreen> {
                                       style: DefaultTextStyle.of(context).style,
                                       children: [
                                         TextSpan(
-                                          text: 'NIS: ${user[DatabaseHelper.columnNIS]}, ',
-                                          style: TextStyle(color: Colors.black54),
+                                          text:
+                                              'NIS: ${user[DatabaseHelper.columnNIS]}, ',
+                                          style:
+                                              TextStyle(color: Colors.black54),
                                         ),
                                         TextSpan(
-                                          text: 'Kelas: ${user[DatabaseHelper.columnKelas]}',
+                                          text:
+                                              'Kelas: ${user[DatabaseHelper.columnKelas]}',
                                           style: TextStyle(
                                             fontWeight: FontWeight.bold,
                                             color: Colors.blueAccent,
+                                          ),
+                                        ),
+                                        TextSpan(
+                                          text:
+                                              '\nNo HP Ortu: ${user[DatabaseHelper.columnNoHpOrtu]}',
+                                          style: TextStyle(
+                                            fontWeight: FontWeight.bold,
+                                            color: const Color.fromARGB(
+                                                255, 255, 145, 0),
                                           ),
                                         ),
                                       ],
