@@ -1,4 +1,4 @@
-package com.kdtg.presensi
+package com.smpn1jember.presensiguru
 
 import io.flutter.embedding.android.FlutterActivity
 
