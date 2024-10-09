@@ -286,11 +286,16 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        title: Text('Sistem Absensi Wajah'),
+        title: Text(
+          'Registrasi Wajah',
+          style:
+              TextStyle(color: Colors.white), // Ubah warna teks menjadi putih
+        ),
+        centerTitle: true, // Membuat teks di tengah
         leading: IconButton(
           icon: Icon(Icons.arrow_back),
           onPressed: () {
-            Navigator.pop(context); // Navigate back to the previous screen
+            Navigator.pop(context); // Navigasi kembali ke layar sebelumnya
           },
         ),
         backgroundColor: Colors.blueAccent,

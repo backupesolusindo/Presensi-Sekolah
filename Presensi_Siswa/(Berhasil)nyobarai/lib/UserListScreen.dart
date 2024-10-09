@@ -38,9 +38,9 @@ class _UserListScreenState extends State<UserListScreen> {
         'nama': user[DatabaseHelper.columnName],
         'nis': user[DatabaseHelper.columnNIS],
         'kelas': user[DatabaseHelper.columnKelas],
-        'no_hp_ortu': user[DatabaseHelper.columnNoHpOrtu], // Tambahkan No HP Orang Tua
+        'no_hp_ortu':
+            user[DatabaseHelper.columnNoHpOrtu], // Tambahkan No HP Orang Tua
         'model': user[DatabaseHelper.columnEmbedding],
-        
       });
     }
     String bodyraw = jsonEncode(<String, dynamic>{'data': arData});
@@ -68,9 +68,9 @@ class _UserListScreenState extends State<UserListScreen> {
               DatabaseHelper.columnName: user['nama'],
               DatabaseHelper.columnNIS: user['nis'],
               DatabaseHelper.columnKelas: user['kelas'],
-              DatabaseHelper.columnNoHpOrtu: user['no_hp_ortu'], // Menyimpan No HP Orang Tua
+              DatabaseHelper.columnNoHpOrtu:
+                  user['no_hp_ortu'], // Menyimpan No HP Orang Tua
               DatabaseHelper.columnEmbedding: user['model'],
-              
             });
           }
 
@@ -133,7 +133,11 @@ class _UserListScreenState extends State<UserListScreen> {
     return Scaffold(
       backgroundColor: Colors.grey[100],
       appBar: AppBar(
-        title: Text('Daftar Murid', style: TextStyle(fontSize: 24)),
+        title: Text(
+          'Daftar Murid',
+          style:
+              TextStyle(color: Colors.white), // Ubah warna teks menjadi putih
+        ),
         automaticallyImplyLeading: false,
         shadowColor: Colors.black54,
         actions: [
@@ -142,7 +146,8 @@ class _UserListScreenState extends State<UserListScreen> {
                   padding: const EdgeInsets.all(12.0),
                   child: CircularProgressIndicator(
                     strokeWidth: 2,
-                    valueColor: AlwaysStoppedAnimation<Color>(Colors.black),
+                    valueColor: AlwaysStoppedAnimation<Color>(
+                        const Color.fromARGB(255, 247, 247, 247)),
                   ),
                 )
               : Padding(
@@ -151,7 +156,7 @@ class _UserListScreenState extends State<UserListScreen> {
                     onPressed: _syncDatabro,
                     child: Text('Sync Data'),
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.blue,
+                      backgroundColor: const Color.fromARGB(255, 255, 255, 255),
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(20),
                       ),
@@ -159,6 +164,13 @@ class _UserListScreenState extends State<UserListScreen> {
                   ),
                 ),
         ],
+        leading: IconButton(
+          icon: Icon(Icons.arrow_back),
+          onPressed: () {
+            Navigator.pop(context); // Navigasi kembali ke layar sebelumnya
+          },
+        ),
+        backgroundColor: Colors.blueAccent,
       ),
       body: Column(
         children: [

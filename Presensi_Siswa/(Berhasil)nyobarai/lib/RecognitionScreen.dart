@@ -262,11 +262,16 @@ class _RecognitionScreenState extends State<RecognitionScreen> {
     double screenWidth = MediaQuery.of(context).size.width;
     return Scaffold(
       appBar: AppBar(
-        title: Text('Sistem Absensi Wajah'),
+        title: Text(
+          'Absensi Wajah',
+          style:
+              TextStyle(color: Colors.white), // Ubah warna teks menjadi putih
+        ),
+        centerTitle: true, // Membuat teks di tengah
         leading: IconButton(
           icon: Icon(Icons.arrow_back),
           onPressed: () {
-            Navigator.pop(context); // Navigate back to the previous screen
+            Navigator.pop(context); // Navigasi kembali ke layar sebelumnya
           },
         ),
         backgroundColor: Colors.blueAccent,
@@ -323,6 +328,7 @@ class _RecognitionScreenState extends State<RecognitionScreen> {
                         height: screenWidth - 100,
                       ),
                     ),
+            //-------------------tombol absen----------------//
             Container(height: 20),
             if (image != null && !isLoading) // Only show button if not loading
               ElevatedButton(
@@ -338,6 +344,7 @@ class _RecognitionScreenState extends State<RecognitionScreen> {
                   elevation: 5,
                 ),
               ),
+            //-------------------tombol absen----------------//
             Container(
               margin: const EdgeInsets.only(bottom: 50),
               child: Row(

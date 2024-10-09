@@ -45,7 +45,7 @@ class DatabaseHelper {
         $columnName TEXT NOT NULL,
         $columnNIS TEXT, 
         $columnKelas TEXT, 
-        $columnNoHpOrtu TEXT, -- Kolom No HP Orang Tua
+        $columnNoHpOrtu TEXT,
         $columnEmbedding TEXT NOT NULL
       )
     ''');
