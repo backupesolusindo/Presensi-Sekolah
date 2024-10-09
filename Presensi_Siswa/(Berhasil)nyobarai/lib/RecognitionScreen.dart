@@ -269,7 +269,8 @@ class _RecognitionScreenState extends State<RecognitionScreen> {
         ),
         centerTitle: true, // Membuat teks di tengah
         leading: IconButton(
-          icon: Icon(Icons.arrow_back),
+          icon:
+              Image.asset('assets/logoSMP.png'), // Mengganti tombol dengan logo
           onPressed: () {
             Navigator.pop(context); // Navigasi kembali ke layar sebelumnya
           },
@@ -278,15 +279,14 @@ class _RecognitionScreenState extends State<RecognitionScreen> {
       ),
       backgroundColor: Colors.blue[50],
       resizeToAvoidBottomInset: false,
-      body: SingleChildScrollView(
-        // Wrap with SingleChildScrollView
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            if (isLoading)
-              Center(
+      body: Column(
+        children: [
+          if (isLoading)
+            Expanded(
+              child: Center(
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
+                  crossAxisAlignment: CrossAxisAlignment.center,
                   children: [
                     Lottie.asset(
                       'assets/loading1.json', // Ensure this path is correct
@@ -302,15 +302,19 @@ class _RecognitionScreenState extends State<RecognitionScreen> {
                   ],
                 ),
               ),
-            if (!isLoading) // Only show the image if not loading
-              image != null
-                  ? Container(
-                      margin: const EdgeInsets.only(
-                          top: 30, left: 30, right: 30, bottom: 0),
+            ),
+          if (!isLoading) // Only show the image if not loading
+            image != null
+                ? Center(
+                    child: Container(
+                      margin: const EdgeInsets.symmetric(
+                          horizontal: 20, vertical: 20),
                       child: FittedBox(
+                        fit: BoxFit
+                            .contain, // Make sure the image fits within the container
                         child: SizedBox(
-                          width: image.width.toDouble(),
-                          height: image.height.toDouble(),
+                          width: 2450,
+                          height: 2450,
                           child: CustomPaint(
                             painter: FacePainter(
                               facesList: recognitions,
@@ -319,121 +323,95 @@ class _RecognitionScreenState extends State<RecognitionScreen> {
                           ),
                         ),
                       ),
-                    )
-                  : Container(
-                      margin: const EdgeInsets.only(top: 100),
-                      child: Image.asset(
-                        "images/logo.png",
-                        width: screenWidth - 100,
-                        height: screenWidth - 100,
-                      ),
                     ),
-            //-------------------tombol absen----------------//
-            Container(height: 20),
-            if (image != null && !isLoading) // Only show button if not loading
-              ElevatedButton(
-                onPressed: verifyAttendance,
-                child: Text("Verifikasi"),
-                style: ElevatedButton.styleFrom(
-                  padding: EdgeInsets.symmetric(horizontal: 40, vertical: 20),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(30),
+                  )
+                : Container(
+                    margin: const EdgeInsets.only(top: 100),
+                    child: Image.asset(
+                      "images/logo.png",
+                      width: screenWidth - 100,
+                      height: screenWidth - 100,
+                    ),
                   ),
-                  backgroundColor: Colors.blueAccent,
-                  shadowColor: Colors.blue.withOpacity(0.5),
-                  elevation: 5,
-                ),
-              ),
-            //-------------------tombol absen----------------//
-            Container(
-              margin: const EdgeInsets.only(bottom: 50),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                children: [
-                  //   Card(
-                  //   shape: RoundedRectangleBorder(
-                  //     borderRadius: BorderRadius.circular(20),
-                  //   ),
-                  //   elevation: 5,
-                  //   child: InkWell(
-                  //     borderRadius: BorderRadius.circular(20),
-                  //     onTap: _imgFromGallery,
-                  //     child: Container(
-                  //       width: screenWidth / 2 - 50,
-                  //       height: screenWidth / 2 - 50,
-                  //       decoration: BoxDecoration(
-                  //         borderRadius: BorderRadius.circular(20),
-                  //         gradient: const LinearGradient(
-                  //           colors: [Colors.blue, Colors.blueAccent],
-                  //           begin: Alignment.topLeft,
-                  //           end: Alignment.bottomRight,
-                  //         ),
-                  //       ),
-                  //       child: Column(
-                  //         mainAxisAlignment: MainAxisAlignment.center,
-                  //         children: [
-                  //           Icon(Icons.image,
-                  //               color: Colors.white, size: screenWidth / 7),
-                  //           const SizedBox(height: 10),
-                  //           const Text(
-                  //             "Galeri",
-                  //             style: TextStyle(
-                  //               color: Colors.white,
-                  //               fontSize: 18,
-                  //               fontWeight: FontWeight.bold,
-                  //             ),
-                  //           ),
-                  //         ],
-                  //       ),
-                  //     ),
-                  //   ),
-                  // ),
-                  Card(
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(20),
-                    ),
-                    elevation: 5,
-                    child: InkWell(
-                      borderRadius: BorderRadius.circular(20),
-                      onTap: _imgFromCamera,
-                      child: Container(
-                        width: screenWidth / 2 - 50,
-                        height: screenWidth / 2 - 50,
-                        decoration: BoxDecoration(
-                          borderRadius: BorderRadius.circular(20),
-                          gradient: const LinearGradient(
-                            colors: [
-                              Colors.blue,
-                              Colors.lightBlueAccent
-                            ], // Updated to a blue gradient
-                            begin: Alignment.topLeft,
-                            end: Alignment.bottomRight,
+          const Spacer(), // Spacer pushes buttons down
+          //-------------------tombol absen----------------//
+          Container(
+            margin: const EdgeInsets.only(bottom: 30), // Adjust the margin here
+            child: Column(
+              children: [
+                Row(
+                  mainAxisAlignment:
+                      MainAxisAlignment.center, // Align buttons in center
+                  children: [
+                    Card(
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(20),
+                      ),
+                      elevation: 5,
+                      child: InkWell(
+                        borderRadius: BorderRadius.circular(20),
+                        onTap: _imgFromCamera,
+                        child: Container(
+                          width: screenWidth / 2 - 50,
+                          height: screenWidth / 2 - 50,
+                          decoration: BoxDecoration(
+                            borderRadius: BorderRadius.circular(20),
+                            gradient: const LinearGradient(
+                              colors: [
+                                Colors.blue,
+                                Colors.lightBlueAccent
+                              ], // Updated to a blue gradient
+                              begin: Alignment.topLeft,
+                              end: Alignment.bottomRight,
+                            ),
+                          ),
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Icon(Icons.camera_alt,
+                                  color: Colors.white, size: screenWidth / 6),
+                              const SizedBox(height: 10),
+                              const Text(
+                                "Kamera",
+                                style: TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 18,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                            ],
                           ),
                         ),
-                        child: Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Icon(Icons.camera_alt,
-                                color: Colors.white, size: screenWidth / 6),
-                            const SizedBox(height: 10),
-                            const Text(
-                              "Kamera",
-                              style: TextStyle(
-                                color: Colors.white,
-                                fontSize: 18,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                          ],
+                      ),
+                    ),
+                  ],
+                ),
+                SizedBox(height: 10), // Add a small gap between the buttons
+                if (image !=
+                    null) // Show "Verifikasi" only if the image is available
+                  Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 10.0),
+                    child: ElevatedButton(
+                      onPressed: verifyAttendance,
+                      child: Text("Verifikasi"),
+                      style: ElevatedButton.styleFrom(
+                        padding:
+                            EdgeInsets.symmetric(horizontal: 40, vertical: 20),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(30),
                         ),
+                        backgroundColor: Colors.blueAccent,
+                        foregroundColor:
+                            const Color.fromARGB(255, 255, 255, 255),
+                        shadowColor: Colors.blue.withOpacity(0.5),
+                        elevation: 5,
                       ),
                     ),
                   ),
-                ],
-              ),
+              ],
             ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }

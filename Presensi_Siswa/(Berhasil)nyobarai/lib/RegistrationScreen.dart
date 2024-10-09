@@ -293,7 +293,8 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
         ),
         centerTitle: true, // Membuat teks di tengah
         leading: IconButton(
-          icon: Icon(Icons.arrow_back),
+          icon:
+              Image.asset('assets/logoSMP.png'), // Mengganti tombol dengan logo
           onPressed: () {
             Navigator.pop(context); // Navigasi kembali ke layar sebelumnya
           },
