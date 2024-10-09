@@ -42,6 +42,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
   String jam = "", jam_pulang = "Belum Presensi Pulang", tgl_pulang = "";
   String KeteranganMulai = "", KeteranganSelesai = "";
   String jam_istirahat = "";
+  List<Map<String, dynamic>> ListJadwalMapel = [];
   var DataAbsen,
       DataPegawai,
       DataLokasi,
@@ -273,6 +274,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                   : _buildMenuWFH(screenHeight),
               _buildBox(screenHeight),
               _buildKegiatanTerkini(screenHeight),
+              _buildJadwalMapelHariIni(screenHeight),
             ],
           ),
         ]),
@@ -485,65 +487,154 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
   }
 
   SliverToBoxAdapter _buildKegiatanTerkini(double screenHeight) {
-    Size size = MediaQuery.of(context).size;
-    return SliverToBoxAdapter(
-        child: AnimatedOpacity(
-            opacity: ssFooter ? 1 : 0,
-            duration: const Duration(milliseconds: 500),
-            child: AnimatedContainer(
-              margin:
-                  ssFooter ? EdgeInsets.only(top: 0) : EdgeInsets.only(top: 30),
-              duration: const Duration(milliseconds: 500),
-              curve: Curves.fastEaseInToSlowEaseOut,
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: <Widget>[
-                  SizedBox(height: 10),
-                  Padding(
-                    padding: const EdgeInsets.only(top: 8, left: 20),
-                    child: Text(
-                      'Kegiatan Anda :',
-                      style: const TextStyle(
-                        fontSize: 15.0,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                  ),
-                  if (ListKegiatan.isEmpty)
-                    Container(
-                      padding: const EdgeInsets.all(20.0),
-                      margin: const EdgeInsets.symmetric(
-                          vertical: 5, horizontal: 15.0),
-                      width: size.width,
-                      decoration: BoxDecoration(
-                        color: CWarning,
-                        borderRadius: BorderRadius.circular(12.0),
-                        boxShadow: [
-                          BoxShadow(
-                            color: CWarning,
-                            blurRadius: 4,
-                            offset: Offset(4, 4), // Shadow position
-                          ),
-                        ],
-                      ),
-                      child: Text(
-                        "Anda Hari Ini Tidak Ada Kegiatan",
-                        style: const TextStyle(
-                            color: Colors.white70, fontWeight: FontWeight.w600),
-                      ),
-                    ),
-                  Container(
-                      width: double.infinity,
-                      height: size.height * 0.3,
-                      child: ListView.builder(
-                          itemCount: ListKegiatan.length,
-                          itemBuilder: (context, index) {
-                            return getCardKegiatan(ListKegiatan[index]);
-                          }))
-                ],
-              ),
-            )));
+  Size size = MediaQuery.of(context).size;
+
+  // If there are no activities, return an empty container, which results in no UI being shown
+  if (ListKegiatan.isEmpty) {
+    return SliverToBoxAdapter(child: SizedBox.shrink());
   }
+
+  // If there are activities, show the 'Kegiatan Anda' section and the list
+  return SliverToBoxAdapter(
+    child: AnimatedOpacity(
+      opacity: ssFooter ? 1 : 0,
+      duration: const Duration(milliseconds: 500),
+      child: AnimatedContainer(
+        margin: ssFooter ? EdgeInsets.only(top: 0) : EdgeInsets.only(top: 30),
+        duration: const Duration(milliseconds: 500),
+        curve: Curves.fastEaseInToSlowEaseOut,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: <Widget>[
+            SizedBox(height: 10),
+            Padding(
+              padding: const EdgeInsets.only(top: 8, left: 20),
+              child: Text(
+                'Kegiatan Anda :',
+                style: const TextStyle(
+                  fontSize: 15.0,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ),
+            Container(
+              width: double.infinity,
+              height: size.height * 0.3,
+              child: ListView.builder(
+                itemCount: ListKegiatan.length,
+                itemBuilder: (context, index) {
+                  return getCardKegiatan(ListKegiatan[index]);
+                },
+              ),
+            ),
+          ],
+        ),
+      ),
+    ),
+  );
+}
+
+SliverToBoxAdapter _buildJadwalMapelHariIni(double screenHeight) {
+  Size size = MediaQuery.of(context).size;
+
+  return SliverToBoxAdapter(
+    child: AnimatedOpacity(
+      opacity: ssFooter ? 1 : 0,
+      duration: const Duration(milliseconds: 500),
+      child: AnimatedContainer(
+        margin: ssFooter ? EdgeInsets.only(top: 0) : EdgeInsets.only(top: 30),
+        duration: const Duration(milliseconds: 500),
+        curve: Curves.fastEaseInToSlowEaseOut,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: <Widget>[
+            SizedBox(height: 10),
+            Padding(
+              padding: const EdgeInsets.only(top: 8, left: 20),
+              child: Text(
+                'Jadwal Mapel Hari Ini :',
+                style: const TextStyle(
+                  fontSize: 15.0,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ),
+            // If there are no schedules, show a message
+            if (ListJadwalMapel.isEmpty)
+              Container(
+                padding: const EdgeInsets.all(20.0),
+                margin: const EdgeInsets.symmetric(
+                    vertical: 5, horizontal: 15.0),
+                width: size.width,
+                decoration: BoxDecoration(
+                  color: CWarning,
+                  borderRadius: BorderRadius.circular(12.0),
+                  boxShadow: [
+                    BoxShadow(
+                      color: CWarning,
+                      blurRadius: 4,
+                      offset: Offset(4, 4), // Shadow position
+                    ),
+                  ],
+                ),
+                child: Text(
+                  "Tidak ada jadwal mapel untuk hari ini.",
+                  style: const TextStyle(
+                      color: Colors.white70, fontWeight: FontWeight.w600),
+                ),
+              )
+            else // Otherwise, show the list of schedules
+              Container(
+                width: double.infinity,
+                height: size.height * 0.3,
+                child: ListView.builder(
+                  itemCount: ListJadwalMapel.length,
+                  itemBuilder: (context, index) {
+                    return getCardJadwalMapel(ListJadwalMapel[index]);
+                  },
+                ),
+              ),
+          ],
+        ),
+      ),
+    ),
+  );
+}
+
+Widget getCardJadwalMapel(Map<String, dynamic> item) {
+  return Container(
+    margin: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 16.0),
+    padding: const EdgeInsets.all(16.0),
+    decoration: BoxDecoration(
+      color: Colors.white,
+      borderRadius: BorderRadius.circular(12.0),
+      boxShadow: [
+        BoxShadow(
+          color: Colors.black12,
+          blurRadius: 6.0,
+          offset: Offset(0, 4),
+        ),
+      ],
+    ),
+    child: Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: <Widget>[
+        Text(
+          item['nama_mapel'],
+          style: TextStyle(
+            fontSize: 18.0,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+        SizedBox(height: 8),
+        Text("Jam: ${item['jam_mulai']} - ${item['jam_selesai']}"),
+        Text("Ruang: ${item['ruang_kelas']}"),
+      ],
+    ),
+  );
+}
+
+
 
   Widget getCardKegiatan(item) {
     return Container(
@@ -1065,45 +1156,45 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                                     )
                                   ],
                                 )),
-                            TextButton(
-                                onPressed: () {
-                                  if (StatusDinasLuar == 1) {
-                                    if (DataIstirahat == null) {
-                                      Navigator.push(context,
-                                          MaterialPageRoute(builder: (context) {
-                                        return AbsenIstirahatScreen();
-                                      }));
-                                    } else {
-                                      _showMyDialog("Presensi Istirahat",
-                                          "Anda belum melakukan Presensi Selesai Istirahat. Silakan Presensi Selesai Istirahat terlebih dahulu !",
-                                          MaterialPageRoute(builder: (context) {
-                                        return AbsenSelesaiIstirahatScreen();
-                                      }));
-                                    }
-                                  } else {
-                                    _showNotif("Presensi Harian",
-                                        "Anda Dilarang Melakukan Presensi Karena Sedang Dinas Luar");
-                                  }
-                                },
-                                child: Column(
-                                  children: <Widget>[
-                                    Image.asset(
-                                      (StatusDinasLuar == 1)
-                                          ? "assets/icons/istirahat_keluar_warna.png"
-                                          : "assets/icons/istirahat_keluar_monokrom.png",
-                                      height: screenHeight * 0.07,
-                                    ),
-                                    SizedBox(height: screenHeight * 0.003),
-                                    Text(
-                                      "Istirahat\nKeluar",
-                                      style: const TextStyle(
-                                        fontSize: 11.0,
-                                        fontWeight: FontWeight.w500,
-                                      ),
-                                      textAlign: TextAlign.center,
-                                    )
-                                  ],
-                                )),
+                            // TextButton(
+                            //     onPressed: () {
+                            //       if (StatusDinasLuar == 1) {
+                            //         if (DataIstirahat == null) {
+                            //           Navigator.push(context,
+                            //               MaterialPageRoute(builder: (context) {
+                            //             return AbsenIstirahatScreen();
+                            //           }));
+                            //         } else {
+                            //           _showMyDialog("Presensi Istirahat",
+                            //               "Anda belum melakukan Presensi Selesai Istirahat. Silakan Presensi Selesai Istirahat terlebih dahulu !",
+                            //               MaterialPageRoute(builder: (context) {
+                            //             return AbsenSelesaiIstirahatScreen();
+                            //           }));
+                            //         }
+                            //       } else {
+                            //         _showNotif("Presensi Harian",
+                            //             "Anda Dilarang Melakukan Presensi Karena Sedang Dinas Luar");
+                            //       }
+                            //     },
+                            //     child: Column(
+                            //       children: <Widget>[
+                            //         Image.asset(
+                            //           (StatusDinasLuar == 1)
+                            //               ? "assets/icons/istirahat_keluar_warna.png"
+                            //               : "assets/icons/istirahat_keluar_monokrom.png",
+                            //           height: screenHeight * 0.07,
+                            //         ),
+                            //         SizedBox(height: screenHeight * 0.003),
+                            //         Text(
+                            //           "Istirahat\nKeluar",
+                            //           style: const TextStyle(
+                            //             fontSize: 11.0,
+                            //             fontWeight: FontWeight.w500,
+                            //           ),
+                            //           textAlign: TextAlign.center,
+                            //         )
+                            //       ],
+                            //     )),
                             TextButton(
                                 onPressed: () {
                                   if (StatusDinasLuar == 1) {
@@ -1155,45 +1246,45 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                                     )
                                   ],
                                 )),
-                            TextButton(
-                                onPressed: () {
-                                  if (StatusDinasLuar == 1) {
-                                    if (DataIstirahat == null) {
-                                      _showMyDialog("Presensi Istirahat",
-                                          "Anda belum melakukan Presensi Istirahat. Silakan Presensi Istirahat terlebih dahulu !",
-                                          MaterialPageRoute(builder: (context) {
-                                        return AbsenIstirahatScreen();
-                                      }));
-                                    } else {
-                                      Navigator.push(context,
-                                          MaterialPageRoute(builder: (context) {
-                                        return AbsenSelesaiIstirahatScreen();
-                                      }));
-                                    }
-                                  } else {
-                                    _showNotif("Presensi Harian",
-                                        "Anda Dilarang Melakukan Presensi Karena Sedang Dinas Luar");
-                                  }
-                                },
-                                child: Column(
-                                  children: <Widget>[
-                                    Image.asset(
-                                      (StatusDinasLuar == 1)
-                                          ? "assets/icons/istirahat_masuk_warna.png"
-                                          : "assets/icons/istirahat_masuk_monokrom.png",
-                                      height: screenHeight * 0.07,
-                                    ),
-                                    SizedBox(height: screenHeight * 0.003),
-                                    Text(
-                                      "Istirahat\nMasuk",
-                                      style: const TextStyle(
-                                        fontSize: 11.0,
-                                        fontWeight: FontWeight.w500,
-                                      ),
-                                      textAlign: TextAlign.center,
-                                    )
-                                  ],
-                                )),
+                            // TextButton(
+                            //     onPressed: () {
+                            //       if (StatusDinasLuar == 1) {
+                            //         if (DataIstirahat == null) {
+                            //           _showMyDialog("Presensi Istirahat",
+                            //               "Anda belum melakukan Presensi Istirahat. Silakan Presensi Istirahat terlebih dahulu !",
+                            //               MaterialPageRoute(builder: (context) {
+                            //             return AbsenIstirahatScreen();
+                            //           }));
+                            //         } else {
+                            //           Navigator.push(context,
+                            //               MaterialPageRoute(builder: (context) {
+                            //             return AbsenSelesaiIstirahatScreen();
+                            //           }));
+                            //         }
+                            //       } else {
+                            //         _showNotif("Presensi Harian",
+                            //             "Anda Dilarang Melakukan Presensi Karena Sedang Dinas Luar");
+                            //       }
+                            //     },
+                            //     child: Column(
+                            //       children: <Widget>[
+                            //         Image.asset(
+                            //           (StatusDinasLuar == 1)
+                            //               ? "assets/icons/istirahat_masuk_warna.png"
+                            //               : "assets/icons/istirahat_masuk_monokrom.png",
+                            //           height: screenHeight * 0.07,
+                            //         ),
+                            //         SizedBox(height: screenHeight * 0.003),
+                            //         Text(
+                            //           "Istirahat\nMasuk",
+                            //           style: const TextStyle(
+                            //             fontSize: 11.0,
+                            //             fontWeight: FontWeight.w500,
+                            //           ),
+                            //           textAlign: TextAlign.center,
+                            //         )
+                            //       ],
+                            //     )),
                           ]),
                     ),
                   ],
