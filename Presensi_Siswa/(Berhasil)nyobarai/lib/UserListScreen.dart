@@ -46,7 +46,7 @@ class _UserListScreenState extends State<UserListScreen> {
 
     try {
       final response = await http.post(
-        Uri.parse('https://presensi-smp1.esolusindo.com/ApiSiswa/Siswa/SyncSiswa'),
+        Uri.parse('https://presensi-smp1.esolusindo.com/Api/ApiSiswa/Siswa/SyncSiswa'),
         headers: <String, String>{
           'Content-Type': 'application/json; charset=UTF-8',
         },
