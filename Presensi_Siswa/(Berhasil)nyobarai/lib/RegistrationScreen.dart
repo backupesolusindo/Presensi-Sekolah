@@ -27,6 +27,7 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
   TextEditingController nameController = TextEditingController();
   TextEditingController nisController = TextEditingController();
   TextEditingController kelasController = TextEditingController();
+  TextEditingController noHpOrtuController = TextEditingController();
 
   @override
   void initState() {
@@ -180,11 +181,20 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
                   hintText: "Kelas",
                 ),
               ),
+              TextField(
+                controller: noHpOrtuController,
+                decoration: const InputDecoration(
+                  fillColor: Colors.white,
+                  filled: true,
+                  hintText: "No HP Orang Tua",
+                ),
+              ),
               const SizedBox(height: 10),
               ElevatedButton(
                 onPressed: () async {
                   if (nameController.text.isEmpty ||
                       nisController.text.isEmpty ||
+                      noHpOrtuController.text.isEmpty ||
                       kelasController.text.isEmpty) {
                     // Tampilkan Snackbar jika ada field yang kosong
                     ScaffoldMessenger.of(context).showSnackBar(
@@ -202,6 +212,7 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
                         nameController.text,
                         nisController.text,
                         kelasController.text,
+                        noHpOrtuController.text,
                         recognition.embeddings);
 
                     // Tampilkan dialog sukses dengan centang
@@ -237,6 +248,7 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
                     nameController.clear();
                     nisController.clear();
                     kelasController.clear();
+                    noHpOrtuController.clear();
                   }
                 },
                 style: ElevatedButton.styleFrom(
@@ -403,14 +415,13 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
                                         6), // Slightly larger icon
                                 const SizedBox(height: 10),
                                 const Text(
-                                  
-                              "Kamera",
-                              style: TextStyle(
-                                color: Colors.white,
-                                fontSize: 18,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
+                                  "Kamera",
+                                  style: TextStyle(
+                                    color: Colors.white,
+                                    fontSize: 18,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
                               ],
                             ),
                           ),

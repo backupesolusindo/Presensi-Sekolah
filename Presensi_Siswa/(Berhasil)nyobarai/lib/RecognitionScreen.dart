@@ -167,7 +167,7 @@ class _RecognitionScreenState extends State<RecognitionScreen> {
     }
 
     final url =
-        'https://presensi-smp1.esolusindo.com/ApiGerbang/Gerbang/uploadAbsen';
+        'https://presensi-smp1.esolusindo.com/Api/ApiGerbang/Gerbang/uploadAbsen';
 
     // Mengirim semua NIS yang terdeteksi
     for (String nis in detectedNISList) {

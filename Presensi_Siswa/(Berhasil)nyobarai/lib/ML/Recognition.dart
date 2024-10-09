@@ -7,8 +7,9 @@ class Recognition {
   final double distance;
   double confidence;
   final String nis; // Menambahkan NIS
-  final String kelas; // Menambahkan Kelas
+  final String kelas;
+  final String noHpOrtu; // Menambahkan No HP Orang Tua (ubah ke final)
 
-  Recognition(this.name, this.location, this.embeddings, this.distance, this.confidence, this.nis, this.kelas);
-
+  // Konstruktor yang menerima semua properti
+  Recognition(this.name, this.location, this.embeddings, this.distance, this.confidence, this.nis, this.kelas, this.noHpOrtu);
 }
