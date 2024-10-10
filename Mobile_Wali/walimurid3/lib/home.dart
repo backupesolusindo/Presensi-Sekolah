@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:walimurid3/recognition/RegistrationScreen.dart';
 import 'bottombar.dart'; // Import bottom bar kustom
 
 class HomePage extends StatefulWidget {
@@ -37,7 +38,8 @@ class _HomePageState extends State<HomePage> {
                     crossAxisAlignment: CrossAxisAlignment.center,
                     children: [
                       CircleAvatar(
-                        backgroundImage: AssetImage('assets/logopoltek.png'), // Ganti dengan logo Anda
+                        backgroundImage: AssetImage(
+                            'assets/logopoltek.png'), // Ganti dengan logo Anda
                       ),
                       SizedBox(width: 16),
                       Column(
@@ -79,15 +81,15 @@ class _HomePageState extends State<HomePage> {
                 mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                 children: [
                   _buildInfoCard(
-                    '15:15:38\nTue, 08 October 2024',
-                    Icons.access_time,
-                    Colors.white // Ubah warna latar belakang menjadi putih
-                  ),
+                      '15:15:38\nTue, 08 October 2024',
+                      Icons.access_time,
+                      Colors.white // Ubah warna latar belakang menjadi putih
+                      ),
                   _buildInfoCard(
-                    'Kampus POLIJE\nLokasi Anda',
-                    Icons.location_on,
-                    Colors.white // Ubah warna latar belakang menjadi putih
-                  ),
+                      'Kampus POLIJE\nLokasi Anda',
+                      Icons.location_on,
+                      Colors.white // Ubah warna latar belakang menjadi putih
+                      ),
                 ],
               ),
               SizedBox(height: 16),
@@ -112,6 +114,19 @@ class _HomePageState extends State<HomePage> {
                     _buildMenuIcon(Icons.logout, 'Presensi Pulang'),
                     SizedBox(width: 20),
                     _buildMenuIcon(Icons.history, 'Istirahat Masuk'),
+                    SizedBox(width: 20),
+                    _buildMenuIcon(
+                      Icons.face, // Ganti ikon di sini
+                      'Daftarkan Wajah Anak',
+                      onTap: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => RegistrationScreen(),
+                          ),
+                        );
+                      },
+                    ),
                   ],
                 ),
               ),
@@ -127,10 +142,12 @@ class _HomePageState extends State<HomePage> {
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   // Menambahkan shadow pada kartu jam presensi datang
-                  _buildPresenceInfo('Jam Presensi Datang', '10:22:49\n08/10/2024', Colors.blue, 200),
+                  _buildPresenceInfo('Jam Presensi Datang',
+                      '10:22:49\n08/10/2024', Colors.blue, 200),
                   SizedBox(width: 16), // Tambahkan jarak di antara kedua kartu
                   // Menambahkan shadow pada kartu jam presensi pulang
-                  _buildPresenceInfo('Jam Presensi Pulang', 'Belum Presensi \nPulang', Colors.teal, 200),
+                  _buildPresenceInfo('Jam Presensi Pulang',
+                      'Belum Presensi \nPulang', Colors.teal, 200),
                 ],
               ),
               SizedBox(height: 16),
@@ -182,25 +199,29 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
-  Widget _buildMenuIcon(IconData icon, String label) {
-    return Container(
-      width: 80, // Set width for scrollable menu items
-      child: Column(
-        children: [
-          CircleAvatar(
-            radius: 30,
-            backgroundColor: Colors.blueAccent,
-            child: Icon(icon, color: Colors.white),
-          ),
-          SizedBox(height: 8),
-          Text(label, textAlign: TextAlign.center),
-        ],
+  Widget _buildMenuIcon(IconData icon, String label, {Function()? onTap}) {
+    return GestureDetector(
+      onTap: onTap, // Tambahkan fungsi onTap di sini
+      child: Container(
+        width: 80, // Set width for scrollable menu items
+        child: Column(
+          children: [
+            CircleAvatar(
+              radius: 30,
+              backgroundColor: Colors.blueAccent,
+              child: Icon(icon, color: Colors.white),
+            ),
+            SizedBox(height: 8),
+            Text(label, textAlign: TextAlign.center),
+          ],
+        ),
       ),
     );
   }
 
   // Modifikasi untuk menambahkan parameter lebar
-  Widget _buildPresenceInfo(String title, String time, Color color, double width) {
+  Widget _buildPresenceInfo(
+      String title, String time, Color color, double width) {
     return Card(
       elevation: 5, // Tambahkan elevasi untuk shadow
       shape: RoundedRectangleBorder(
