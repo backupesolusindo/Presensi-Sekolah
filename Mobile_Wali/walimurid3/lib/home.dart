@@ -100,34 +100,32 @@ class _HomePageState extends State<HomePage> {
                 style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
               ),
               SizedBox(height: 8),
-              // Horizontal Scroll for Menu Presensi
-              SingleChildScrollView(
-                scrollDirection: Axis.horizontal,
-                child: Row(
-                  children: [
-                    _buildMenuIcon(Icons.menu, 'Semua Menu'),
-                    SizedBox(width: 20),
-                    _buildMenuIcon(Icons.login, 'Presensi Masuk'),
-                    SizedBox(width: 20),
-                    _buildMenuIcon(Icons.coffee, 'Istirahat Keluar'),
-                    SizedBox(width: 20),
-                    _buildMenuIcon(Icons.logout, 'Presensi Pulang'),
-                    SizedBox(width: 20),
-                    _buildMenuIcon(Icons.history, 'Istirahat Masuk'),
-                    SizedBox(width: 20),
-                    _buildMenuIcon(
-                      Icons.face, // Ganti ikon di sini
-                      'Daftarkan Wajah Anak',
-                      onTap: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) => RegistrationScreen(),
-                          ),
-                        );
-                      },
+              // Card dengan scroll horizontal untuk Menu Presensi
+              Card(
+                elevation: 5,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(15),
+                ),
+                child: Padding(
+                  padding: const EdgeInsets.all(16.0),
+                  child: SingleChildScrollView(
+                    scrollDirection: Axis.horizontal,
+                    child: Row(
+                      children: [
+                        _buildMenuIcon(Icons.menu, 'Semua Menu'),
+                        SizedBox(width: 20),
+                        _buildMenuIcon(Icons.login, 'Presensi Masuk'),
+                        SizedBox(width: 20),
+                        _buildMenuIcon(Icons.coffee, 'Istirahat Keluar'),
+                        SizedBox(width: 20),
+                        _buildMenuIcon(Icons.logout, 'Presensi Pulang'),
+                        SizedBox(width: 20),
+                        _buildMenuIcon(Icons.history, 'Istirahat Masuk'),
+                        SizedBox(width: 20),
+                        _buildMenuIcon(Icons.face, 'Daftarkan Wajah Anak'),
+                      ],
                     ),
-                  ],
+                  ),
                 ),
               ),
               SizedBox(height: 16),
@@ -138,18 +136,9 @@ class _HomePageState extends State<HomePage> {
                 style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
               ),
               SizedBox(height: 8),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  // Menambahkan shadow pada kartu jam presensi datang
-                  _buildPresenceInfo('Jam Presensi Datang',
-                      '10:22:49\n08/10/2024', Colors.blue, 200),
-                  SizedBox(width: 16), // Tambahkan jarak di antara kedua kartu
-                  // Menambahkan shadow pada kartu jam presensi pulang
-                  _buildPresenceInfo('Jam Presensi Pulang',
-                      'Belum Presensi \nPulang', Colors.teal, 200),
-                ],
-              ),
+              _buildPresenceStatusCard(
+                  'Anda Hari ini Belum Melakukan Presensi'), // Presensi Anda
+
               SizedBox(height: 16),
 
               // Bagian Kegiatan Anda
@@ -158,16 +147,8 @@ class _HomePageState extends State<HomePage> {
                 style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
               ),
               SizedBox(height: 8),
-              Card(
-                color: Colors.orange,
-                child: Padding(
-                  padding: const EdgeInsets.all(16.0),
-                  child: Text(
-                    'Anda Hari Ini Tidak Ada Kegiatan',
-                    style: TextStyle(color: Colors.white),
-                  ),
-                ),
-              ),
+              _buildPresenceStatusCard(
+                  'Anda Hari Ini Tidak Ada Kegiatan'), // Kegiatan Anda
             ],
           ),
         ),
@@ -179,6 +160,7 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
+  // Widget untuk info card dengan icon
   Widget _buildInfoCard(String text, IconData icon, Color cardColor) {
     return Card(
       elevation: 5, // Tambahkan elevasi untuk memberikan efek bayangan
@@ -199,56 +181,44 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
+  // Widget untuk ikon menu dengan teks di dalam Card
   Widget _buildMenuIcon(IconData icon, String label, {Function()? onTap}) {
     return GestureDetector(
       onTap: onTap, // Tambahkan fungsi onTap di sini
-      child: Container(
-        width: 80, // Set width for scrollable menu items
-        child: Column(
-          children: [
-            CircleAvatar(
-              radius: 30,
-              backgroundColor: Colors.blueAccent,
-              child: Icon(icon, color: Colors.white),
-            ),
-            SizedBox(height: 8),
-            Text(label, textAlign: TextAlign.center),
-          ],
-        ),
+      child: Column(
+        children: [
+          CircleAvatar(
+            radius: 30,
+            backgroundColor: Colors.blueAccent,
+            child: Icon(icon, color: Colors.white),
+          ),
+          SizedBox(height: 8),
+          Text(label, textAlign: TextAlign.center),
+        ],
       ),
     );
   }
 
-  // Modifikasi untuk menambahkan parameter lebar
-  Widget _buildPresenceInfo(
-      String title, String time, Color color, double width) {
+  // Widget untuk status presensi (Presensi Anda dan Kegiatan Anda)
+  Widget _buildPresenceStatusCard(String text) {
     return Card(
-      elevation: 5, // Tambahkan elevasi untuk shadow
       shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(10),
+        borderRadius: BorderRadius.circular(20), // Membuat sudut melengkung
       ),
-      child: Container(
-        width: width, // Menentukan lebar kartu
-        padding: EdgeInsets.all(16),
-        decoration: BoxDecoration(
-          color: color,
-          borderRadius: BorderRadius.circular(10),
-        ),
-        child: Column(
+      elevation: 5, // Menambahkan bayangan
+      color: Colors.lightBlue, // Warna latar belakang sesuai dengan gambar
+      child: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.start,
           children: [
             Text(
-              title,
-              style: TextStyle(color: Colors.white, fontSize: 14),
-            ),
-            SizedBox(height: 8),
-            Text(
-              time,
+              text,
               style: TextStyle(
-                color: Colors.white,
-                fontWeight: FontWeight.bold,
-                fontSize: 14,
+                color: Colors.white, // Warna teks putih
+                fontSize: 16, // Ukuran teks yang cukup besar
+                fontWeight: FontWeight.bold, // Teks dibuat tebal
               ),
-              textAlign: TextAlign.center,
             ),
           ],
         ),
