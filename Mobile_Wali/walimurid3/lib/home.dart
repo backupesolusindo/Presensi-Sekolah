@@ -37,8 +37,6 @@ class _HomePageState extends State<HomePage> {
                     crossAxisAlignment: CrossAxisAlignment.center,
                     children: [
                       CircleAvatar(
-                        // backgroundColor: Colors.blueAccent,
-                        // radius: 30,
                         backgroundImage: AssetImage('assets/logopoltek.png'), // Ganti dengan logo Anda
                       ),
                       SizedBox(width: 16),
@@ -80,8 +78,16 @@ class _HomePageState extends State<HomePage> {
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                 children: [
-                  _buildInfoCard('15:15:38\nTue, 08 October 2024', Icons.access_time),
-                  _buildInfoCard('Kampus POLIJE\nLokasi Anda', Icons.location_on),
+                  _buildInfoCard(
+                    '15:15:38\nTue, 08 October 2024',
+                    Icons.access_time,
+                    Colors.white // Ubah warna latar belakang menjadi putih
+                  ),
+                  _buildInfoCard(
+                    'Kampus POLIJE\nLokasi Anda',
+                    Icons.location_on,
+                    Colors.white // Ubah warna latar belakang menjadi putih
+                  ),
                 ],
               ),
               SizedBox(height: 16),
@@ -120,10 +126,11 @@ class _HomePageState extends State<HomePage> {
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  // Menggunakan ukuran tetap untuk kedua kartu
-                  _buildPresenceInfo('Jam Presensi Datang', '10:22:49\n08/10/2024', Colors.blue, 200), // Ganti 150 dengan lebar yang diinginkan
+                  // Menambahkan shadow pada kartu jam presensi datang
+                  _buildPresenceInfo('Jam Presensi Datang', '10:22:49\n08/10/2024', Colors.blue, 200),
                   SizedBox(width: 16), // Tambahkan jarak di antara kedua kartu
-                  _buildPresenceInfo('Jam Presensi Pulang', '\nBelum Presensi Pulang', Colors.teal, 200), // Ganti 150 dengan lebar yang diinginkan
+                  // Menambahkan shadow pada kartu jam presensi pulang
+                  _buildPresenceInfo('Jam Presensi Pulang', 'Belum Presensi \nPulang', Colors.teal, 200),
                 ],
               ),
               SizedBox(height: 16),
@@ -155,8 +162,10 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
-  Widget _buildInfoCard(String text, IconData icon) {
+  Widget _buildInfoCard(String text, IconData icon, Color cardColor) {
     return Card(
+      elevation: 5, // Tambahkan elevasi untuk memberikan efek bayangan
+      color: cardColor, // Mengatur warna latar belakang
       child: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Column(
@@ -192,30 +201,36 @@ class _HomePageState extends State<HomePage> {
 
   // Modifikasi untuk menambahkan parameter lebar
   Widget _buildPresenceInfo(String title, String time, Color color, double width) {
-    return Container(
-      width: width, // Menentukan lebar kartu
-      padding: EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: color,
+    return Card(
+      elevation: 5, // Tambahkan elevasi untuk shadow
+      shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(10),
       ),
-      child: Column(
-        children: [
-          Text(
-            title,
-            style: TextStyle(color: Colors.white, fontSize: 14),
-          ),
-          SizedBox(height: 8),
-          Text(
-            time,
-            style: TextStyle(
-              color: Colors.white,
-              fontWeight: FontWeight.bold,
-              fontSize: 14,
+      child: Container(
+        width: width, // Menentukan lebar kartu
+        padding: EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: color,
+          borderRadius: BorderRadius.circular(10),
+        ),
+        child: Column(
+          children: [
+            Text(
+              title,
+              style: TextStyle(color: Colors.white, fontSize: 14),
             ),
-            textAlign: TextAlign.center,
-          ),
-        ],
+            SizedBox(height: 8),
+            Text(
+              time,
+              style: TextStyle(
+                color: Colors.white,
+                fontWeight: FontWeight.bold,
+                fontSize: 14,
+              ),
+              textAlign: TextAlign.center,
+            ),
+          ],
+        ),
       ),
     );
   }
