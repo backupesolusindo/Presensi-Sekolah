@@ -20,13 +20,13 @@ class Body extends StatelessWidget {
               style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
             ),
             Text(
-              "Klinik Dokterku Taman Gading",
+              "SMP Negeri 1 Jember",
               style: TextStyle(fontWeight: FontWeight.bold),
             ),
             SizedBox(height: size.height * 0.05),
             Container(
               child: Image.asset(
-                "assets/images/splash_screen.png",
+                "assets/images/smp1logo.png",
                 width: size.width * 0.6, //ukuran gambar
               ),
             ),
