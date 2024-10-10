@@ -1,10 +1,17 @@
 // import 'package:sqflite/sqflite.dart';
 // import 'package:path/path.dart';
 
+<<<<<<< HEAD
 // class DatabaseHelper {
 //   // Nama database dan versi
 //   static final _databaseName = "faces_database.db";
 //   static final _databaseVersion = 2; // Update versi database
+=======
+class DatabaseHelper {
+  // Nama database dan versi
+  static final _databaseName = "face_database.db";
+  static final _databaseVersion = 2; // Update versi database
+>>>>>>> 736a77ea7099d82dcf910d10df8293531687db82
 
 //   // Nama tabel dan kolom
 //   static final table = 'registered_faces';

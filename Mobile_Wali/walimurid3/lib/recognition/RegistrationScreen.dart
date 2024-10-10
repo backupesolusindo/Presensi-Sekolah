@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 // import 'dart:io';
 // import 'dart:typed_data';
 // import 'package:flutter/material.dart';
@@ -8,6 +9,19 @@
 // import 'ML/Recognizer.dart';
 // import 'DB/DatabaseHelper.dart'; // Pastikan path ini sesuai
 // import 'package:lottie/lottie.dart';
+=======
+import 'dart:io';
+import 'dart:typed_data';
+import 'package:flutter/material.dart';
+import 'package:image_picker/image_picker.dart';
+import 'package:image/image.dart' as img;
+import 'package:google_mlkit_face_detection/google_mlkit_face_detection.dart';
+import 'package:walimurid3/recognition/UserListScreen.dart';
+import 'ML/Recognition.dart';
+import 'ML/Recognizer.dart';
+import 'DB/DatabaseHelper.dart'; // Pastikan path ini sesuai
+import 'package:lottie/lottie.dart';
+>>>>>>> 736a77ea7099d82dcf910d10df8293531687db82
 
 // class RegistrationScreen extends StatefulWidget {
 //   const RegistrationScreen({Key? key}) : super(key: key);
@@ -143,6 +157,7 @@
 //     drawRectangleAroundFaces();
 //   }
 
+<<<<<<< HEAD
 //   showFaceRegistrationDialogue(Uint8List croppedFace, Recognition recognition) {
 //     showDialog(
 //       context: context,
@@ -263,6 +278,129 @@
 //       ),
 //     );
 //   }
+=======
+  showFaceRegistrationDialogue(Uint8List croppedFace, Recognition recognition) {
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text("Pendaftaran Wajah", textAlign: TextAlign.center),
+        content: SingleChildScrollView(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.center,
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const SizedBox(height: 20),
+              Image.memory(croppedFace, width: 200, height: 200),
+              TextField(
+                controller: nameController,
+                decoration: const InputDecoration(
+                  fillColor: Colors.white,
+                  filled: true,
+                  hintText: "Nama",
+                ),
+              ),
+              TextField(
+                controller: nisController,
+                decoration: const InputDecoration(
+                  fillColor: Colors.white,
+                  filled: true,
+                  hintText: "NIS",
+                ),
+                keyboardType: TextInputType.number,
+              ),
+              TextField(
+                controller: kelasController,
+                decoration: const InputDecoration(
+                  fillColor: Colors.white,
+                  filled: true,
+                  hintText: "Kelas",
+                ),
+              ),
+              TextField(
+                controller: noHpOrtuController,
+                decoration: const InputDecoration(
+                  fillColor: Colors.white,
+                  filled: true,
+                  hintText: "No HP Orang Tua",
+                ),
+              ),
+              const SizedBox(height: 10),
+              ElevatedButton(
+                onPressed: () async {
+                  if (nameController.text.isEmpty ||
+                      nisController.text.isEmpty ||
+                      noHpOrtuController.text.isEmpty ||
+                      kelasController.text.isEmpty) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(content: Text("Isi dengan lengkap")),
+                    );
+                  } else if (await DatabaseHelper.instance
+                      .isNisExists(nisController.text)) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(content: Text("NIS telah terdaftar")),
+                    );
+                  } else {
+                    recognizer.registerFaceInDB(
+                        nameController.text,
+                        nisController.text,
+                        kelasController.text,
+                        noHpOrtuController.text,
+                        recognition.embeddings);
+
+                    // Show success dialog and navigate to UserListScreen
+                    showDialog(
+                      context: context,
+                      builder: (ctx) => AlertDialog(
+                        title:
+                            const Text("Success", textAlign: TextAlign.center),
+                        content: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            const Icon(Icons.check_circle,
+                                color: Colors.green, size: 100),
+                            const SizedBox(height: 20),
+                            const Text("Berhasil Mendaftar",
+                                textAlign: TextAlign.center),
+                          ],
+                        ),
+                        actions: [
+                          TextButton(
+                            onPressed: () {
+                              Navigator.pop(ctx); // Close the success dialog
+                              Navigator.pop(
+                                  context); // Go back to the previous screen
+                              Navigator.pushReplacement(
+                                context,
+                                MaterialPageRoute(
+                                    builder: (context) => UserListScreen()),
+                              );
+                            },
+                            child: const Text("OK"),
+                          ),
+                        ],
+                      ),
+                    );
+
+                    // Reset text controllers after success dialog
+                    nameController.clear();
+                    nisController.clear();
+                    kelasController.clear();
+                    noHpOrtuController.clear();
+                  }
+                },
+                style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.blue,
+                    minimumSize: const Size(200, 40)),
+                child: const Text("Register"),
+              ),
+            ],
+          ),
+        ),
+        contentPadding: EdgeInsets.zero,
+      ),
+    );
+  }
+>>>>>>> 736a77ea7099d82dcf910d10df8293531687db82
 
 //   drawRectangleAroundFaces() async {
 //     image = await _image?.readAsBytes();
