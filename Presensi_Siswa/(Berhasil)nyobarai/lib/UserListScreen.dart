@@ -132,45 +132,87 @@ class _UserListScreenState extends State<UserListScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.grey[100],
-      appBar: AppBar(
-        title: Text(
-          'Daftar Murid',
-          style:
-              TextStyle(color: Colors.white), // Ubah warna teks menjadi putih
-        ),
-        automaticallyImplyLeading: false,
-        shadowColor: Colors.black54,
-        actions: [
-          _isSyncing
-              ? Padding(
-                  padding: const EdgeInsets.all(12.0),
-                  child: CircularProgressIndicator(
-                    strokeWidth: 2,
-                    valueColor: AlwaysStoppedAnimation<Color>(
-                        const Color.fromARGB(255, 247, 247, 247)),
-                  ),
-                )
-              : Padding(
-                  padding: const EdgeInsets.only(right: 16.0),
-                  child: ElevatedButton(
-                    onPressed: _syncDatabro,
-                    child: Text('Sync Data'),
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color.fromARGB(255, 255, 255, 255),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(20),
+      appBar: PreferredSize(
+        preferredSize: Size.fromHeight(kToolbarHeight),
+        child: ClipRRect(
+          borderRadius: BorderRadius.vertical(
+            bottom:
+                Radius.circular(16), // Menentukan seberapa tumpul sudut bawah
+          ),
+          child: AppBar(
+            title: Text(
+              'Daftar Murid',
+              style: TextStyle(
+                  color: Colors.white), // Ubah warna teks menjadi putih
+            ),
+            centerTitle: true,
+            automaticallyImplyLeading: false,
+            shadowColor: Colors.black54,
+            actions: [
+              _isSyncing
+                  ? Padding(
+                      padding: const EdgeInsets.all(12.0),
+                      child: Center(
+                        child: Container(
+                          width: 30, // Menyesuaikan ukuran background lingkaran
+                          height: 30,
+                          decoration: BoxDecoration(
+                            shape: BoxShape.circle,
+                            color: Colors.blueAccent.withOpacity(
+                                0.1), // Warna background semi-transparan
+                          ),
+                          child: TweenAnimationBuilder(
+                            tween: Tween<double>(begin: 0, end: 1),
+                            duration: Duration(
+                                seconds: 1), // Durasi untuk satu putaran penuh
+                            builder: (context, double value, child) {
+                              return CircularProgressIndicator(
+                                strokeWidth:
+                                    3, // Membuat garis sedikit lebih tebal
+                                value: value, // Nilai animasi
+                                valueColor: AlwaysStoppedAnimation<Color>(
+                                  const Color.fromARGB(
+                                      255, 255, 255, 255), // Warna putih
+                                ),
+                              );
+                            },
+                            onEnd: () {
+                              // Memastikan animasi berulang terus
+                              Future.delayed(Duration(milliseconds: 300), () {
+                                // Mengulang animasi setelah jeda
+                                setState(() {});
+                              });
+                            },
+                          ),
+                        ),
+                      ),
+                    )
+                  : Padding(
+                      padding: const EdgeInsets.only(right: 16.0),
+                      child: ElevatedButton(
+                        onPressed: _syncDatabro,
+                        child: Icon(
+                            Icons.refresh), // Ganti teks dengan ikon refresh
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor:
+                              const Color.fromARGB(255, 255, 255, 255),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(20),
+                          ),
+                        ),
                       ),
                     ),
-                  ),
-                ),
-        ],
-        leading: IconButton(
-          icon: Icon(Icons.arrow_back),
-          onPressed: () {
-            Navigator.pop(context); // Navigasi kembali ke layar sebelumnya
-          },
+            ],
+            leading: IconButton(
+              icon: Image.asset(
+                  'assets/logoSMP.png'), // Mengganti tombol dengan logo
+              onPressed: () {
+                Navigator.pop(context); // Navigasi kembali ke layar sebelumnya
+              },
+            ),
+            backgroundColor: Colors.blueAccent,
+          ),
         ),
-        backgroundColor: Colors.blueAccent,
       ),
       body: Column(
         children: [

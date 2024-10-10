@@ -30,24 +30,25 @@ class _HomePageState extends State<HomeScreen> {
                     Container(
                       margin: const EdgeInsets.only(top: 50),
                       child: Image.asset(
-                        "images/logo.png",
-                        width: screenWidth - 40,
-                        height: screenWidth - 40,
+                        "assets/logoSMP.png",
+                        width: screenWidth - 100,
+                        height: screenWidth - 100,
                       ),
                     ),
                     const SizedBox(height: 20), // Jarak antara logo dan tombol
                     Text(
-                      "Sistem Absensi Wajah",
+                      "Absensi Wajah\nSMPN 1 Jember",
+                      textAlign: TextAlign.center, // Membuat teks rata tengah
                       style: TextStyle(
                         fontSize: 24,
                         fontWeight: FontWeight.bold,
                         color: Colors.blue[800], // Warna teks
                       ),
                     ),
-                    const SizedBox(height: 20),
+
+                    const SizedBox(height: 90),
                     _buildButton("Daftar", () {
-                      _navigateWithLoading(
-                          context, const RegistrationScreen());
+                      _navigateWithLoading(context, const RegistrationScreen());
                     }),
                     const SizedBox(height: 20),
                     _buildButton("Absen", () {
@@ -57,7 +58,8 @@ class _HomePageState extends State<HomeScreen> {
                     _buildButton("Murid Terdaftar", () {
                       _navigateWithLoading(context, UserListScreen());
                     }),
-                    const SizedBox(height: 50), // Jarak bawah untuk padding bottom
+                    const SizedBox(
+                        height: 20), // Jarak bawah untuk padding bottom
                   ],
                 ),
               ),

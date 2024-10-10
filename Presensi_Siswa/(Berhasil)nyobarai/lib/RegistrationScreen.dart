@@ -285,20 +285,30 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
     double screenWidth = MediaQuery.of(context).size.width;
 
     return Scaffold(
-      appBar: AppBar(
-        title: Text(
-          'Registrasi Wajah',
-          style:
-              TextStyle(color: Colors.white), // Ubah warna teks menjadi putih
+      appBar: PreferredSize(
+        preferredSize: Size.fromHeight(kToolbarHeight),
+        child: ClipRRect(
+          borderRadius: BorderRadius.vertical(
+            bottom:
+                Radius.circular(16), // Menentukan seberapa tumpul sudut bawah
+          ),
+          child: AppBar(
+            title: Text(
+              'Registrasi Wajah',
+              style: TextStyle(
+                  color: Colors.white), // Ubah warna teks menjadi putih
+            ),
+            centerTitle: true, // Membuat teks di tengah
+            leading: IconButton(
+              icon: Image.asset(
+                  'assets/logoSMP.png'), // Mengganti tombol dengan logo
+              onPressed: () {
+                Navigator.pop(context); // Navigasi kembali ke layar sebelumnya
+              },
+            ),
+            backgroundColor: Colors.blueAccent,
+          ),
         ),
-        centerTitle: true, // Membuat teks di tengah
-        leading: IconButton(
-          icon: Icon(Icons.arrow_back),
-          onPressed: () {
-            Navigator.pop(context); // Navigasi kembali ke layar sebelumnya
-          },
-        ),
-        backgroundColor: Colors.blueAccent,
       ),
       backgroundColor: Colors.blue[50],
       resizeToAvoidBottomInset: false,
