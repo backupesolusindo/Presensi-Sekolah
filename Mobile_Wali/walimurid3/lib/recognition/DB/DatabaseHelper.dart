@@ -3,7 +3,7 @@ import 'package:path/path.dart';
 
 class DatabaseHelper {
   // Nama database dan versi
-  static final _databaseName = "faces_database.db";
+  static final _databaseName = "face_database.db";
   static final _databaseVersion = 2; // Update versi database
 
   // Nama tabel dan kolom

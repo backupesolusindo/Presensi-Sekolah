@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:image/image.dart' as img;
 import 'package:google_mlkit_face_detection/google_mlkit_face_detection.dart';
+import 'package:walimurid3/recognition/UserListScreen.dart';
 import 'ML/Recognition.dart';
 import 'ML/Recognizer.dart';
 import 'DB/DatabaseHelper.dart'; // Pastikan path ini sesuai
@@ -155,7 +156,6 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
             children: [
               const SizedBox(height: 20),
               Image.memory(croppedFace, width: 200, height: 200),
-              // Input field hanya ditampilkan pertama kali
               TextField(
                 controller: nameController,
                 decoration: const InputDecoration(
@@ -196,18 +196,15 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
                       nisController.text.isEmpty ||
                       noHpOrtuController.text.isEmpty ||
                       kelasController.text.isEmpty) {
-                    // Tampilkan Snackbar jika ada field yang kosong
                     ScaffoldMessenger.of(context).showSnackBar(
                       const SnackBar(content: Text("Isi dengan lengkap")),
                     );
                   } else if (await DatabaseHelper.instance
                       .isNisExists(nisController.text)) {
-                    // Tampilkan Snackbar jika NIS sudah ada
                     ScaffoldMessenger.of(context).showSnackBar(
                       const SnackBar(content: Text("NIS telah terdaftar")),
                     );
                   } else {
-                    // Simpan data ke database
                     recognizer.registerFaceInDB(
                         nameController.text,
                         nisController.text,
@@ -215,7 +212,7 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
                         noHpOrtuController.text,
                         recognition.embeddings);
 
-                    // Tampilkan dialog sukses dengan centang
+                    // Show success dialog and navigate to UserListScreen
                     showDialog(
                       context: context,
                       builder: (ctx) => AlertDialog(
@@ -234,9 +231,14 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
                         actions: [
                           TextButton(
                             onPressed: () {
-                              Navigator.pop(ctx); // Tutup dialog sukses
+                              Navigator.pop(ctx); // Close the success dialog
                               Navigator.pop(
-                                  context); // Kembali ke halaman sebelumnya
+                                  context); // Go back to the previous screen
+                              Navigator.pushReplacement(
+                                context,
+                                MaterialPageRoute(
+                                    builder: (context) => UserListScreen()),
+                              );
                             },
                             child: const Text("OK"),
                           ),
@@ -244,7 +246,7 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
                       ),
                     );
 
-                    // Reset text controllers setelah dialog sukses ditutup
+                    // Reset text controllers after success dialog
                     nameController.clear();
                     nisController.clear();
                     kelasController.clear();
