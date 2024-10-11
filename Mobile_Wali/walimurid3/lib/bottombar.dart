@@ -1,48 +1,65 @@
 import 'package:flutter/material.dart';
-import 'profile.dart'; // Import halaman profil
-import 'home.dart'; // Import halaman home
+import 'home.dart';  // Import halaman Home
+import 'profile.dart';  // Import halaman Profile
+import 'riwayat.dart';  // Import halaman Riwayat
 
-class CustomBottomBar extends StatelessWidget {
+class CustomBottomBar extends StatefulWidget {
   final int currentIndex;
   final Function(int) onTap;
 
   CustomBottomBar({required this.currentIndex, required this.onTap});
 
   @override
+  _CustomBottomBarState createState() => _CustomBottomBarState();
+}
+
+class _CustomBottomBarState extends State<CustomBottomBar> {
+  @override
   Widget build(BuildContext context) {
     return BottomNavigationBar(
-      currentIndex: currentIndex,
-      onTap: (int index) {
-        if (index == 0) {
-          // Jika index 0 (Home) dipilih
-          Navigator.push(
-            context,
-            MaterialPageRoute(builder: (context) => HomePage()), // Arahkan ke halaman Home
-          );
-        } else if (index == 2) {
-          // Jika index 2 (Profile) dipilih
-          Navigator.push(
-            context,
-            MaterialPageRoute(builder: (context) => ProfilePage()), // Arahkan ke halaman profil
-          );
-        } else {
-          onTap(index); // Untuk halaman lain, biarkan onTap menjalankan tugasnya
-        }
+      currentIndex: widget.currentIndex,
+      onTap: (index) {
+        widget.onTap(index);  // Panggil fungsi onTap dari parent
+        _navigateToPage(index);  // Panggil navigasi sesuai index
       },
-      items: const <BottomNavigationBarItem>[
+      items: [
         BottomNavigationBarItem(
           icon: Icon(Icons.home),
           label: 'Home',
         ),
         BottomNavigationBarItem(
           icon: Icon(Icons.history),
-          label: 'History',
+          label: 'Riwayat',
         ),
         BottomNavigationBarItem(
-          icon: Icon(Icons.account_circle),
+          icon: Icon(Icons.person),
           label: 'Profile',
         ),
       ],
     );
+  }
+
+  // Fungsi navigasi untuk berpindah halaman
+  void _navigateToPage(int index) {
+    switch (index) {
+      case 0:
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (context) => HomePage()),  // Navigasi ke Home
+        );
+        break;
+      case 1:
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (context) => RiwayatPage()),  // Navigasi ke Riwayat
+        );
+        break;
+      case 2:
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (context) => ProfilePage()),  // Navigasi ke Profile
+        );
+        break;
+    }
   }
 }
