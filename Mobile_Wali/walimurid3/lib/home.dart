@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:walimurid3/recognition/RegistrationScreen.dart';
 import 'bottombar.dart'; // Import bottom bar kustom
+import 'riwayat.dart';   // Import halaman Riwayat
 
 class HomePage extends StatefulWidget {
   @override
@@ -14,6 +15,13 @@ class _HomePageState extends State<HomePage> {
     setState(() {
       _currentIndex = index;
     });
+
+    if (index == 1) {
+      Navigator.push(
+        context,
+        MaterialPageRoute(builder: (context) => RiwayatPage()), // Navigasi ke RiwayatPage
+      );
+    }
   }
 
   @override

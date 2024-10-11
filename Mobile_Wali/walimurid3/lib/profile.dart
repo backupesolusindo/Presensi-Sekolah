@@ -13,7 +13,7 @@ class _ProfilePageState extends State<ProfilePage> {
     if (index == 0) {
       Navigator.pushNamed(context, '/home'); // Navigasi ke Home
     } else if (index == 1) {
-      Navigator.pushNamed(context, '/history'); // Navigasi ke History
+      Navigator.pushNamed(context, '/history'); // Navigasi ke Riwayat
     }
     // Untuk profil (index 2), tetap di halaman ini
   }
@@ -25,10 +25,10 @@ class _ProfilePageState extends State<ProfilePage> {
         children: [
           // Efek slice dari atas kanan ke bawah kiri
           ClipPath(
-            clipper: CustomDiagonalClipper(), // Menggunakan custom clipper untuk slice
+            clipper: CustomDiagonalClipper(),
             child: Container(
-              height: 300, // Mengurangi tinggi slice agar tidak menutupi konten
-              color: Colors.lightBlue, // Warna biru muda untuk background
+              height: 300,
+              color: Colors.lightBlue,
             ),
           ),
 
@@ -36,7 +36,7 @@ class _ProfilePageState extends State<ProfilePage> {
           SingleChildScrollView(
             child: Column(
               children: [
-                SizedBox(height: 100), // Jarak antara slice dan konten
+                SizedBox(height: 100),
                 CircleAvatar(
                   radius: 50,
                   backgroundImage: AssetImage('assets/logopoltek.png'), // Gambar profil atau logo
@@ -47,11 +47,11 @@ class _ProfilePageState extends State<ProfilePage> {
                   style: TextStyle(
                     fontSize: 24,
                     fontWeight: FontWeight.bold,
-                    color: Colors.black, // Warna teks hitam agar kontras dengan background
+                    color: Colors.black,
                   ),
                 ),
                 SizedBox(height: 8),
-                Text('-'), // Tanda pemisah atau bisa diisi dengan informasi lain
+                Text('-'),
                 SizedBox(height: 32),
 
                 // Card informasi di depan slice
@@ -76,9 +76,9 @@ class _ProfilePageState extends State<ProfilePage> {
     return Card(
       margin: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
       shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(12), // Membuat sudut card melengkung
+        borderRadius: BorderRadius.circular(12),
       ),
-      elevation: 4, // Memberikan bayangan pada Card
+      elevation: 4,
       child: ListTile(
         leading: Icon(icon, color: Colors.blueAccent),
         title: Text(title),
@@ -93,9 +93,9 @@ class CustomDiagonalClipper extends CustomClipper<Path> {
   @override
   Path getClip(Size size) {
     var path = Path();
-    path.lineTo(size.width, 0.0); // Mulai dari kanan atas
-    path.lineTo(0.0, size.height); // Garis ke bawah kiri
-    path.lineTo(0.0, 0.0); // Kembali ke titik awal di kiri atas
+    path.lineTo(size.width, 0.0);
+    path.lineTo(0.0, size.height);
+    path.lineTo(0.0, 0.0);
     path.close();
     return path;
   }
