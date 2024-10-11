@@ -191,7 +191,7 @@ class _RecognitionScreenState extends State<RecognitionScreen> {
       }
 
       // Jika tidak ada wajah yang dikenali, tampilkan dialog error
-      if (_image != null) {
+      if (detectedNISList.isEmpty) {
         showDialog(
           context: context,
           builder: (BuildContext context) {
@@ -241,7 +241,7 @@ class _RecognitionScreenState extends State<RecognitionScreen> {
         builder: (BuildContext context) {
           return _buildDialog(
             title: 'Gagal',
-            message: 'Wajah tidak terdeteksi',
+            message: 'Wajah tidak terdeteksi, coba foto lagi',
             icon: Icons.error,
             iconColor: Colors.red,
           );
