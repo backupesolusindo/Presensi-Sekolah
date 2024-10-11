@@ -236,48 +236,24 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
   }
 
   @override
-  Widget build(BuildContext context) {
-    Size size = MediaQuery.of(context).size;
-    final screenHeight = MediaQuery.of(context).size.height;
-    return Scaffold(
-      // appBar: CustomAppBar(),
-      body: Container(
-        color: CBackground,
-        child: Stack(children: [
-          Positioned(
-            top: 0,
-            right: 0,
+Widget build(BuildContext context) {
+  Size size = MediaQuery.of(context).size;
+  final screenHeight = MediaQuery.of(context).size.height;
+  
+  return Scaffold(
+    body: Container(
+      color: CBackground, // Background color
+      child: Stack(
+        children: [
+          // Positioned background image to cover the full screen
+          Positioned.fill(
             child: Image.asset(
-              "assets/images/dash_tr.png",
-              height: size.height * 0.4,
+              "assets/images/WaliRename.png",
+              fit: BoxFit.cover, // Ensures the image covers the full background
             ),
           ),
-          Positioned(
-            top: 0,
-            left: 0,
-            child: Image.asset(
-              "assets/images/blob_left.png",
-              height: size.height * 0.4,
-            ),
-          ),
-          Positioned(
-            bottom: 0,
-            left: 0,
-            child: Image.asset(
-              "assets/images/dash_bl.png",
-              // height: size.height * 0.3,
-              width: size.width,
-              fit: BoxFit.fill,
-            ),
-          ),
-          Positioned(
-            bottom: 0,
-            left: 0,
-            child: Image.asset(
-              "assets/images/dash_br.png",
-              height: size.height * 0.3,
-            ),
-          ),
+          
+          // The rest of the scrollable content
           CustomScrollView(
             physics: ClampingScrollPhysics(),
             slivers: <Widget>[
@@ -299,10 +275,12 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
               _buildJadwalMapelHariIni(screenHeight),
             ],
           ),
-        ]),
+        ],
       ),
-    );
-  }
+    ),
+  );
+}
+
 
 SliverToBoxAdapter _buildBox(double screenHeight) {
   Size size = MediaQuery.of(context).size;
