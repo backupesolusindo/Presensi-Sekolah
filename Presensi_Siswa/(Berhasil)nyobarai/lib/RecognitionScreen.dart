@@ -250,30 +250,49 @@ class _RecognitionScreenState extends State<RecognitionScreen> {
       return;
     }
 
-    final url =
-        'https://presensi-smp1.esolusindo.com/Api/ApiGerbang/Gerbang/uploadAbsen';
-
-    // Mengirim semua NIS yang terdeteksi
-    for (String nis in detectedNISList) {
-      final response = await http.post(
-        Uri.parse(url),
-        headers: {'Content-Type': 'application/json'},
-        body: json.encode({'nis': nis, 'status': 'absen'}),
-      );
-
-      if (response.statusCode != 200) {
-        // Tangani jika ada kesalahan
+    for (Recognition rectangle in recognitions) {
+      if (rectangle.name == "Tidak dikenali") {
+        // Tangani jika wajah tidak dikenali
         showDialog(
           context: context,
           builder: (BuildContext context) {
             return _buildDialog(
               title: 'Gagal',
-              message: 'Gagal Absen $nis',
+              message: 'Wajah belum terdaftar',
               icon: Icons.error,
               iconColor: Colors.red,
             );
           },
         );
+        return;
+      } else {
+        // Nama dari rectangle yang dikenali
+        String recognizedName = rectangle.name;
+        print("Wajah dikenali: $recognizedName");
+
+        // Lanjutkan dengan proses absen
+        final url =
+            'https://presensi-smp1.esolusindo.com/Api/ApiGerbang/Gerbang/uploadAbsen';
+
+        final response = await http.post(
+          Uri.parse(url),
+          headers: {'Content-Type': 'application/json'},
+          body: json.encode({'nis': rectangle.nis, 'status': 'absen'}),
+        );
+
+        if (response.statusCode != 200) {
+          showDialog(
+            context: context,
+            builder: (BuildContext context) {
+              return _buildDialog(
+                title: 'Gagal',
+                message: 'Gagal Absen untuk $recognizedName',
+                icon: Icons.error,
+                iconColor: Colors.red,
+              );
+            },
+          );
+        }
       }
     }
 
@@ -496,26 +515,64 @@ class FacePainter extends CustomPainter {
     }
 
     Paint p = Paint();
-    p.color = Colors.red;
+    p.color = const Color.fromARGB(255, 30, 255, 0);
     p.style = PaintingStyle.stroke;
-    p.strokeWidth = 3;
+    p.strokeWidth = 5;
 
+    // Draw rectangle and text for each face
     for (Recognition rectangle in facesList) {
+      // Draw the face rectangle
       canvas.drawRect(rectangle.location, p);
-      // TEKS DI KOTAK WAJAH
-      TextSpan span = TextSpan(
-        style: const TextStyle(color: Colors.white, fontSize: 41),
-        text: "${rectangle.name} ${(rectangle.confidence).toStringAsFixed(2)}%",
-      );
 
-      TextPainter tp = TextPainter(
-        text: span,
-        textAlign: TextAlign.left,
-        textDirection: TextDirection.ltr,
-      );
-      tp.layout();
-      tp.paint(canvas, Offset(rectangle.location.left, rectangle.location.top));
+      // Check if the name is "Tidak dikenali"
+      if (rectangle.name == "Tidak dikenali") {
+        // Display "Wajah Tidak Dikenali" message
+        _drawTextWithBackground(
+          canvas,
+          "Wajah Tidak Dikenali",
+          rectangle.location.left,
+          rectangle.location.top - 80, // Position above the rectangle
+        );
+      } else {
+        // Display the name and confidence for recognized faces
+        String text =
+            "${rectangle.name} ${(rectangle.confidence).toStringAsFixed(2)}%";
+        _drawTextWithBackground(
+          canvas,
+          text,
+          rectangle.location.left,
+          rectangle.location.top - 80, // Position above the rectangle
+        );
+      }
     }
+  }
+
+  // Custom method to draw text with background
+  void _drawTextWithBackground(Canvas canvas, String text, double x, double y) {
+    TextSpan span = TextSpan(
+      style: TextStyle(
+          color: Colors.black, fontSize: 30, fontWeight: FontWeight.bold),
+      text: text,
+    );
+
+    TextPainter tp = TextPainter(
+      text: span,
+      textAlign: TextAlign.left,
+      textDirection: TextDirection.ltr,
+      maxLines: 2, // Limit to 2 lines
+      ellipsis: '...', // Ellipsis for overflow text
+    );
+    tp.layout(maxWidth: 500); // Set max width to 200px
+
+    // Calculate background size
+    Paint backgroundPaint = Paint()..color = Colors.white;
+    double padding = 6;
+    Rect backgroundRect = Rect.fromLTWH(x - padding, y - padding,
+        tp.width + 2 * padding, tp.height + 2 * padding);
+    canvas.drawRect(backgroundRect, backgroundPaint);
+
+    // Draw the text over the background
+    tp.paint(canvas, Offset(x, y));
   }
 
   @override
