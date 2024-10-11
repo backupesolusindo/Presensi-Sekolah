@@ -3,11 +3,11 @@ import 'dart:io';
 import 'dart:math';
 import 'dart:typed_data';
 import 'package:flutter/material.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:image/image.dart' as img;
 import 'package:google_mlkit_face_detection/google_mlkit_face_detection.dart';
 import 'package:lottie/lottie.dart';
 import 'package:http/http.dart' as http;
-import 'package:camera/camera.dart'; // Tambahkan package kamera
 import 'ML/Recognition.dart';
 import 'ML/Recognizer.dart';
 
@@ -19,11 +19,9 @@ class RecognitionScreen extends StatefulWidget {
 }
 
 class _RecognitionScreenState extends State<RecognitionScreen> {
-  CameraController? cameraController; // Controller untuk kamera
+  late ImagePicker imagePicker;
   File? _image;
-  bool isLoading = false;
-  bool isFrontCamera = true; // Menyimpan status kamera (depan/belakang)
-  bool showPreview = true; // Untuk menampilkan preview kamera atau gambar hasil
+  bool isLoading = false; // Add this line
 
   late FaceDetector faceDetector;
   late Recognizer recognizer;
@@ -31,12 +29,12 @@ class _RecognitionScreenState extends State<RecognitionScreen> {
   List<Recognition> recognitions = [];
   List<Face> faces = [];
   var image;
-  List<String> detectedNISList = [];
+  List<String> detectedNISList = []; // Ubah menjadi List
 
   @override
   void initState() {
     super.initState();
-    initializeCamera(); // Inisialisasi kamera
+    imagePicker = ImagePicker();
 
     final options = FaceDetectorOptions();
     faceDetector = FaceDetector(options: options);
@@ -44,66 +42,49 @@ class _RecognitionScreenState extends State<RecognitionScreen> {
     recognizer = Recognizer();
   }
 
-  Future<void> initializeCamera([bool isFront = true]) async {
-    // Ambil daftar kamera yang tersedia
-    final cameras = await availableCameras();
+  Future<void> _imgFromCamera() async {
+    setState(() {
+      isLoading = true; // Start loading
+    });
 
-    // Pilih kamera berdasarkan `isFront`
-    final selectedCamera = isFront
-        ? cameras.firstWhere(
-            (camera) => camera.lensDirection == CameraLensDirection.front,
-          )
-        : cameras.firstWhere(
-            (camera) => camera.lensDirection == CameraLensDirection.back,
-          );
+    XFile? pickedFile = await imagePicker.pickImage(source: ImageSource.camera);
+    if (pickedFile != null) {
+      setState(() {
+        _image = File(pickedFile.path);
+      });
+      await doFaceDetection(); // Wait for face detection to complete
+    }
 
-    // Inisialisasi controller kamera
-    cameraController = CameraController(
-      selectedCamera,
-      ResolutionPreset.high,
-    );
-
-    // Mulai kamera
-    await cameraController?.initialize();
-    setState(() {});
+    setState(() {
+      isLoading = false; // Stop loading
+    });
   }
 
-  Future<void> captureImage() async {
-    if (cameraController == null || !cameraController!.value.isInitialized) {
-      return;
+  Future<void> _imgFromGallery() async {
+    setState(() {
+      isLoading = true; // Start loading
+    });
+
+    XFile? pickedFile =
+        await imagePicker.pickImage(source: ImageSource.gallery);
+    if (pickedFile != null) {
+      setState(() {
+        _image = File(pickedFile.path);
+      });
+      await doFaceDetection(); // Wait for face detection to complete
     }
 
-    try {
-      setState(() {
-        isLoading = true;
-      });
-
-      // Ambil gambar dari kamera
-      final XFile imageFile = await cameraController!.takePicture();
-      setState(() {
-        _image = File(imageFile.path);
-        showPreview = false; // Ganti ke tampilan gambar hasil
-      });
-
-      await doFaceDetection(); // Deteksi wajah setelah gambar diambil
-
-      setState(() {
-        isLoading = false;
-      });
-    } catch (e) {
-      setState(() {
-        isLoading = false;
-      });
-      print("Error capturing image: $e");
-    }
+    setState(() {
+      isLoading = false; // Stop loading
+    });
   }
 
   Future<void> doFaceDetection() async {
     recognitions.clear();
-    detectedNISList.clear();
+    detectedNISList.clear(); // Kosongkan list sebelum deteksi
+    _image = await removeRotation(_image!);
 
     if (_image != null) {
-      _image = await removeRotation(_image!);
       var imageBytes = await _image!.readAsBytes();
       image = await decodeImageFromList(imageBytes);
 
@@ -134,6 +115,7 @@ class _RecognitionScreenState extends State<RecognitionScreen> {
           Recognition recognition = recognizer.recognize(croppedFace, faceRect);
           recognitions.add(recognition);
 
+          // Simpan NIS yang terdeteksi (jika belum ada dalam list)
           if (!detectedNISList.contains(recognition.nis)) {
             detectedNISList.add(recognition.nis);
           }
@@ -273,11 +255,11 @@ class _RecognitionScreenState extends State<RecognitionScreen> {
     );
   }
 
+  TextEditingController textEditingController = TextEditingController();
+
   @override
   Widget build(BuildContext context) {
     double screenWidth = MediaQuery.of(context).size.width;
-    double screenHeight = MediaQuery.of(context).size.height;
-
     return Scaffold(
       appBar: PreferredSize(
         preferredSize: Size.fromHeight(kToolbarHeight),
@@ -316,107 +298,131 @@ class _RecognitionScreenState extends State<RecognitionScreen> {
                   crossAxisAlignment: CrossAxisAlignment.center,
                   children: [
                     Lottie.asset(
-                      "assets/loading1.json",
+                      'assets/loading1.json', // Ensure this path is correct
                       width: 100,
                       height: 100,
                     ),
-                    const Text(
-                      'Loading...',
+                    SizedBox(height: 20),
+                    Text(
+                      'Mohon Ditunggu',
                       style:
                           TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                     ),
                   ],
                 ),
               ),
-            )
-          else if (cameraController != null &&
-              cameraController!.value.isInitialized &&
-              showPreview)
-            // Tampilkan preview kamera dengan ukuran penuh
-            Expanded(
-              child: CameraPreview(cameraController!),
-            )
-          else if (!showPreview && _image != null)
-            Expanded(
-              child: Container(
-                margin: const EdgeInsets.all(20),
-                child: FittedBox(
-                  fit: BoxFit
-                      .contain, // Sesuaikan gambar agar pas dengan ukuran layar
-                  child: SizedBox(
-                    width: image.width
-                        .toDouble(), // Menggunakan ukuran asli gambar
-                    height: image.height.toDouble(),
-                    child: CustomPaint(
-                      painter: FacePainter(
-                          facesList: recognitions, imageFile: image),
+            ),
+          if (!isLoading) // Only show the image if not loading
+            image != null
+                ? Center(
+                    child: Container(
+                      margin: const EdgeInsets.symmetric(
+                          horizontal: 20, vertical: 20),
+                      child: FittedBox(
+                        fit: BoxFit
+                            .contain, // Make sure the image fits within the container
+                        child: SizedBox(
+                          width: 2450,
+                          height: 2450,
+                          child: CustomPaint(
+                            painter: FacePainter(
+                              facesList: recognitions,
+                              imageFile: image,
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                  )
+                : Container(
+                    margin: const EdgeInsets.only(top: 100),
+                    child: Image.asset(
+                      "images/logo.png",
+                      width: screenWidth - 100,
+                      height: screenWidth - 100,
                     ),
                   ),
-                ),
-              ),
-            ),
-          SizedBox(height: 20),
-          if (showPreview)
-            ElevatedButton(
-              onPressed: () async {
-                await captureImage(); // Mengambil gambar langsung dari kamera
-              },
-              child: Text('Ambil Gambar'),
-              style: ElevatedButton.styleFrom(
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(20),
-                ),
-                padding: EdgeInsets.symmetric(horizontal: 40, vertical: 20),
-                textStyle: TextStyle(fontSize: 16),
-              ),
-            ),
-          if (!showPreview && detectedNISList.isNotEmpty)
-            Row(
-              mainAxisAlignment:
-                  MainAxisAlignment.center, // Posisikan di tengah
+          const Spacer(), // Spacer pushes buttons down
+          //-------------------tombol absen----------------//
+          Container(
+            margin: const EdgeInsets.only(bottom: 30), // Adjust the margin here
+            child: Column(
               children: [
-                ElevatedButton(
-                  onPressed: () {
-                    setState(() {
-                      showPreview = true; // Kembali ke tampilan preview kamera
-                    });
-                  },
-                  child: Text('Ambil Ulang'),
-                  style: ElevatedButton.styleFrom(
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(20),
+                Row(
+                  mainAxisAlignment:
+                      MainAxisAlignment.center, // Align buttons in center
+                  children: [
+                    Card(
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(20),
+                      ),
+                      elevation: 5,
+                      child: InkWell(
+                        borderRadius: BorderRadius.circular(20),
+                        onTap: _imgFromCamera,
+                        child: Container(
+                          width: screenWidth / 2 - 50,
+                          height: screenWidth / 2 - 50,
+                          decoration: BoxDecoration(
+                            borderRadius: BorderRadius.circular(20),
+                            gradient: const LinearGradient(
+                              colors: [
+                                Colors.blue,
+                                Colors.lightBlueAccent
+                              ], // Updated to a blue gradient
+                              begin: Alignment.topLeft,
+                              end: Alignment.bottomRight,
+                            ),
+                          ),
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Icon(Icons.camera_alt,
+                                  color: Colors.white, size: screenWidth / 6),
+                              const SizedBox(height: 10),
+                              const Text(
+                                "Kamera",
+                                style: TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 18,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
                     ),
-                    padding: EdgeInsets.symmetric(horizontal: 10, vertical: 20),
-                    textStyle: TextStyle(fontSize: 16),
-                  ),
+                  ],
                 ),
-                SizedBox(width: 20), // Spasi di antara tombol
-                ElevatedButton(
-                  onPressed: () async {
-                    await verifyAttendance(); // Mengirim data untuk verifikasi absen
-                  },
-                  child: Text('Verifikasi Kehadiran'),
-                  style: ElevatedButton.styleFrom(
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(20),
+                SizedBox(height: 10), // Add a small gap between the buttons
+                if (image !=
+                    null) // Show "Verifikasi" only if the image is available
+                  Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 10.0),
+                    child: ElevatedButton(
+                      onPressed: verifyAttendance,
+                      child: Text("Verifikasi"),
+                      style: ElevatedButton.styleFrom(
+                        padding:
+                            EdgeInsets.symmetric(horizontal: 40, vertical: 20),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(30),
+                        ),
+                        backgroundColor: Colors.blueAccent,
+                        foregroundColor:
+                            const Color.fromARGB(255, 255, 255, 255),
+                        shadowColor: Colors.blue.withOpacity(0.5),
+                        elevation: 5,
+                      ),
                     ),
-                    padding: EdgeInsets.symmetric(horizontal: 10, vertical: 20),
-                    textStyle: TextStyle(fontSize: 16),
                   ),
-                ),
               ],
             ),
-          SizedBox(height: 20),
+          ),
         ],
       ),
     );
-  }
-
-  @override
-  void dispose() {
-    cameraController?.dispose();
-    faceDetector.close();
-    super.dispose();
   }
 }
 
@@ -439,9 +445,9 @@ class FacePainter extends CustomPainter {
 
     for (Recognition rectangle in facesList) {
       canvas.drawRect(rectangle.location, p);
-      // TEKS DI KOTAK WAJAH
+      // TEKS DIKOTAK WAJAH
       TextSpan span = TextSpan(
-        style: const TextStyle(color: Colors.white, fontSize: 41),
+        style: const TextStyle(color: Colors.white, fontSize: 130),
         text: "${rectangle.name} ${(rectangle.confidence).toStringAsFixed(2)}%",
       );
 
