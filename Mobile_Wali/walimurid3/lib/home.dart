@@ -143,12 +143,12 @@ class _HomePageState extends State<HomePage> {
 
               // Bagian Kegiatan Anda
               Text(
-                'Kegiatan Anda:',
+                'Jadwal Mapel Hari Ini:',
                 style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
               ),
               SizedBox(height: 8),
               _buildPresenceStatusCard(
-                  'Anda Hari Ini Tidak Ada Kegiatan'), // Kegiatan Anda
+                  'Tidak ada jadwal mapel untuk hari ini.'), // Kegiatan Anda
             ],
           ),
         ),

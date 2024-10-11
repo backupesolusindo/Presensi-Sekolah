@@ -9,7 +9,11 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      home: HomePage(), // Set HomePage from home.dart as the home screen
+      debugShowCheckedModeBanner: false, // Menghilangkan banner debug
+      home: HomePage(), // Set HomePage dari home.dart sebagai halaman utama
+      theme: ThemeData(
+        primarySwatch: Colors.blue, // Ubah warna tema sesuai kebutuhan
+      ),
     );
   }
 }
