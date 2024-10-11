@@ -75,7 +75,9 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
     WidgetsBinding.instance.addObserver(this);
     getPref();
     cekFakeGPS();
+    fetchJadwalMapel(); // Fetch the schedule
     Timer.periodic(Duration(seconds: 1), (Timer t) => _getTime());
+    
   }
 
   cekFakeGPS() async {
@@ -213,49 +215,45 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
     }
   }
 
+    Future<void> fetchJadwalMapel() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    var url = Uri.parse(Core().ApiUrl + "Dash/getJadwalMapel");
+    
+    var response = await http.post(url, body: {
+      "uuid": prefs.getString("ID"),
+    });
+
+    if (response.statusCode == 200) {
+      var data = json.decode(response.body)['data'];
+      setState(() {
+        ListJadwalMapel = List<Map<String, dynamic>>.from(data);
+      });
+    } else {
+      setState(() {
+        ListJadwalMapel = [];
+      });
+    }
+  }
+
   @override
-  Widget build(BuildContext context) {
-    Size size = MediaQuery.of(context).size;
-    final screenHeight = MediaQuery.of(context).size.height;
-    return Scaffold(
-      // appBar: CustomAppBar(),
-      body: Container(
-        color: CBackground,
-        child: Stack(children: [
-          Positioned(
-            top: 0,
-            right: 0,
+Widget build(BuildContext context) {
+  Size size = MediaQuery.of(context).size;
+  final screenHeight = MediaQuery.of(context).size.height;
+  
+  return Scaffold(
+    body: Container(
+      color: CBackground, // Background color
+      child: Stack(
+        children: [
+          // Positioned background image to cover the full screen
+          Positioned.fill(
             child: Image.asset(
-              "assets/images/dash_tr.png",
-              height: size.height * 0.4,
+              "assets/images/WaliRename.png",
+              fit: BoxFit.cover, // Ensures the image covers the full background
             ),
           ),
-          Positioned(
-            top: 0,
-            left: 0,
-            child: Image.asset(
-              "assets/images/blob_left.png",
-              height: size.height * 0.4,
-            ),
-          ),
-          Positioned(
-            bottom: 0,
-            left: 0,
-            child: Image.asset(
-              "assets/images/dash_bl.png",
-              // height: size.height * 0.3,
-              width: size.width,
-              fit: BoxFit.fill,
-            ),
-          ),
-          Positioned(
-            bottom: 0,
-            left: 0,
-            child: Image.asset(
-              "assets/images/dash_br.png",
-              height: size.height * 0.3,
-            ),
-          ),
+          
+          // The rest of the scrollable content
           CustomScrollView(
             physics: ClampingScrollPhysics(),
             slivers: <Widget>[
@@ -277,214 +275,217 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
               _buildJadwalMapelHariIni(screenHeight),
             ],
           ),
-        ]),
+        ],
       ),
-    );
-  }
+    ),
+  );
+}
 
-  //box counter
-  SliverToBoxAdapter _buildBox(double screenHeight) {
-    Size size = MediaQuery.of(context).size;
-    return SliverToBoxAdapter(
-        child: AnimatedOpacity(
-            opacity: ssFooter ? 1 : 0,
-            duration: const Duration(milliseconds: 500),
-            child: AnimatedContainer(
-                margin: ssFooter
-                    ? EdgeInsets.only(top: 0)
-                    : EdgeInsets.only(top: 30),
-                duration: const Duration(milliseconds: 500),
-                curve: Curves.fastEaseInToSlowEaseOut,
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: <Widget>[
-                    SizedBox(height: 10),
-                    Padding(
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 20, vertical: 8),
+
+SliverToBoxAdapter _buildBox(double screenHeight) {
+  Size size = MediaQuery.of(context).size;
+
+  return SliverToBoxAdapter(
+    child: AnimatedOpacity(
+      opacity: ssFooter ? 1 : 0,
+      duration: const Duration(milliseconds: 500),
+      child: AnimatedContainer(
+        margin: ssFooter ? EdgeInsets.only(top: 0) : EdgeInsets.only(top: 30),
+        duration: const Duration(milliseconds: 500),
+        curve: Curves.fastEaseInToSlowEaseOut,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: <Widget>[
+            SizedBox(height: 10),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
+              child: Text(
+                'Presensi Anda :',
+                style: const TextStyle(
+                  fontSize: 15.0,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ),
+            // Card for missing presence with icon
+            if (DataAbsen == null && DataKegiatan.length < 1 && StatusDinasLuar == 1)
+              Container(
+                padding: const EdgeInsets.all(15.0), // Smaller padding for compact look
+                margin: const EdgeInsets.symmetric(vertical: 0, horizontal: 15.0),
+                width: size.width,
+                decoration: BoxDecoration(
+                  color: Colors.blue, // Change CWarning to a blue color
+                  borderRadius: BorderRadius.circular(10.0), // Adjust corner radius
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.blue.withOpacity(0.5), // Softer shadow in blue
+                      blurRadius: 4,
+                      offset: Offset(2, 2), // Softer shadow position
+                    ),
+                  ],
+                ),
+                child: Row(
+                  children: [
+                    Icon(
+                      Icons.error_outline, // Using "!" symbol
+                      color: Colors.white70,
+                      size: 24, // Adjusted icon size for compactness
+                    ),
+                    SizedBox(width: 10), // Space between icon and text
+                    Expanded(
                       child: Text(
-                        'Presensi Anda :',
+                        "Anda Hari Ini Belum Melakukan Presensi",
                         style: const TextStyle(
-                          fontSize: 15.0,
+                          color: Colors.white70,
                           fontWeight: FontWeight.w600,
                         ),
                       ),
                     ),
-                    if (DataAbsen == null &&
-                        DataKegiatan.length < 1 &&
-                        StatusDinasLuar == 1)
-                      Container(
-                        padding: const EdgeInsets.all(20.0),
-                        margin: const EdgeInsets.symmetric(
-                            vertical: 0, horizontal: 15.0),
-                        width: size.width,
-                        decoration: BoxDecoration(
-                          color: CWarning,
-                          borderRadius: BorderRadius.circular(12.0),
-                          boxShadow: [
-                            BoxShadow(
-                              color: CWarning,
-                              blurRadius: 4,
-                              offset: Offset(4, 4), // Shadow position
-                            ),
-                          ],
-                        ),
-                        child: Text(
-                          "Anda Hari Ini Belum Melakukan Presensi",
-                          style: const TextStyle(
-                              color: Colors.white70,
-                              fontWeight: FontWeight.w600),
-                        ),
-                      ),
-                    if (DataAbsen != null)
-                      Row(
-                        children: <Widget>[
-                          _buildStatCard(
-                              KeteranganMulai,
-                              formatDate(DateTime.parse(DataAbsen['waktu']),
-                                  [HH, ':', nn, ':', ss]),
-                              formatDate(DateTime.parse(DataAbsen['waktu']),
-                                  [dd, '/', mm, '/', yyyy]),
-                              Colors.lightBlue),
-                          _buildStatCard(KeteranganSelesai, jam_pulang,
-                              tgl_pulang, Colors.cyan),
-                        ],
-                      ),
-                    if (DataIstirahat != null)
-                      Row(
-                        children: <Widget>[
-                          _buildStatCard('Jam Presensi Istirahat',
-                              jam_istirahat, "", Colors.lightGreen),
-                        ],
-                      ),
-                    if (AdaDinasLuar == 1)
-                      Container(
-                        width: size.width,
-                        margin: const EdgeInsets.symmetric(
-                            vertical: 5.0, horizontal: 15.0),
-                        padding: const EdgeInsets.all(10.0),
-                        decoration: BoxDecoration(
-                          color: kPrimaryColor.withOpacity(0.8),
-                          borderRadius: BorderRadius.circular(12.0),
-                          boxShadow: [
-                            BoxShadow(
-                              color: kPrimaryColor.withOpacity(0.8),
-                              blurRadius: 4,
-                              offset: Offset(4, 4), // Shadow position
-                            ),
-                          ],
-                        ),
-                        child: Column(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: <Widget>[
-                            Text(
-                              "Dinas Luar :",
-                              style: const TextStyle(
-                                color: Colors.white,
-                                fontSize: 16.0,
-                                fontWeight: FontWeight.w600,
-                              ),
-                            ),
-                            SizedBox(
-                              height: 8,
-                            ),
-                            Text(
-                              DataDinasLuar['no_surat'],
-                              style: const TextStyle(
-                                color: Colors.white,
-                                fontSize: 14.0,
-                                fontWeight: FontWeight.w600,
-                              ),
-                            ),
-                            SizedBox(
-                              height: 4,
-                            ),
-                            Text(
-                              DataDinasLuar['nama_surat'],
-                              style: const TextStyle(
-                                color: Colors.white,
-                                fontSize: 14.0,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                            Text(
-                              "Tanggal : " +
-                                  DataDinasLuar['tanggal_mulai'] +
-                                  " s/d " +
-                                  DataDinasLuar['tanggal_selesai'],
-                              style: const TextStyle(
-                                color: Colors.white,
-                                fontSize: 14.0,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    if (AdaTugasBelajar == 1)
-                      Container(
-                        width: size.width,
-                        margin: const EdgeInsets.symmetric(
-                            vertical: 5.0, horizontal: 15.0),
-                        padding: const EdgeInsets.all(10.0),
-                        decoration: BoxDecoration(
-                          color: kPrimaryColor,
-                          borderRadius: BorderRadius.circular(10.0),
-                        ),
-                        child: Column(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: <Widget>[
-                            Text(
-                              "Tugas Belajar :",
-                              style: const TextStyle(
-                                color: Colors.white,
-                                fontSize: 16.0,
-                                fontWeight: FontWeight.w600,
-                              ),
-                            ),
-                            SizedBox(
-                              height: 8,
-                            ),
-                            Text(
-                              "Kampus : " +
-                                  DataTugasBelajar['tugas_belajar']
-                                      ['nama_kampus'],
-                              style: const TextStyle(
-                                color: Colors.white,
-                                fontSize: 14.0,
-                                fontWeight: FontWeight.w600,
-                              ),
-                            ),
-                            SizedBox(
-                              height: 4,
-                            ),
-                            Text(
-                              "Keterangan : " +
-                                  DataTugasBelajar['tugas_belajar']
-                                      ['keterangan'],
-                              style: const TextStyle(
-                                color: Colors.white,
-                                fontSize: 14.0,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                            Text(
-                              "Tahun : " +
-                                  DataTugasBelajar['tugas_belajar']['tahun'],
-                              style: const TextStyle(
-                                color: Colors.white,
-                                fontSize: 14.0,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
                   ],
-                ))));
-  }
+                ),
+              ),
+            // Cards for Absen if available
+            if (DataAbsen != null)
+              Row(
+                children: <Widget>[
+                  _buildStatCard(
+                    KeteranganMulai,
+                    formatDate(DateTime.parse(DataAbsen['waktu']), [HH, ':', nn, ':', ss]),
+                    formatDate(DateTime.parse(DataAbsen['waktu']), [dd, '/', mm, '/', yyyy]),
+                    Colors.lightBlue, // Change this if needed
+                  ),
+                  _buildStatCard(KeteranganSelesai, jam_pulang, tgl_pulang, Colors.cyan),
+                ],
+              ),
+            // Cards for Istirahat if available
+            if (DataIstirahat != null)
+              Row(
+                children: <Widget>[
+                  _buildStatCard(
+                    'Jam Presensi Istirahat',
+                    jam_istirahat,
+                    "",
+                    Colors.lightGreen,
+                  ),
+                ],
+              ),
+            // Card for Dinas Luar if applicable
+            if (AdaDinasLuar == 1)
+              Container(
+                width: size.width,
+                margin: const EdgeInsets.symmetric(vertical: 5.0, horizontal: 15.0),
+                padding: const EdgeInsets.all(12.0), // Adjusted padding for consistency
+                decoration: BoxDecoration(
+                  color: Colors.blue.withOpacity(0.8), // Change kPrimaryColor to a blue color
+                  borderRadius: BorderRadius.circular(12.0),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.blue.withOpacity(0.8), // Change to blue shadow
+                      blurRadius: 4,
+                      offset: Offset(4, 4),
+                    ),
+                  ],
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: <Widget>[
+                    Text(
+                      "Dinas Luar :",
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 16.0,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                    SizedBox(height: 8),
+                    Text(
+                      DataDinasLuar['no_surat'],
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 14.0,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                    SizedBox(height: 4),
+                    Text(
+                      DataDinasLuar['nama_surat'],
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 14.0,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    Text(
+                      "Tanggal: " +
+                          DataDinasLuar['tanggal_mulai'] +
+                          " s/d " +
+                          DataDinasLuar['tanggal_selesai'],
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 14.0,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            // Card for Tugas Belajar if applicable
+            if (AdaTugasBelajar == 1)
+              Container(
+                width: size.width,
+                margin: const EdgeInsets.symmetric(vertical: 5.0, horizontal: 15.0),
+                padding: const EdgeInsets.all(12.0), // Consistent padding
+                decoration: BoxDecoration(
+                  color: Colors.blue, // Change kPrimaryColor to a blue color
+                  borderRadius: BorderRadius.circular(10.0),
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: <Widget>[
+                    Text(
+                      "Tugas Belajar :",
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 16.0,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                    SizedBox(height: 8),
+                    Text(
+                      "Kampus: " + DataTugasBelajar['tugas_belajar']['nama_kampus'],
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 14.0,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                    SizedBox(height: 4),
+                    Text(
+                      "Keterangan: " + DataTugasBelajar['tugas_belajar']['keterangan'],
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 14.0,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    Text(
+                      "Tahun: " + DataTugasBelajar['tugas_belajar']['tahun'],
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 14.0,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+          ],
+        ),
+      ),
+    ),
+  );
+}
+
 
   SliverToBoxAdapter _buildKegiatanTerkini(double screenHeight) {
   Size size = MediaQuery.of(context).size;
@@ -559,34 +560,48 @@ SliverToBoxAdapter _buildJadwalMapelHariIni(double screenHeight) {
                 ),
               ),
             ),
-            // If there are no schedules, show a message
+            // If there are no schedules, show a message with a smaller card and an icon
             if (ListJadwalMapel.isEmpty)
               Container(
-                padding: const EdgeInsets.all(20.0),
+                padding: const EdgeInsets.all(15.0), // Smaller padding
                 margin: const EdgeInsets.symmetric(
-                    vertical: 5, horizontal: 15.0),
+                    vertical: 5, horizontal: 20.0), // Smaller margin
                 width: size.width,
                 decoration: BoxDecoration(
-                  color: CWarning,
-                  borderRadius: BorderRadius.circular(12.0),
+                  color: Colors.blue, // Change CWarning to blue
+                  borderRadius: BorderRadius.circular(10.0), // Smaller corners
                   boxShadow: [
                     BoxShadow(
-                      color: CWarning,
-                      blurRadius: 4,
-                      offset: Offset(4, 4), // Shadow position
+                      color: Colors.blue.withOpacity(0.5), // Softer blue shadow
+                      blurRadius: 3, // Smaller blur
+                      offset: Offset(2, 2), // Subtle shadow position
                     ),
                   ],
                 ),
-                child: Text(
-                  "Tidak ada jadwal mapel untuk hari ini.",
-                  style: const TextStyle(
-                      color: Colors.white70, fontWeight: FontWeight.w600),
+                child: Row(
+                  children: [
+                    Icon(
+                      Icons.error_outline, // Icon representing "!"
+                      color: Colors.white70,
+                      size: 24, // Smaller icon size
+                    ),
+                    SizedBox(width: 8), // Less space between icon and text
+                    Expanded(
+                      child: Text(
+                        "Tidak ada jadwal mapel untuk hari ini.",
+                        style: const TextStyle(
+                          color: Colors.white70, 
+                          fontWeight: FontWeight.w600
+                        ),
+                      ),
+                    ),
+                  ],
                 ),
               )
             else // Otherwise, show the list of schedules
               Container(
                 width: double.infinity,
-                height: size.height * 0.3,
+                height: size.height * 0.3, // Adjust height as needed
                 child: ListView.builder(
                   itemCount: ListJadwalMapel.length,
                   itemBuilder: (context, index) {
@@ -603,15 +618,15 @@ SliverToBoxAdapter _buildJadwalMapelHariIni(double screenHeight) {
 
 Widget getCardJadwalMapel(Map<String, dynamic> item) {
   return Container(
-    margin: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 16.0),
-    padding: const EdgeInsets.all(16.0),
+    margin: const EdgeInsets.symmetric(vertical: 10.0, horizontal: 20.0),
+    padding: const EdgeInsets.all(20.0),
     decoration: BoxDecoration(
       color: Colors.white,
-      borderRadius: BorderRadius.circular(12.0),
+      borderRadius: BorderRadius.circular(15.0),
       boxShadow: [
         BoxShadow(
-          color: Colors.black12,
-          blurRadius: 6.0,
+          color: Colors.black.withOpacity(0.1), // Lighter shadow
+          blurRadius: 8.0,
           offset: Offset(0, 4),
         ),
       ],
@@ -619,21 +634,80 @@ Widget getCardJadwalMapel(Map<String, dynamic> item) {
     child: Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: <Widget>[
-        Text(
-          item['nama_mapel'],
-          style: TextStyle(
-            fontSize: 18.0,
-            fontWeight: FontWeight.bold,
-          ),
+        Row(
+          children: [
+            Icon(
+              Icons.book,
+              color: Colors.blueAccent, // Accent color for icon
+              size: 24,
+            ),
+            SizedBox(width: 10), // Space between icon and text
+            Text(
+              item['nama_mapel'],
+              style: TextStyle(
+                fontSize: 20.0,
+                fontWeight: FontWeight.w600, // Thicker font for emphasis
+                color: Colors.black87, // Softer black color
+              ),
+            ),
+          ],
+        ),
+        SizedBox(height: 12),
+        Row(
+          children: [
+            Icon(
+              Icons.access_time_filled,
+              color: Colors.grey,
+              size: 20,
+            ),
+            SizedBox(width: 6),
+            Text(
+              "${item['jam_mulai']} - ${item['jam_selesai']}",
+              style: TextStyle(
+                fontSize: 16.0,
+                color: Colors.grey[600],
+              ),
+            ),
+          ],
         ),
         SizedBox(height: 8),
-        Text("Jam: ${item['jam_mulai']} - ${item['jam_selesai']}"),
-        Text("Ruang: ${item['ruang_kelas']}"),
+        Row(
+          children: [
+            Icon(
+              Icons.location_on,
+              color: Colors.redAccent, // Red accent for location
+              size: 20,
+            ),
+            SizedBox(width: 6),
+            Text(
+              "Ruang: ${item['ruang_kelas']}",
+              style: TextStyle(
+                fontSize: 16.0,
+                color: Colors.grey[600],
+              ),
+            ),
+          ],
+        ),
+        SizedBox(height: 8),
+        Container(
+          padding: EdgeInsets.symmetric(vertical: 6.0, horizontal: 10.0),
+          decoration: BoxDecoration(
+            color: Colors.blueAccent.withOpacity(0.1), // Blue background
+            borderRadius: BorderRadius.circular(12.0),
+          ),
+          child: Text(
+            'Aktif',
+            style: TextStyle(
+              fontSize: 14.0,
+              fontWeight: FontWeight.w500,
+              color: Colors.blueAccent,
+            ),
+          ),
+        ),
       ],
     ),
   );
 }
-
 
 
   Widget getCardKegiatan(item) {
@@ -827,10 +901,11 @@ Widget getCardJadwalMapel(Map<String, dynamic> item) {
                         height: 59,
                         width: 59,
                         decoration: BoxDecoration(
-                          borderRadius: BorderRadius.circular(50),
-                          image: DecorationImage(
-                              image: NetworkImage(Core().Url + Foto)),
-                        ),
+  borderRadius: BorderRadius.circular(70),
+  image: DecorationImage(
+    image: AssetImage('assets/images/smp1logo.png'),// Optional: adjust how the image fits the box
+  ),
+),
                       ),
                       SizedBox(
                         width: 15,

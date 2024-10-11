@@ -15,62 +15,67 @@ class _StatsScreenState extends State<StatsScreen> {
   @override
   Widget build(BuildContext context) {
     Size size = MediaQuery.of(context).size;
+
     return Scaffold(
-        backgroundColor: CBackground,
-        // appBar: CustomAppBar(),
-        body: Stack(
+      body: Container(
+        color: CBackground, // Background color
+        child: Stack(
           children: [
-            Positioned(
-              top: 0,
-              right: 0,
+            // Center the background image, fitting to the box
+            Align(
+              alignment: Alignment.center, // Center the image
               child: Image.asset(
-                "assets/images/dash_tr.png",
-                height: size.height * 0.4,
+                "assets/images/WaliRename.png",
+                fit: BoxFit.cover, // Ensures the image fills the space
+                width: size.width, // Adjusts to full screen width
+                height: size.height, // Adjusts to full screen height
               ),
             ),
-            Positioned(
-              bottom: 0,
-              left: 0,
-              child: Image.asset(
-                "assets/images/dash_bl.png",
-                height: size.height * 0.4,
-                width: size.width,
-                fit: BoxFit.fill,
-              ),
-            ),
+            
+            // CustomScrollView for scrollable content
             CustomScrollView(
               physics: ClampingScrollPhysics(),
               slivers: <Widget>[
-                _buildHeader(),
+                _buildHeader(), // Build your header
                 SliverPadding(
                   padding: const EdgeInsets.symmetric(horizontal: 10.0),
                   sliver: SliverToBoxAdapter(
-                    child: StatsGrid(),
+                    child: StatsGrid(), // Add your StatsGrid here
                   ),
                 ),
-                // SliverPadding(
-                //   padding: const EdgeInsets.only(top: 20.0),
-                //   sliver: SliverToBoxAdapter(
-                //     child: CovidBarChart(covidCases: covidUSADailyNewCases),
-                //   ),
-                // ),
+                // Additional slivers can be added here
               ],
-            )
+            ),
           ],
-        ));
+        ),
+      ),
+    );
   }
 
   SliverPadding _buildHeader() {
     return SliverPadding(
       padding: const EdgeInsets.only(
-          left: 20.0, right: 20.0, bottom: 20.0, top: 40.0),
+        left: 20.0, 
+        right: 20.0, 
+        bottom: 20.0, 
+        top: 40.0,
+      ),
       sliver: SliverToBoxAdapter(
-        child: Text(
-          'Statistik Presensi',
-          style: const TextStyle(
-            color: CText,
-            fontSize: 25.0,
-            fontWeight: FontWeight.bold,
+        child: Card(
+          elevation: 5.0, // Adds shadow for a 3D effect
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(10.0), // Rounded corners
+          ),
+          child: Padding(
+            padding: const EdgeInsets.all(16.0), // Inner padding for the card
+            child: Text(
+              'Statistik Presensi',
+              style: const TextStyle(
+                color: CText,
+                fontSize: 25.0,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
           ),
         ),
       ),

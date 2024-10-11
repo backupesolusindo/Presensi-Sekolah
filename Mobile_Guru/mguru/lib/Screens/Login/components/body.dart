@@ -58,16 +58,16 @@ class _Body extends State<Body> {
               "HALAMAN LOGIN",
               style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
             ),
-            SizedBox(height: size.height * 0.06),
+            SizedBox(height: size.height * 0.03),
             Container(
               child: Image.asset(
-                "assets/images/logo.png",
-                width: size.width * 0.6, //ukuran gambar
+                "assets/images/smp1logo.png",
+                width: size.width * 0.4, //ukuran gambar
               ),
             ),
-            SizedBox(height: size.height * 0.03),
+            SizedBox(height: size.height * 0.05),
             RoundedInputField(
-              hintText: "NIP / NIK atau SSO Email Anda",
+              hintText: "NIP Anda",
               IdCon: txtUsername,
               onChanged: (String value) {},
             ),
@@ -138,7 +138,7 @@ class _Body extends State<Body> {
                   });
                 },
               ),
-            SizedBox(height: size.height * 0.03),
+            SizedBox(height: size.height * 0.01),
           ],
         ),
       ),
