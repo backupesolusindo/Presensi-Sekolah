@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'home.dart';
+import 'riwayat.dart';
 import 'bottombar.dart'; // Import bottom bar
 
 class ProfilePage extends StatefulWidget {
@@ -9,13 +11,24 @@ class ProfilePage extends StatefulWidget {
 class _ProfilePageState extends State<ProfilePage> {
   int _currentIndex = 2; // Set index 2 untuk halaman profil
 
+ 
   void _onItemTapped(int index) {
+    setState(() {
+      _currentIndex = index;
+    });
+
     if (index == 0) {
-      Navigator.pushNamed(context, '/home'); // Navigasi ke Home
-    } else if (index == 1) {
-      Navigator.pushNamed(context, '/history'); // Navigasi ke Riwayat
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (context) => HomePage(nama_wali: '', no_hp: '',)), // Pindah ke halaman Home
+      );
+    } else if (index == 2) {
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (context) => RiwayatPage()), // Pindah ke halaman Profile
+      );
     }
-    // Untuk profil (index 2), tetap di halaman ini
+    // Untuk index 1, tetap di halaman Riwayat
   }
 
   @override
