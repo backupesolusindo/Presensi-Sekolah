@@ -75,7 +75,6 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
     WidgetsBinding.instance.addObserver(this);
     getPref();
     cekFakeGPS();
-    fetchJadwalMapel(); // Fetch the schedule
     Timer.periodic(Duration(seconds: 1), (Timer t) => _getTime());
     
   }
@@ -93,38 +92,44 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
   }
 
   getPref() async {
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    UUID = prefs.getString("ID")!;
-    NIP = prefs.getString("NIP")!;
-    Nama = prefs.getString("Nama")!;
+  SharedPreferences prefs = await SharedPreferences.getInstance();
+  UUID = prefs.getString("ID")!;
+  NIP = prefs.getString("NIP")!;
+  Nama = prefs.getString("Nama")!;
 
-    if (prefs.getInt("CameraSelect") == null) {
-      prefs.setInt("CameraSelect", 1);
-    }
-
-    bool status = await Geolocator.isLocationServiceEnabled();
-    if (!status) {
-      Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) {
-        return AktifGPS();
-      }));
-    }
-
-    var url = Uri.parse(Core().ApiUrl + "Login/set_token");
-    var response = await http.post(url, body: {
-      "uuid": prefs.getString("ID"),
-      "token": prefs.getString("token"),
-    });
-    print(response.body);
-    print("Login Pref :" + UUID);
-    getDataDash();
-    fetchKegiatan();
+  if (prefs.getInt("CameraSelect") == null) {
+    prefs.setInt("CameraSelect", 1);
   }
 
+  bool status = await Geolocator.isLocationServiceEnabled();
+  if (!status) {
+    Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) {
+      return AktifGPS();
+    }));
+  }
+
+  var url = Uri.parse(Core().ApiUrl + "Login/set_token");
+  var response = await http.post(url, body: {
+    "uuid": prefs.getString("ID"),
+    "token": prefs.getString("token"),
+  });
+  print(response.body);
+  print("Login Pref :" + UUID);
+  getDataDash();
+  fetchKegiatan();
+  // Fetch Jadwal Mapel setelah login
+  fetchJadwalMapel();
+}
+
   Future<String> getDataDash() async {
-    SharedPreferences prefs = await SharedPreferences.getInstance();
+  SharedPreferences prefs = await SharedPreferences.getInstance();
+  
+  try {
     var res = await http.get(Uri.parse(Core().ApiUrl + "Dash/get_dash/" + UUID),
         headers: {"Accept": "application/json"});
+    
     var resBody = json.decode(res.body);
+    
     setState(() {
       statusLoading = 0;
       ssHeader = true;
@@ -135,6 +140,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
         });
       });
 
+      // Mengambil data pegawai, lokasi, dan lainnya
       DataPegawai = resBody['data']["pegawai"];
       DataLokasi = resBody['data']["lokasi"];
       DataAbsen = resBody['data']["absen"];
@@ -149,6 +155,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
       AdaTugasBelajar = int.parse(DataTugasBelajar['ada_tugas_belajar']);
       Foto = DataPegawai["foto_profil"];
 
+      // Simpan data ke SharedPreferences
       prefs.setString("NIP", DataPegawai['NIP']);
       prefs.setString("Nama", DataPegawai['nama_pegawai']);
       prefs.setString("Lokasi", DataLokasi['nama_kampus']);
@@ -158,15 +165,18 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
       prefs.setDouble("LokasiLng", double.parse(DataLokasi['longtitude']));
       prefs.setDouble("Radius", double.parse(DataLokasi['radius']));
 
+      // Cek versi
       if (resBody['data']["version"] > Core().Version) {
         _showNotifUpdate();
       }
-      // print("Lintas Hari : "+resBody['data']["jabatan"]["lintas_hari"]);
+
+      // Status lintas hari
       if (resBody['data']["jabatan"]["lintas_hari"] != null) {
         status_lintashari =
             int.parse(resBody['data']["jabatan"]["lintas_hari"]);
       }
 
+      // Set status kerja dan keterangan
       if (DataAbsen["jenis_absen"] == "1") {
         statusWF = 1;
         KeteranganMulai = "Jam Presensi Datang";
@@ -176,12 +186,16 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
         KeteranganMulai = "Jam Presensi Mulai WFH";
         KeteranganSelesai = "Jam Presensi Selesai WFH";
       }
+
+      // Waktu pulang
       if (DataAbsenPulang != null) {
         jam_pulang = formatDate(
             DateTime.parse(DataAbsenPulang['waktu']), [HH, ':', nn, ':', ss]);
         tgl_pulang = formatDate(
             DateTime.parse(DataAbsenPulang['waktu']), [dd, '/', mm, '/', yyyy]);
       }
+
+      // Waktu istirahat
       if (DataSelesaiIstirahat != null) {
         jam_istirahat = formatDate(DateTime.parse(DataIstirahat['waktu']),
                 [HH, ':', nn, ':', ss]) +
@@ -194,9 +208,17 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
             " - Belum Presensi";
       }
     });
+
+    // Menambahkan pemanggilan fetchJadwalMapel di sini
+    await fetchJadwalMapel(); // Pastikan Anda menunggu sampai jadwal diambil
     print(resBody);
     return "";
+    
+  } catch (e) {
+    print("Error fetching data: $e");
+    return "Error"; // Kembalikan error jika terjadi kesalahan
   }
+}
 
   fetchKegiatan() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
@@ -215,25 +237,41 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
     }
   }
 
-    Future<void> fetchJadwalMapel() async {
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    var url = Uri.parse(Core().ApiUrl + "Dash/getJadwalMapel");
-    
-    var response = await http.post(url, body: {
-      "uuid": prefs.getString("ID"),
-    });
+Future<List<Map<String, dynamic>>> fetchJadwalMapel() async {
+  SharedPreferences prefs = await SharedPreferences.getInstance();
+  String? uuid = prefs.getString("ID");
+
+  if (uuid == null) {
+    print("Error: UUID is null.");
+    return []; 
+  }
+
+  var url = Uri.parse(Core().ApiUrl + "ApiJadwalMapel/JadwalMapel/getJadwalMapel_byUUID/$uuid");
+  try {
+    var response = await http.get(url);
 
     if (response.statusCode == 200) {
-      var data = json.decode(response.body)['data'];
-      setState(() {
-        ListJadwalMapel = List<Map<String, dynamic>>.from(data);
-      });
+      var responseData = json.decode(response.body);
+      if (responseData['data'] != null && responseData['status'] == true) {
+        // Convert the data into list of maps
+        ListJadwalMapel = List<Map<String, dynamic>>.from(responseData['data']);
+        setState(() {}); // Update UI after getting data
+        return ListJadwalMapel;
+      } else {
+        print("Error: ${responseData['message']}");
+        return [];
+      }
     } else {
-      setState(() {
-        ListJadwalMapel = [];
-      });
+      print("Failed to fetch data: ${response.statusCode}");
+      throw Exception("Failed to load jadwal mapel");
     }
+  } catch (e) {
+    print("Error fetching data: $e");
+    return [];
   }
+}
+
+
 
   @override
 Widget build(BuildContext context) {
@@ -560,37 +598,35 @@ SliverToBoxAdapter _buildJadwalMapelHariIni(double screenHeight) {
                 ),
               ),
             ),
-            // If there are no schedules, show a message with a smaller card and an icon
             if (ListJadwalMapel.isEmpty)
               Container(
-                padding: const EdgeInsets.all(15.0), // Smaller padding
-                margin: const EdgeInsets.symmetric(
-                    vertical: 5, horizontal: 20.0), // Smaller margin
+                padding: const EdgeInsets.all(15.0),
+                margin: const EdgeInsets.symmetric(vertical: 5, horizontal: 20.0),
                 width: size.width,
                 decoration: BoxDecoration(
-                  color: Colors.blue, // Change CWarning to blue
-                  borderRadius: BorderRadius.circular(10.0), // Smaller corners
+                  color: Colors.blue,
+                  borderRadius: BorderRadius.circular(10.0),
                   boxShadow: [
                     BoxShadow(
-                      color: Colors.blue.withOpacity(0.5), // Softer blue shadow
-                      blurRadius: 3, // Smaller blur
-                      offset: Offset(2, 2), // Subtle shadow position
+                      color: Colors.blue.withOpacity(0.5),
+                      blurRadius: 3,
+                      offset: Offset(2, 2),
                     ),
                   ],
                 ),
                 child: Row(
                   children: [
                     Icon(
-                      Icons.error_outline, // Icon representing "!"
+                      Icons.error_outline,
                       color: Colors.white70,
-                      size: 24, // Smaller icon size
+                      size: 24,
                     ),
-                    SizedBox(width: 8), // Less space between icon and text
+                    SizedBox(width: 8),
                     Expanded(
                       child: Text(
                         "Tidak ada jadwal mapel untuk hari ini.",
                         style: const TextStyle(
-                          color: Colors.white70, 
+                          color: Colors.white70,
                           fontWeight: FontWeight.w600
                         ),
                       ),
@@ -598,10 +634,10 @@ SliverToBoxAdapter _buildJadwalMapelHariIni(double screenHeight) {
                   ],
                 ),
               )
-            else // Otherwise, show the list of schedules
+            else
               Container(
                 width: double.infinity,
-                height: size.height * 0.3, // Adjust height as needed
+                height: size.height * 0.3,
                 child: ListView.builder(
                   itemCount: ListJadwalMapel.length,
                   itemBuilder: (context, index) {
@@ -625,7 +661,7 @@ Widget getCardJadwalMapel(Map<String, dynamic> item) {
       borderRadius: BorderRadius.circular(15.0),
       boxShadow: [
         BoxShadow(
-          color: Colors.black.withOpacity(0.1), // Lighter shadow
+          color: Colors.black.withOpacity(0.1),
           blurRadius: 8.0,
           offset: Offset(0, 4),
         ),
@@ -638,16 +674,16 @@ Widget getCardJadwalMapel(Map<String, dynamic> item) {
           children: [
             Icon(
               Icons.book,
-              color: Colors.blueAccent, // Accent color for icon
+              color: Colors.blueAccent,
               size: 24,
             ),
-            SizedBox(width: 10), // Space between icon and text
+            SizedBox(width: 10),
             Text(
-              item['nama_mapel'],
+              item['nama_mapel'], // Mengambil nama mata pelajaran
               style: TextStyle(
                 fontSize: 20.0,
-                fontWeight: FontWeight.w600, // Thicker font for emphasis
-                color: Colors.black87, // Softer black color
+                fontWeight: FontWeight.w600,
+                color: Colors.black87,
               ),
             ),
           ],
@@ -662,7 +698,7 @@ Widget getCardJadwalMapel(Map<String, dynamic> item) {
             ),
             SizedBox(width: 6),
             Text(
-              "${item['jam_mulai']} - ${item['jam_selesai']}",
+              "${item['waktu_mulai']} - ${item['waktu_selesai']}", // Menampilkan waktu mulai dan selesai
               style: TextStyle(
                 fontSize: 16.0,
                 color: Colors.grey[600],
@@ -675,12 +711,12 @@ Widget getCardJadwalMapel(Map<String, dynamic> item) {
           children: [
             Icon(
               Icons.location_on,
-              color: Colors.redAccent, // Red accent for location
+              color: Colors.redAccent,
               size: 20,
             ),
             SizedBox(width: 6),
             Text(
-              "Ruang: ${item['ruang_kelas']}",
+              "Kelas: ${item['nama_kelas']}", // Menampilkan kelas
               style: TextStyle(
                 fontSize: 16.0,
                 color: Colors.grey[600],
@@ -689,25 +725,26 @@ Widget getCardJadwalMapel(Map<String, dynamic> item) {
           ],
         ),
         SizedBox(height: 8),
-        Container(
-          padding: EdgeInsets.symmetric(vertical: 6.0, horizontal: 10.0),
-          decoration: BoxDecoration(
-            color: Colors.blueAccent.withOpacity(0.1), // Blue background
-            borderRadius: BorderRadius.circular(12.0),
+        Text(
+          "Hari: ${item['hari']}", // Menampilkan hari
+          style: TextStyle(
+            fontSize: 16.0,
+            color: Colors.black,
           ),
-          child: Text(
-            'Aktif',
-            style: TextStyle(
-              fontSize: 14.0,
-              fontWeight: FontWeight.w500,
-              color: Colors.blueAccent,
-            ),
+        ),
+        SizedBox(height: 8),
+        Text(
+          "Nama Pegawai: ${item['nama_pegawai']}", // Menampilkan nama pegawai
+          style: TextStyle(
+            fontSize: 16.0,
+            color: Colors.black,
           ),
         ),
       ],
     ),
   );
 }
+
 
 
   Widget getCardKegiatan(item) {

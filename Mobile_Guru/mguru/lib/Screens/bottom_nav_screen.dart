@@ -28,7 +28,7 @@ class _BottomNavScreenState extends State<BottomNavScreen> {
         backgroundColor: Colors.white,
         showSelectedLabels: false,
         showUnselectedLabels: false,
-        selectedItemColor: Color(0xFF003366), // Darker blue
+        selectedItemColor: Color(0xFF336699), // Darker blue
         unselectedItemColor: Colors.grey[400], // Lighter shade for unselected items
         elevation: 30.0,
         items:
