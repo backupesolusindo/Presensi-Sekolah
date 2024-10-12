@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'home.dart'; // Import the home.dart file
+import 'login.dart'; // Import the LoginPage
 
 void main() {
   runApp(MyApp());
@@ -9,11 +9,14 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      debugShowCheckedModeBanner: false, // Menghilangkan banner debug
-      home: HomePage(), // Set HomePage dari home.dart sebagai halaman utama
+      debugShowCheckedModeBanner: false, // Optional: Hides the debug banner
+      title: 'Absensi SMPN 1 Jember',
       theme: ThemeData(
-        primarySwatch: Colors.blue, // Ubah warna tema sesuai kebutuhan
+        primarySwatch: Colors.blue,
+        visualDensity: VisualDensity.adaptivePlatformDensity,
       ),
+      home: LoginPage(), // Set LoginPage as the initial page
+      // home: DashboardPage(nama_wali: 'Wali Murid', nis_anak: '12345678'),
     );
   }
 }

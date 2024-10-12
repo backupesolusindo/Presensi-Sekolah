@@ -3,11 +3,11 @@ import 'dart:io';
 import 'dart:math';
 import 'dart:typed_data';
 import 'package:flutter/material.dart';
-import 'package:image_picker/image_picker.dart';
 import 'package:image/image.dart' as img;
 import 'package:google_mlkit_face_detection/google_mlkit_face_detection.dart';
 import 'package:lottie/lottie.dart';
 import 'package:http/http.dart' as http;
+import 'package:camera/camera.dart'; // Tambahkan package kamera
 import 'ML/Recognition.dart';
 import 'ML/Recognizer.dart';
 
@@ -19,9 +19,11 @@ class RecognitionScreen extends StatefulWidget {
 }
 
 class _RecognitionScreenState extends State<RecognitionScreen> {
-  late ImagePicker imagePicker;
+  CameraController? cameraController; // Controller untuk kamera
   File? _image;
-  bool isLoading = false; // Add this line
+  bool isLoading = false;
+  bool isFrontCamera = true; // Menyimpan status kamera (depan/belakang)
+  bool showPreview = true; // Untuk menampilkan preview kamera atau gambar hasil
 
   late FaceDetector faceDetector;
   late Recognizer recognizer;
@@ -29,12 +31,12 @@ class _RecognitionScreenState extends State<RecognitionScreen> {
   List<Recognition> recognitions = [];
   List<Face> faces = [];
   var image;
-  List<String> detectedNISList = []; // Ubah menjadi List
+  List<String> detectedNISList = [];
 
   @override
   void initState() {
     super.initState();
-    imagePicker = ImagePicker();
+    initializeCamera(); // Inisialisasi kamera
 
     final options = FaceDetectorOptions();
     faceDetector = FaceDetector(options: options);
@@ -42,55 +44,122 @@ class _RecognitionScreenState extends State<RecognitionScreen> {
     recognizer = Recognizer();
   }
 
-  Future<void> _imgFromCamera() async {
-    setState(() {
-      isLoading = true; // Start loading
-    });
+  Future<void> initializeCamera([bool isFront = true]) async {
+    // Ambil daftar kamera yang tersedia
+    final cameras = await availableCameras();
 
-    XFile? pickedFile = await imagePicker.pickImage(source: ImageSource.camera);
-    if (pickedFile != null) {
-      setState(() {
-        _image = File(pickedFile.path);
-      });
-      await doFaceDetection(); // Wait for face detection to complete
-    }
+    // Pilih kamera berdasarkan `isFront`
+    final selectedCamera = isFront
+        ? cameras.firstWhere(
+            (camera) => camera.lensDirection == CameraLensDirection.front,
+          )
+        : cameras.firstWhere(
+            (camera) => camera.lensDirection == CameraLensDirection.back,
+          );
 
-    setState(() {
-      isLoading = false; // Stop loading
-    });
+    // Inisialisasi controller kamera
+    cameraController = CameraController(
+      selectedCamera,
+      ResolutionPreset.high,
+    );
+
+    // Mulai kamera
+    await cameraController?.initialize();
+    setState(() {});
   }
 
-  Future<void> _imgFromGallery() async {
-    setState(() {
-      isLoading = true; // Start loading
-    });
-
-    XFile? pickedFile =
-        await imagePicker.pickImage(source: ImageSource.gallery);
-    if (pickedFile != null) {
-      setState(() {
-        _image = File(pickedFile.path);
-      });
-      await doFaceDetection(); // Wait for face detection to complete
+  Future<void> captureImage() async {
+    if (cameraController == null || !cameraController!.value.isInitialized) {
+      return;
     }
 
-    setState(() {
-      isLoading = false; // Stop loading
-    });
+    try {
+      setState(() {
+        isLoading = true;
+      });
+
+      // Ambil gambar dari kamera
+      final XFile imageFile = await cameraController!.takePicture();
+      setState(() {
+        _image = File(imageFile.path);
+        showPreview = false; // Ganti ke tampilan gambar hasil
+      });
+
+      await doFaceDetection(); // Deteksi wajah setelah gambar diambil
+
+      setState(() {
+        isLoading = false;
+      });
+    } catch (e) {
+      setState(() {
+        isLoading = false;
+      });
+      print("Error capturing image: $e");
+    }
   }
 
   Future<void> doFaceDetection() async {
     recognitions.clear();
-    detectedNISList.clear(); // Kosongkan list sebelum deteksi
-    _image = await removeRotation(_image!);
+    detectedNISList.clear();
 
     if (_image != null) {
+      _image = await removeRotation(_image!);
       var imageBytes = await _image!.readAsBytes();
       image = await decodeImageFromList(imageBytes);
 
       InputImage inputImage = InputImage.fromFile(_image!);
       faces = await faceDetector.processImage(inputImage);
 
+      if (faces.isEmpty) {
+        setState(() {
+          showPreview =
+              false; // Tidak menampilkan preview jika wajah tidak terdeteksi
+        });
+
+        // Tampilkan dialog ketika wajah tidak terdeteksi
+        showDialog(
+          context: context,
+          builder: (ctx) => AlertDialog(
+            shape:
+                RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+            title: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const Icon(Icons.error_outline,
+                    color: Colors.red, size: 80), // Ikon X merah besar
+                const SizedBox(height: 10),
+                const Text(
+                  "Wajah Tidak Terdeteksi",
+                  style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
+                  textAlign: TextAlign.center,
+                ),
+              ],
+            ),
+            content: const Text(
+              "Pastikan wajah terlihat jelas dan coba lagi.",
+              style: TextStyle(fontSize: 16),
+              textAlign: TextAlign.center,
+            ),
+            actions: [
+              TextButton(
+                onPressed: () {
+                  Navigator.pop(ctx); // Tutup dialog dan kembali
+                  setState(() {
+                    showPreview = true; // Kembali ke tampilan preview kamera
+                  });
+                },
+                style: TextButton.styleFrom(
+                  foregroundColor: Colors.red,
+                ),
+                child: const Text("Coba Lagi"),
+              ),
+            ],
+          ),
+        );
+        return;
+      }
+
+      // Jika wajah terdeteksi, lanjutkan dengan proses pengenalan
       for (Face face in faces) {
         Rect faceRect = face.boundingBox;
         num left = max(0, faceRect.left);
@@ -115,14 +184,29 @@ class _RecognitionScreenState extends State<RecognitionScreen> {
           Recognition recognition = recognizer.recognize(croppedFace, faceRect);
           recognitions.add(recognition);
 
-          // Simpan NIS yang terdeteksi (jika belum ada dalam list)
           if (!detectedNISList.contains(recognition.nis)) {
             detectedNISList.add(recognition.nis);
           }
         }
       }
 
-      drawRectangleAroundFaces();
+      // Jika tidak ada wajah yang dikenali, tampilkan dialog error
+      if (detectedNISList.isEmpty) {
+        showDialog(
+          context: context,
+          builder: (BuildContext context) {
+            return _buildDialog(
+              title: 'Gagal',
+              message: 'Wajah tidak dikenali',
+              icon: Icons.error,
+              iconColor: Colors.red,
+            );
+          },
+        );
+      } else {
+        // Jika wajah dikenali, lanjutkan dengan proses lainnya
+        drawRectangleAroundFaces();
+      }
     }
   }
 
@@ -157,7 +241,7 @@ class _RecognitionScreenState extends State<RecognitionScreen> {
         builder: (BuildContext context) {
           return _buildDialog(
             title: 'Gagal',
-            message: 'Wajah tidak terdeteksi',
+            message: 'Wajah tidak terdeteksi, coba foto lagi',
             icon: Icons.error,
             iconColor: Colors.red,
           );
@@ -166,30 +250,49 @@ class _RecognitionScreenState extends State<RecognitionScreen> {
       return;
     }
 
-    final url =
-        'https://presensi-smp1.esolusindo.com/Api/ApiGerbang/Gerbang/uploadAbsen';
-
-    // Mengirim semua NIS yang terdeteksi
-    for (String nis in detectedNISList) {
-      final response = await http.post(
-        Uri.parse(url),
-        headers: {'Content-Type': 'application/json'},
-        body: json.encode({'nis': nis, 'status': 'absen'}),
-      );
-
-      if (response.statusCode != 200) {
-        // Tangani jika ada kesalahan
+    for (Recognition rectangle in recognitions) {
+      if (rectangle.name == "Tidak dikenali") {
+        // Tangani jika wajah tidak dikenali
         showDialog(
           context: context,
           builder: (BuildContext context) {
             return _buildDialog(
               title: 'Gagal',
-              message: 'Gagal Absen $nis',
+              message: 'Wajah belum terdaftar',
               icon: Icons.error,
               iconColor: Colors.red,
             );
           },
         );
+        return;
+      } else {
+        // Nama dari rectangle yang dikenali
+        String recognizedName = rectangle.name;
+        print("Wajah dikenali: $recognizedName");
+
+        // Lanjutkan dengan proses absen
+        final url =
+            'https://presensi-smp1.esolusindo.com/Api/ApiGerbang/Gerbang/uploadAbsen';
+
+        final response = await http.post(
+          Uri.parse(url),
+          headers: {'Content-Type': 'application/json'},
+          body: json.encode({'nis': rectangle.nis, 'status': 'absen'}),
+        );
+
+        if (response.statusCode != 200) {
+          showDialog(
+            context: context,
+            builder: (BuildContext context) {
+              return _buildDialog(
+                title: 'Gagal',
+                message: 'Gagal Absen untuk $recognizedName',
+                icon: Icons.error,
+                iconColor: Colors.red,
+              );
+            },
+          );
+        }
       }
     }
 
@@ -255,11 +358,8 @@ class _RecognitionScreenState extends State<RecognitionScreen> {
     );
   }
 
-  TextEditingController textEditingController = TextEditingController();
-
   @override
   Widget build(BuildContext context) {
-    double screenWidth = MediaQuery.of(context).size.width;
     return Scaffold(
       appBar: PreferredSize(
         preferredSize: Size.fromHeight(kToolbarHeight),
@@ -298,131 +398,107 @@ class _RecognitionScreenState extends State<RecognitionScreen> {
                   crossAxisAlignment: CrossAxisAlignment.center,
                   children: [
                     Lottie.asset(
-                      'assets/loading1.json', // Ensure this path is correct
+                      "assets/loading1.json",
                       width: 100,
                       height: 100,
                     ),
-                    SizedBox(height: 20),
-                    Text(
-                      'Mohon Ditunggu',
+                    const Text(
+                      'Loading...',
                       style:
                           TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                     ),
                   ],
                 ),
               ),
-            ),
-          if (!isLoading) // Only show the image if not loading
-            image != null
-                ? Center(
-                    child: Container(
-                      margin: const EdgeInsets.symmetric(
-                          horizontal: 20, vertical: 20),
-                      child: FittedBox(
-                        fit: BoxFit
-                            .contain, // Make sure the image fits within the container
-                        child: SizedBox(
-                          width: 2450,
-                          height: 2450,
-                          child: CustomPaint(
-                            painter: FacePainter(
-                              facesList: recognitions,
-                              imageFile: image,
-                            ),
-                          ),
-                        ),
-                      ),
-                    ),
-                  )
-                : Container(
-                    margin: const EdgeInsets.only(top: 100),
-                    child: Image.asset(
-                      "images/logo.png",
-                      width: screenWidth - 100,
-                      height: screenWidth - 100,
+            )
+          else if (cameraController != null &&
+              cameraController!.value.isInitialized &&
+              showPreview)
+            // Tampilkan preview kamera dengan ukuran penuh
+            Expanded(
+              child: CameraPreview(cameraController!),
+            )
+          else if (!showPreview && _image != null)
+            Expanded(
+              child: Container(
+                margin: const EdgeInsets.all(20),
+                child: FittedBox(
+                  fit: BoxFit
+                      .contain, // Sesuaikan gambar agar pas dengan ukuran layar
+                  child: SizedBox(
+                    width: image.width
+                        .toDouble(), // Menggunakan ukuran asli gambar
+                    height: image.height.toDouble(),
+                    child: CustomPaint(
+                      painter: FacePainter(
+                          facesList: recognitions, imageFile: image),
                     ),
                   ),
-          const Spacer(), // Spacer pushes buttons down
-          //-------------------tombol absen----------------//
-          Container(
-            margin: const EdgeInsets.only(bottom: 30), // Adjust the margin here
-            child: Column(
-              children: [
-                Row(
-                  mainAxisAlignment:
-                      MainAxisAlignment.center, // Align buttons in center
-                  children: [
-                    Card(
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(20),
-                      ),
-                      elevation: 5,
-                      child: InkWell(
-                        borderRadius: BorderRadius.circular(20),
-                        onTap: _imgFromCamera,
-                        child: Container(
-                          width: screenWidth / 2 - 50,
-                          height: screenWidth / 2 - 50,
-                          decoration: BoxDecoration(
-                            borderRadius: BorderRadius.circular(20),
-                            gradient: const LinearGradient(
-                              colors: [
-                                Colors.blue,
-                                Colors.lightBlueAccent
-                              ], // Updated to a blue gradient
-                              begin: Alignment.topLeft,
-                              end: Alignment.bottomRight,
-                            ),
-                          ),
-                          child: Column(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              Icon(Icons.camera_alt,
-                                  color: Colors.white, size: screenWidth / 6),
-                              const SizedBox(height: 10),
-                              const Text(
-                                "Kamera",
-                                style: TextStyle(
-                                  color: Colors.white,
-                                  fontSize: 18,
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ),
-                    ),
-                  ],
                 ),
-                SizedBox(height: 10), // Add a small gap between the buttons
-                if (image !=
-                    null) // Show "Verifikasi" only if the image is available
-                  Padding(
-                    padding: const EdgeInsets.symmetric(vertical: 10.0),
-                    child: ElevatedButton(
-                      onPressed: verifyAttendance,
-                      child: Text("Verifikasi"),
-                      style: ElevatedButton.styleFrom(
-                        padding:
-                            EdgeInsets.symmetric(horizontal: 40, vertical: 20),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(30),
-                        ),
-                        backgroundColor: Colors.blueAccent,
-                        foregroundColor:
-                            const Color.fromARGB(255, 255, 255, 255),
-                        shadowColor: Colors.blue.withOpacity(0.5),
-                        elevation: 5,
-                      ),
+              ),
+            ),
+          SizedBox(height: 20),
+          if (showPreview)
+            ElevatedButton(
+              onPressed: () async {
+                await captureImage(); // Mengambil gambar langsung dari kamera
+              },
+              child: Text('Ambil Gambar'),
+              style: ElevatedButton.styleFrom(
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(20),
+                ),
+                padding: EdgeInsets.symmetric(horizontal: 40, vertical: 20),
+                textStyle: TextStyle(fontSize: 16),
+              ),
+            ),
+          if (!showPreview && detectedNISList.isNotEmpty)
+            Row(
+              mainAxisAlignment:
+                  MainAxisAlignment.center, // Posisikan di tengah
+              children: [
+                ElevatedButton(
+                  onPressed: () {
+                    setState(() {
+                      showPreview = true; // Kembali ke tampilan preview kamera
+                    });
+                  },
+                  child: Text('Ambil Ulang'),
+                  style: ElevatedButton.styleFrom(
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(20),
                     ),
+                    padding: EdgeInsets.symmetric(horizontal: 10, vertical: 20),
+                    textStyle: TextStyle(fontSize: 16),
                   ),
+                ),
+                SizedBox(width: 20), // Spasi di antara tombol
+                ElevatedButton(
+                  onPressed: () async {
+                    await verifyAttendance(); // Mengirim data untuk verifikasi absen
+                  },
+                  child: Text('Verifikasi Kehadiran'),
+                  style: ElevatedButton.styleFrom(
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(20),
+                    ),
+                    padding: EdgeInsets.symmetric(horizontal: 10, vertical: 20),
+                    textStyle: TextStyle(fontSize: 16),
+                  ),
+                ),
               ],
             ),
-          ),
+          SizedBox(height: 20),
         ],
       ),
     );
+  }
+
+  @override
+  void dispose() {
+    cameraController?.dispose();
+    faceDetector.close();
+    super.dispose();
   }
 }
 
@@ -439,26 +515,64 @@ class FacePainter extends CustomPainter {
     }
 
     Paint p = Paint();
-    p.color = Colors.red;
+    p.color = const Color.fromARGB(255, 30, 255, 0);
     p.style = PaintingStyle.stroke;
-    p.strokeWidth = 3;
+    p.strokeWidth = 5;
 
+    // Draw rectangle and text for each face
     for (Recognition rectangle in facesList) {
+      // Draw the face rectangle
       canvas.drawRect(rectangle.location, p);
-      // TEKS DIKOTAK WAJAH
-      TextSpan span = TextSpan(
-        style: const TextStyle(color: Colors.white, fontSize: 130),
-        text: "${rectangle.name} ${(rectangle.confidence).toStringAsFixed(2)}%",
-      );
 
-      TextPainter tp = TextPainter(
-        text: span,
-        textAlign: TextAlign.left,
-        textDirection: TextDirection.ltr,
-      );
-      tp.layout();
-      tp.paint(canvas, Offset(rectangle.location.left, rectangle.location.top));
+      // Check if the name is "Tidak dikenali"
+      if (rectangle.name == "Tidak dikenali") {
+        // Display "Wajah Tidak Dikenali" message
+        _drawTextWithBackground(
+          canvas,
+          "Wajah Tidak Dikenali",
+          rectangle.location.left,
+          rectangle.location.top - 80, // Position above the rectangle
+        );
+      } else {
+        // Display the name and confidence for recognized faces
+        String text =
+            "${rectangle.name} ${(rectangle.confidence).toStringAsFixed(2)}%";
+        _drawTextWithBackground(
+          canvas,
+          text,
+          rectangle.location.left,
+          rectangle.location.top - 80, // Position above the rectangle
+        );
+      }
     }
+  }
+
+  // Custom method to draw text with background
+  void _drawTextWithBackground(Canvas canvas, String text, double x, double y) {
+    TextSpan span = TextSpan(
+      style: TextStyle(
+          color: Colors.black, fontSize: 30, fontWeight: FontWeight.bold),
+      text: text,
+    );
+
+    TextPainter tp = TextPainter(
+      text: span,
+      textAlign: TextAlign.left,
+      textDirection: TextDirection.ltr,
+      maxLines: 2, // Limit to 2 lines
+      ellipsis: '...', // Ellipsis for overflow text
+    );
+    tp.layout(maxWidth: 500); // Set max width to 200px
+
+    // Calculate background size
+    Paint backgroundPaint = Paint()..color = Colors.white;
+    double padding = 6;
+    Rect backgroundRect = Rect.fromLTWH(x - padding, y - padding,
+        tp.width + 2 * padding, tp.height + 2 * padding);
+    canvas.drawRect(backgroundRect, backgroundPaint);
+
+    // Draw the text over the background
+    tp.paint(canvas, Offset(x, y));
   }
 
   @override

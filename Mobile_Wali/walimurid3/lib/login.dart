@@ -2,8 +2,8 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:http/http.dart' as http;
-import 'package:walimurid/Utilities/BaseUrl.dart';
-import 'bottombar.dart'; // Ganti dengan file dashboard kamu
+import '/Utilities/BaseUrl.dart';
+import 'home.dart'; // Ganti dengan file dashboard kamu
 import 'signup.dart'; // Ganti dengan file signup kamu
 
 class LoginPage extends StatefulWidget {
@@ -60,14 +60,12 @@ class _LoginPageState extends State<LoginPage>
         if (data['status'] == 'success') {
           List<dynamic> siswaData = data['siswa']; // Data siswa dari API
 
-          // Navigasi ke NavbarPage sambil mengirimkan data siswa
           Navigator.pushReplacement(
             context,
             MaterialPageRoute(
-              builder: (context) => NavbarPage(
+              builder: (context) => HomePage(
                 nama_wali: data['nama_wali'],
                 no_hp: data['no_hp'],
-                siswaData: siswaData, // Kirimkan data siswa ke NavbarPage
               ),
             ),
           );

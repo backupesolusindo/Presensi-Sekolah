@@ -1,8 +1,14 @@
 import 'package:flutter/material.dart';
-import 'package:walimurid3/recognition/RegistrationScreen.dart';
+import 'recognition/RegistrationScreen.dart';
 import 'bottombar.dart'; // Import bottom bar kustom
+import 'riwayat.dart';   // Import halaman Riwayat
 
 class HomePage extends StatefulWidget {
+  final String nama_wali;
+  final String no_hp;
+
+  HomePage({required this.nama_wali, required this.no_hp});
+
   @override
   _HomePageState createState() => _HomePageState();
 }
@@ -14,6 +20,13 @@ class _HomePageState extends State<HomePage> {
     setState(() {
       _currentIndex = index;
     });
+
+    if (index == 1) {
+      Navigator.push(
+        context,
+        MaterialPageRoute(builder: (context) => RiwayatPage()), // Navigasi ke RiwayatPage
+      );
+    }
   }
 
   @override
@@ -38,8 +51,7 @@ class _HomePageState extends State<HomePage> {
                     crossAxisAlignment: CrossAxisAlignment.center,
                     children: [
                       CircleAvatar(
-                        backgroundImage: AssetImage(
-                            'assets/logopoltek.png'), // Ganti dengan logo Anda
+                        backgroundImage: AssetImage('assets/logopoltek.png'),
                       ),
                       SizedBox(width: 16),
                       Column(
@@ -54,7 +66,7 @@ class _HomePageState extends State<HomePage> {
                             ),
                           ),
                           Text(
-                            'Rahma Dian Milinia Desi, S.Tr.P.',
+                            widget.nama_wali, // Tampilkan nama_wali
                             style: TextStyle(
                               fontSize: 16,
                               fontWeight: FontWeight.bold,
@@ -62,12 +74,11 @@ class _HomePageState extends State<HomePage> {
                             ),
                           ),
                           Text(
-                            'A19991209202407201',
+                            widget.no_hp, // Tampilkan no_hp
                             style: TextStyle(
                               fontSize: 14,
                               color: Colors.grey[600],
-                            ),
-                          ),
+                            ),),
                         ],
                       ),
                     ],
