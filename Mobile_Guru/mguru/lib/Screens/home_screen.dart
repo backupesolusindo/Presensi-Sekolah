@@ -670,81 +670,112 @@ Widget getCardJadwalMapel(Map<String, dynamic> item) {
     child: Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: <Widget>[
+        // Header: Mata pelajaran dan ikon buku
         Row(
           children: [
             Icon(
-              Icons.book,
+              Icons.book_rounded,
               color: Colors.blueAccent,
-              size: 24,
+              size: 28,
             ),
             SizedBox(width: 10),
-            Text(
-              item['nama_mapel'], // Mengambil nama mata pelajaran
-              style: TextStyle(
-                fontSize: 20.0,
-                fontWeight: FontWeight.w600,
-                color: Colors.black87,
+            Expanded(
+              child: Text(
+                item['nama_mapel'], // Nama mata pelajaran
+                style: TextStyle(
+                  fontSize: 20.0,
+                  fontWeight: FontWeight.w700,
+                  color: Colors.black87,
+                ),
+                overflow: TextOverflow.ellipsis,
               ),
             ),
           ],
         ),
-        SizedBox(height: 12),
+        SizedBox(height: 15),
+
+        // Waktu pelajaran
         Row(
           children: [
             Icon(
-              Icons.access_time_filled,
-              color: Colors.grey,
+              Icons.access_time_filled_rounded,
+              color: Colors.orangeAccent,
               size: 20,
             ),
             SizedBox(width: 6),
             Text(
-              "${item['waktu_mulai']} - ${item['waktu_selesai']}", // Menampilkan waktu mulai dan selesai
+              "${item['waktu_mulai']} - ${item['waktu_selesai']}", // Waktu mulai dan selesai
               style: TextStyle(
                 fontSize: 16.0,
-                color: Colors.grey[600],
+                color: Colors.grey[700],
               ),
             ),
           ],
         ),
-        SizedBox(height: 8),
+        SizedBox(height: 10),
+
+        // Lokasi (Kelas)
         Row(
           children: [
             Icon(
-              Icons.location_on,
-              color: Colors.redAccent,
+              Icons.class_rounded,
+              color: Colors.purpleAccent,
               size: 20,
             ),
             SizedBox(width: 6),
             Text(
-              "Kelas: ${item['nama_kelas']}", // Menampilkan kelas
+              "${item['nama_kelas']}", // Nama kelas
               style: TextStyle(
                 fontSize: 16.0,
-                color: Colors.grey[600],
+                color: Colors.grey[700],
               ),
             ),
           ],
         ),
-        SizedBox(height: 8),
-        Text(
-          "Hari: ${item['hari']}", // Menampilkan hari
-          style: TextStyle(
-            fontSize: 16.0,
-            color: Colors.black,
-          ),
+        SizedBox(height: 10),
+
+        // Hari pelajaran
+        Row(
+          children: [
+            Icon(
+              Icons.calendar_today_rounded,
+              color: Colors.greenAccent,
+              size: 20,
+            ),
+            SizedBox(width: 6),
+            Text(
+              "Hari: ${item['hari']}", // Hari
+              style: TextStyle(
+                fontSize: 16.0,
+                color: Colors.grey[700],
+              ),
+            ),
+          ],
         ),
-        SizedBox(height: 8),
-        Text(
-          "Nama Pegawai: ${item['nama_pegawai']}", // Menampilkan nama pegawai
-          style: TextStyle(
-            fontSize: 16.0,
-            color: Colors.black,
-          ),
+        SizedBox(height: 10),
+
+        // Nama Pegawai
+        Row(
+          children: [
+            Icon(
+              Icons.person_rounded,
+              color: Colors.tealAccent[700],
+              size: 20,
+            ),
+            SizedBox(width: 6),
+            Text(
+              "Pengajar: ${item['nama_pegawai']}", // Nama pegawai
+              style: TextStyle(
+                fontSize: 16.0,
+                color: Colors.grey[700],
+              ),
+            ),
+          ],
         ),
       ],
     ),
   );
 }
-
 
 
   Widget getCardKegiatan(item) {

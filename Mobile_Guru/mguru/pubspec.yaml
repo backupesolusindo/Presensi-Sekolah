@@ -62,6 +62,7 @@ dev_dependencies:
   camera: ^0.10.5+2
   platform: ^3.1.0
   page_transition: ^2.1.0
+  intl: ^0.19.0
 
 # For information on the generic Dart part of this file, see the
 # following page: https://dart.dev/tools/pub/pubspec
