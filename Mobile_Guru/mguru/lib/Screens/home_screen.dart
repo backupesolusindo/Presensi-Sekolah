@@ -26,6 +26,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:http/http.dart' as http;
 import 'package:trust_location/trust_location.dart';
 import 'package:launch_review/launch_review.dart';
+import 'package:mobile_presensi_kdtg/Screens/presensi_siswa_page.dart'; 
 
 import 'Absen/WorkFrom/absen_selesai_wf_screen.dart';
 import 'Absen/WorkFrom/absen_wf_screen.dart';
@@ -653,126 +654,143 @@ SliverToBoxAdapter _buildJadwalMapelHariIni(double screenHeight) {
 }
 
 Widget getCardJadwalMapel(Map<String, dynamic> item) {
-  return Container(
-    margin: const EdgeInsets.symmetric(vertical: 10.0, horizontal: 20.0),
-    padding: const EdgeInsets.all(20.0),
-    decoration: BoxDecoration(
-      color: Colors.white,
-      borderRadius: BorderRadius.circular(15.0),
-      boxShadow: [
-        BoxShadow(
-          color: Colors.black.withOpacity(0.1),
-          blurRadius: 8.0,
-          offset: Offset(0, 4),
+  return GestureDetector(
+    onTap: () {
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => PresensiSiswaPage(
+            namaMapel: item['nama_mapel'],
+            namaKelas: item['nama_kelas'],
+            namaPengajar: item['nama_pegawai'],
+            waktuMulai: item['waktu_mulai'],
+            waktuSelesai: item['waktu_selesai'],
+            hari: item['hari'],
+          ),
         ),
-      ],
-    ),
-    child: Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: <Widget>[
-        // Header: Mata pelajaran dan ikon buku
-        Row(
-          children: [
-            Icon(
-              Icons.book_rounded,
-              color: Colors.blueAccent,
-              size: 28,
-            ),
-            SizedBox(width: 10),
-            Expanded(
-              child: Text(
-                item['nama_mapel'], // Nama mata pelajaran
-                style: TextStyle(
-                  fontSize: 20.0,
-                  fontWeight: FontWeight.w700,
-                  color: Colors.black87,
+      );
+    },
+    child: Container(
+      margin: const EdgeInsets.symmetric(vertical: 10.0, horizontal: 20.0),
+      padding: const EdgeInsets.all(20.0),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(15.0),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.1),
+            blurRadius: 8.0,
+            offset: Offset(0, 4),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: <Widget>[
+          // Header: Mata pelajaran dan ikon buku
+          Row(
+            children: [
+              Icon(
+                Icons.book_rounded,
+                color: Colors.blueAccent,
+                size: 28,
+              ),
+              SizedBox(width: 10),
+              Expanded(
+                child: Text(
+                  item['nama_mapel'], // Nama mata pelajaran
+                  style: TextStyle(
+                    fontSize: 20.0,
+                    fontWeight: FontWeight.w700,
+                    color: Colors.black87,
+                  ),
+                  overflow: TextOverflow.ellipsis,
                 ),
-                overflow: TextOverflow.ellipsis,
               ),
-            ),
-          ],
-        ),
-        SizedBox(height: 15),
+            ],
+          ),
+          SizedBox(height: 15),
 
-        // Waktu pelajaran
-        Row(
-          children: [
-            Icon(
-              Icons.access_time_filled_rounded,
-              color: Colors.orangeAccent,
-              size: 20,
-            ),
-            SizedBox(width: 6),
-            Text(
-              "${item['waktu_mulai']} - ${item['waktu_selesai']}", // Waktu mulai dan selesai
-              style: TextStyle(
-                fontSize: 16.0,
-                color: Colors.grey[700],
+          // Waktu pelajaran
+          Row(
+            children: [
+              Icon(
+                Icons.access_time_filled_rounded,
+                color: Colors.orangeAccent,
+                size: 20,
               ),
-            ),
-          ],
-        ),
-        SizedBox(height: 10),
+              SizedBox(width: 6),
+              Text(
+                "${item['waktu_mulai']} - ${item['waktu_selesai']}", // Waktu mulai dan selesai
+                style: TextStyle(
+                  fontSize: 16.0,
+                  color: Colors.grey[700],
+                ),
+              ),
+            ],
+          ),
+          SizedBox(height: 10),
 
-        // Lokasi (Kelas)
-        Row(
-          children: [
-            Icon(
-              Icons.class_rounded,
-              color: Colors.purpleAccent,
-              size: 20,
-            ),
-            SizedBox(width: 6),
-            Text(
-              "${item['nama_kelas']}", // Nama kelas
-              style: TextStyle(
-                fontSize: 16.0,
-                color: Colors.grey[700],
+          // Lokasi (Kelas)
+          Row(
+            children: [
+              Icon(
+                Icons.class_rounded,
+                color: Colors.purpleAccent,
+                size: 20,
               ),
-            ),
-          ],
-        ),
-        SizedBox(height: 10),
+              SizedBox(width: 6),
+              Text(
+                "${item['nama_kelas']}", // Nama kelas
+                style: TextStyle(
+                  fontSize: 16.0,
+                  color: Colors.grey[700],
+                ),
+              ),
+            ],
+          ),
+          SizedBox(height: 10),
 
-        // Hari pelajaran
-        Row(
-          children: [
-            Icon(
-              Icons.calendar_today_rounded,
-              color: Colors.greenAccent,
-              size: 20,
-            ),
-            SizedBox(width: 6),
-            Text(
-              "Hari: ${item['hari']}", // Hari
-              style: TextStyle(
-                fontSize: 16.0,
-                color: Colors.grey[700],
+          // Hari pelajaran
+          Row(
+            children: [
+              Icon(
+                Icons.calendar_today_rounded,
+                color: Colors.greenAccent,
+                size: 20,
               ),
-            ),
-          ],
-        ),
-        SizedBox(height: 10),
+              SizedBox(width: 6),
+              Text(
+                "Hari: ${item['hari']}", // Hari
+                style: TextStyle(
+                  fontSize: 16.0,
+                  color: Colors.grey[700],
+                ),
+              ),
+            ],
+          ),
+          SizedBox(height: 10),
 
-        // Nama Pegawai
-        Row(
-          children: [
-            Icon(
-              Icons.person_rounded,
-              color: Colors.tealAccent[700],
-              size: 20,
-            ),
-            SizedBox(width: 6),
-            Text(
-              "Pengajar: ${item['nama_pegawai']}", // Nama pegawai
-              style: TextStyle(
-                fontSize: 16.0,
-                color: Colors.grey[700],
+          // Nama Pegawai
+          Row(
+            children: [
+              Icon(
+                Icons.person_rounded,
+                color: Colors.tealAccent[700],
+                size: 20,
               ),
-            ),
-          ],
-        ),
-      ],
+              SizedBox(width: 6),
+              Text(
+                "Pengajar: ${item['nama_pegawai']}", // Nama pegawai
+                style: TextStyle(
+                  fontSize: 16.0,
+                  color: Colors.grey[700],
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
     ),
   );
 }
