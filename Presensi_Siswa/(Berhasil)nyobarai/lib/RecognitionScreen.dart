@@ -40,7 +40,6 @@ class _RecognitionScreenState extends State<RecognitionScreen> {
 
     final options = FaceDetectorOptions();
     faceDetector = FaceDetector(options: options);
-
     recognizer = Recognizer();
   }
 
