@@ -19,7 +19,7 @@ class _RiwayatPageState extends State<RiwayatPage> {
     if (index == 0) {
       Navigator.pushReplacement(
         context,
-        MaterialPageRoute(builder: (context) => HomePage(nama_wali: '', no_hp: '',)), // Pindah ke halaman Home
+        MaterialPageRoute(builder: (context) => HomePage()), // Pindah ke halaman Home
       );
     } else if (index == 2) {
       Navigator.pushReplacement(

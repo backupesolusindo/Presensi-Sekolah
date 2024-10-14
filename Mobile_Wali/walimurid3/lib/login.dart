@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:http/http.dart' as http;
+import 'package:shared_preferences/shared_preferences.dart'; // Tambahkan ini
 import '/Utilities/BaseUrl.dart';
 import 'home.dart'; // Ganti dengan file dashboard kamu
 import 'signup.dart'; // Ganti dengan file signup kamu
@@ -40,7 +41,7 @@ class _LoginPageState extends State<LoginPage>
       return;
     }
 
-    final url = Uri.parse(UrlApi +'/WaliAPI/login');
+    final url = Uri.parse(UrlApi + '/WaliAPI/login');
     setState(() {
       _isLoading = true;
     });
@@ -60,12 +61,16 @@ class _LoginPageState extends State<LoginPage>
         if (data['status'] == 'success') {
           List<dynamic> siswaData = data['siswa']; // Data siswa dari API
 
+          // Simpan ke Shared Preferences
+          SharedPreferences prefs = await SharedPreferences.getInstance();
+          await prefs.setString('nama_wali', data['nama_wali']);
+          await prefs.setString('no_hp', data['no_hp']);
+          await prefs.setString('password', password); // Simpan password jika perlu
+
           Navigator.pushReplacement(
             context,
             MaterialPageRoute(
               builder: (context) => HomePage(
-                nama_wali: data['nama_wali'],
-                no_hp: data['no_hp'],
               ),
             ),
           );

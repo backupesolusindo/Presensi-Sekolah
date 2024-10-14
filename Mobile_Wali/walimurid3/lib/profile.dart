@@ -2,6 +2,10 @@ import 'package:flutter/material.dart';
 import 'home.dart';
 import 'riwayat.dart';
 import 'bottombar.dart'; // Import bottom bar
+import 'login.dart'; // Import halaman login
+import 'package:shared_preferences/shared_preferences.dart'; // Import shared_preferences
+import 'dart:convert'; // Untuk decoding JSON
+import 'package:http/http.dart' as http; // Untuk request HTTP
 
 class ProfilePage extends StatefulWidget {
   @override
@@ -10,8 +14,54 @@ class ProfilePage extends StatefulWidget {
 
 class _ProfilePageState extends State<ProfilePage> {
   int _currentIndex = 2; // Set index 2 untuk halaman profil
+  String namaPegawai = "Loading..."; // Default teks sementara
 
- 
+  @override
+  void initState() {
+    super.initState();
+    _fetchNamaPegawai(); // Panggil API saat halaman dimuat
+  }
+
+  Future<void> _fetchNamaPegawai() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final savedNamaWali = prefs.getString('nama_wali');
+
+      if (savedNamaWali != null) {
+        // Jika nama_wali sudah ada di SharedPreferences, gunakan itu
+        setState(() {
+          namaPegawai = savedNamaWali;
+        });
+      } else {
+        // Lakukan request API jika tidak ada data di SharedPreferences
+        final response = await http.get(
+          Uri.parse('https://api.example.com/nama_wali'), // Ganti dengan URL API Anda
+        );
+
+        if (response.statusCode == 200) {
+          final data = json.decode(response.body);
+          final fetchedNamaWali = data['nama_wali'];
+
+          // Simpan nama_wali ke SharedPreferences
+          await prefs.setString('nama_wali', fetchedNamaWali);
+
+          // Update state dengan nama wali yang diambil dari API
+          setState(() {
+            namaPegawai = fetchedNamaWali;
+          });
+        } else {
+          setState(() {
+            namaPegawai = "Gagal memuat data.";
+          });
+        }
+      }
+    } catch (e) {
+      setState(() {
+        namaPegawai = "Error: ${e.toString()}";
+      });
+    }
+  }
+
   void _onItemTapped(int index) {
     setState(() {
       _currentIndex = index;
@@ -20,15 +70,14 @@ class _ProfilePageState extends State<ProfilePage> {
     if (index == 0) {
       Navigator.pushReplacement(
         context,
-        MaterialPageRoute(builder: (context) => HomePage(nama_wali: '', no_hp: '',)), // Pindah ke halaman Home
+        MaterialPageRoute(builder: (context) => HomePage()),
       );
     } else if (index == 2) {
       Navigator.pushReplacement(
         context,
-        MaterialPageRoute(builder: (context) => RiwayatPage()), // Pindah ke halaman Profile
+        MaterialPageRoute(builder: (context) => RiwayatPage()),
       );
     }
-    // Untuk index 1, tetap di halaman Riwayat
   }
 
   @override
@@ -36,7 +85,6 @@ class _ProfilePageState extends State<ProfilePage> {
     return Scaffold(
       body: Stack(
         children: [
-          // Efek slice dari atas kanan ke bawah kiri
           ClipPath(
             clipper: CustomDiagonalClipper(),
             child: Container(
@@ -44,19 +92,17 @@ class _ProfilePageState extends State<ProfilePage> {
               color: Colors.lightBlue,
             ),
           ),
-
-          // Isi Profil dalam SingleChildScrollView agar bisa di-scroll jika melebihi layar
           SingleChildScrollView(
             child: Column(
               children: [
                 SizedBox(height: 100),
                 CircleAvatar(
                   radius: 50,
-                  backgroundImage: AssetImage('assets/logopoltek.png'), // Gambar profil atau logo
+                  backgroundImage: AssetImage('assets/logopoltek.png'),
                 ),
                 SizedBox(height: 16),
                 Text(
-                  'Nama Pegawai', // Ubah sesuai nama yang diinginkan
+                  namaPegawai, // Tampilkan nama pegawai yang diambil dari API
                   style: TextStyle(
                     fontSize: 24,
                     fontWeight: FontWeight.bold,
@@ -64,14 +110,20 @@ class _ProfilePageState extends State<ProfilePage> {
                   ),
                 ),
                 SizedBox(height: 8),
-                Text('-'),
+                Text('TEST'),
                 SizedBox(height: 32),
-
-                // Card informasi di depan slice
                 _buildInfoCard(Icons.email, 'Email', 'user@example.com'),
                 _buildInfoCard(Icons.domain, 'Unit', 'Politeknik Jember'),
                 _buildInfoCard(Icons.check_circle, '0 Presensi', 'Jumlah Presensi Bulan Ini'),
                 _buildInfoCard(Icons.event, '0 Kegiatan', 'Jumlah Kegiatan Bulan Ini'),
+                SizedBox(height: 32),
+                ElevatedButton(
+                  onPressed: () => _showLogoutConfirmation(context),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.redAccent,
+                  ),
+                  child: Text('Logout'),
+                ),
               ],
             ),
           ),
@@ -84,7 +136,6 @@ class _ProfilePageState extends State<ProfilePage> {
     );
   }
 
-  // Widget untuk menampilkan info card
   Widget _buildInfoCard(IconData icon, String title, String subtitle) {
     return Card(
       margin: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
@@ -99,9 +150,39 @@ class _ProfilePageState extends State<ProfilePage> {
       ),
     );
   }
+
+  void _showLogoutConfirmation(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text('Konfirmasi Logout'),
+          content: Text('Apakah Anda yakin ingin logout?'),
+          actions: <Widget>[
+            TextButton(
+              child: Text('Batal'),
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+            ),
+            TextButton(
+              child: Text('Logout'),
+              onPressed: () async {
+                SharedPreferences prefs = await SharedPreferences.getInstance();
+                await prefs.clear(); // Hapus semua data SharedPreferences
+                Navigator.pushReplacement(
+                  context,
+                  MaterialPageRoute(builder: (context) => LoginPage()),
+                );
+              },
+            ),
+          ],
+        );
+      },
+    );
+  }
 }
 
-// Custom Clipper untuk efek slice
 class CustomDiagonalClipper extends CustomClipper<Path> {
   @override
   Path getClip(Size size) {
