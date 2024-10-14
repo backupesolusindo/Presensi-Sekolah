@@ -41,6 +41,7 @@ flutter:
     - assets/mobile_face_net.tflite
     - assets/logo.png
     - assets/gambarmuka.png
+    - assets/walibg.png
 
   # Jika Anda memiliki aset lain, tambahkan di sini
   # - images/a_dot_ham.jpeg
