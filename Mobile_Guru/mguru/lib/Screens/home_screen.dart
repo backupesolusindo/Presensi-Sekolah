@@ -662,10 +662,10 @@ Widget getCardJadwalMapel(Map<String, dynamic> item) {
           builder: (context) => PresensiSiswaPage(
             namaMapel: item['nama_mapel'],
             namaKelas: item['nama_kelas'],
-            namaPengajar: item['nama_pegawai'],
             waktuMulai: item['waktu_mulai'],
             waktuSelesai: item['waktu_selesai'],
             hari: item['hari'],
+            tanggal: item['tanggal'],
           ),
         ),
       );
@@ -698,7 +698,7 @@ Widget getCardJadwalMapel(Map<String, dynamic> item) {
               SizedBox(width: 10),
               Expanded(
                 child: Text(
-                  item['nama_mapel'], // Nama mata pelajaran
+                  item['nama_mapel'] ?? 'Tidak ada data', // Nama mata pelajaran
                   style: TextStyle(
                     fontSize: 20.0,
                     fontWeight: FontWeight.w700,
@@ -721,7 +721,7 @@ Widget getCardJadwalMapel(Map<String, dynamic> item) {
               ),
               SizedBox(width: 6),
               Text(
-                "${item['waktu_mulai']} - ${item['waktu_selesai']}", // Waktu mulai dan selesai
+                "${item['waktu_mulai'] ?? '-'} - ${item['waktu_selesai'] ?? '-'}", // Waktu mulai dan selesai
                 style: TextStyle(
                   fontSize: 16.0,
                   color: Colors.grey[700],
@@ -741,7 +741,29 @@ Widget getCardJadwalMapel(Map<String, dynamic> item) {
               ),
               SizedBox(width: 6),
               Text(
-                "${item['nama_kelas']}", // Nama kelas
+                item['nama_kelas'] ?? 'Tidak ada data', // Nama kelas
+                style: TextStyle(
+                  fontSize: 16.0,
+                  color: Colors.grey[700],
+                ),
+              ),
+            ],
+          ),
+          SizedBox(height: 10),
+
+          // Tanggal
+          Row(
+            children: [
+              Icon(
+                Icons.date_range_rounded,
+                color: Colors.redAccent,
+                size: 20,
+              ),
+              SizedBox(width: 6),
+              Text(
+                item['tanggal'] != null && item['tanggal'].isNotEmpty
+                    ? item['tanggal'] // Tanggal pelajaran
+                    : 'Tanggal belum ditentukan',
                 style: TextStyle(
                   fontSize: 16.0,
                   color: Colors.grey[700],
@@ -761,27 +783,7 @@ Widget getCardJadwalMapel(Map<String, dynamic> item) {
               ),
               SizedBox(width: 6),
               Text(
-                "Hari: ${item['hari']}", // Hari
-                style: TextStyle(
-                  fontSize: 16.0,
-                  color: Colors.grey[700],
-                ),
-              ),
-            ],
-          ),
-          SizedBox(height: 10),
-
-          // Nama Pegawai
-          Row(
-            children: [
-              Icon(
-                Icons.person_rounded,
-                color: Colors.tealAccent[700],
-                size: 20,
-              ),
-              SizedBox(width: 6),
-              Text(
-                "Pengajar: ${item['nama_pegawai']}", // Nama pegawai
+                "Hari: ${item['hari'] ?? '-'}", // Hari
                 style: TextStyle(
                   fontSize: 16.0,
                   color: Colors.grey[700],

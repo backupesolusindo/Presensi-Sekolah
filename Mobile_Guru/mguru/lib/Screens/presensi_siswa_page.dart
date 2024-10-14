@@ -5,19 +5,19 @@ import 'data_murid_page.dart'; // Impor halaman data murid
 class PresensiSiswaPage extends StatefulWidget {
   final String namaMapel;
   final String namaKelas;
-  final String namaPengajar;
   final String waktuMulai;
   final String waktuSelesai;
   final String hari;
+  final String tanggal; // Add tanggal field
 
   const PresensiSiswaPage({
     Key? key,
     required this.namaMapel,
     required this.namaKelas,
-    required this.namaPengajar,
     required this.waktuMulai,
     required this.waktuSelesai,
     required this.hari,
+    required this.tanggal, // Required parameter
   }) : super(key: key);
 
   @override
@@ -94,8 +94,9 @@ class _PresensiSiswaPageState extends State<PresensiSiswaPage> {
                             'Kelas: ${widget.namaKelas}',
                             style: TextStyle(fontSize: 14, color: Colors.black), // Warna teks hitam
                           ),
+                          SizedBox(height: 8),
                           Text(
-                            'Pengajar: ${widget.namaPengajar}',
+                            'Tanggal: ${widget.tanggal != null && widget.tanggal.isNotEmpty ? widget.tanggal : 'Belum ditentukan'}',
                             style: TextStyle(fontSize: 14, color: Colors.black), // Warna teks hitam
                           ),
                         ],
@@ -186,3 +187,4 @@ class _PresensiSiswaPageState extends State<PresensiSiswaPage> {
     );
   }
 }
+
