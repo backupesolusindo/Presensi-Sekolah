@@ -1,4 +1,8 @@
+import 'dart:async';  // Untuk Timer
 import 'package:flutter/material.dart';
+import 'package:intl/date_symbol_data_local.dart';
+import 'package:intl/intl.dart';  // Untuk format tanggal dan waktu
+import 'package:intl/intl_standalone.dart';  // Inisialisasi Locale
 import 'package:shared_preferences/shared_preferences.dart';
 import 'recognition/RegistrationScreen.dart';
 import 'bottombar.dart'; // Import bottom bar kustom
@@ -14,17 +18,46 @@ class _HomePageState extends State<HomePage> {
   String noHp = '';
   int _currentIndex = 0;
 
+  String _currentTime = '';
+  String _currentDate = '';
+  late Timer _timer;
+
   @override
   void initState() {
     super.initState();
-    _loadUserData();
+    _initializeLocale();  // Inisialisasi locale untuk format waktu dan tanggal
+    _loadUserData();       // Load nama wali dan nomor HP
+  }
+
+  Future<void> _initializeLocale() async {
+    await initializeDateFormatting('id_ID', null);  // Inisialisasi locale untuk Indonesia
+    _updateTime();  // Panggil pertama kali untuk menampilkan waktu awal
+
+    // Timer untuk memperbarui waktu setiap detik
+    _timer = Timer.periodic(Duration(seconds: 1), (Timer t) {
+      _updateTime();
+    });
+  }
+
+  @override
+  void dispose() {
+    _timer.cancel();  // Hentikan timer saat widget dihancurkan
+    super.dispose();
   }
 
   Future<void> _loadUserData() async {
     final prefs = await SharedPreferences.getInstance();
     setState(() {
-      namaWali = prefs.getString('nama_wali') ?? 'Nama Wali'; // Default jika tidak ada
-      noHp = prefs.getString('no_hp') ?? 'Nomor HP'; // Default jika tidak ada
+      namaWali = prefs.getString('nama_wali') ?? 'Nama Wali';
+      noHp = prefs.getString('no_hp') ?? 'Nomor HP';
+    });
+  }
+
+  void _updateTime() {
+    final now = DateTime.now();
+    setState(() {
+      _currentTime = DateFormat('HH:mm:ss').format(now);  // Format waktu
+      _currentDate = DateFormat('EEEE, d MMMM yyyy', 'id_ID').format(now);  // Format tanggal
     });
   }
 
@@ -36,7 +69,7 @@ class _HomePageState extends State<HomePage> {
     if (index == 1) {
       Navigator.push(
         context,
-        MaterialPageRoute(builder: (context) => RiwayatPage()), // Navigasi ke RiwayatPage
+        MaterialPageRoute(builder: (context) => RiwayatPage()), // Navigasi ke halaman Riwayat
       );
     }
   }
@@ -50,7 +83,7 @@ class _HomePageState extends State<HomePage> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // Bagian Info Profil di dalam kartu
+              // Kartu Profil
               Card(
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(15.0),
@@ -60,7 +93,6 @@ class _HomePageState extends State<HomePage> {
                 child: Padding(
                   padding: const EdgeInsets.all(16.0),
                   child: Row(
-                    crossAxisAlignment: CrossAxisAlignment.center,
                     children: [
                       CircleAvatar(
                         backgroundImage: AssetImage('assets/logopoltek.png'),
@@ -78,7 +110,7 @@ class _HomePageState extends State<HomePage> {
                             ),
                           ),
                           Text(
-                            namaWali, // Tampilkan nama_wali
+                            namaWali,
                             style: TextStyle(
                               fontSize: 16,
                               fontWeight: FontWeight.bold,
@@ -86,7 +118,7 @@ class _HomePageState extends State<HomePage> {
                             ),
                           ),
                           Text(
-                            noHp, // Tampilkan no_hp
+                            noHp,
                             style: TextStyle(
                               fontSize: 14,
                               color: Colors.grey[600],
@@ -104,27 +136,18 @@ class _HomePageState extends State<HomePage> {
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                 children: [
-                  _buildInfoCard(
-                    '15:15:38\nTue, 08 October 2024',
-                    Icons.access_time,
-                    Colors.white, // Ubah warna latar belakang menjadi putih
-                  ),
-                  _buildInfoCard(
-                    'Kampus POLIJE\nLokasi Anda',
-                    Icons.location_on,
-                    Colors.white, // Ubah warna latar belakang menjadi putih
-                  ),
+                  _buildInfoCard('$_currentTime\n$_currentDate', Icons.access_time, Colors.white),
+                  _buildInfoCard('Kampus POLIJE\nLokasi Anda', Icons.location_on, Colors.white),
                 ],
               ),
               SizedBox(height: 16),
 
-              // Bagian Menu Presensi
+              // Menu Presensi
               Text(
                 'Menu Presensi:',
                 style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
               ),
               SizedBox(height: 8),
-              // Card dengan scroll horizontal untuk Menu Presensi
               Card(
                 elevation: 5,
                 shape: RoundedRectangleBorder(
@@ -154,23 +177,23 @@ class _HomePageState extends State<HomePage> {
               ),
               SizedBox(height: 16),
 
-              // Presensi Anda Section
+              // Presensi Anda
               Text(
                 'Presensi Anda:',
                 style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
               ),
               SizedBox(height: 8),
-              _buildPresenceStatusCard('Anda Hari ini Belum Melakukan Presensi'), // Presensi Anda
+              _buildPresenceStatusCard('Anda Hari ini Belum Melakukan Presensi'),
 
               SizedBox(height: 16),
 
-              // Bagian Kegiatan Anda
+              // Jadwal Mapel Hari Ini
               Text(
                 'Jadwal Mapel Hari Ini:',
                 style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
               ),
               SizedBox(height: 8),
-              _buildPresenceStatusCard('Tidak ada jadwal mapel untuk hari ini.'), // Kegiatan Anda
+              _buildPresenceStatusCard('Tidak ada jadwal mapel untuk hari ini.'),
             ],
           ),
         ),
@@ -182,65 +205,49 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
-  // Widget untuk info card dengan icon
   Widget _buildInfoCard(String text, IconData icon, Color cardColor) {
     return Card(
-      elevation: 5, // Tambahkan elevasi untuk memberikan efek bayangan
-      color: cardColor, // Mengatur warna latar belakang
+      elevation: 5,
+      color: cardColor,
       child: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Column(
           children: [
             Icon(icon, size: 30, color: Colors.blueAccent),
             SizedBox(height: 8),
-            Text(
-              text,
-              textAlign: TextAlign.center,
-            ),
+            Text(text, textAlign: TextAlign.center),
           ],
         ),
       ),
     );
   }
 
-  // Widget untuk ikon menu dengan teks di dalam Card
-  Widget _buildMenuIcon(IconData icon, String label, {Function()? onTap}) {
-    return GestureDetector(
-      onTap: onTap, // Tambahkan fungsi onTap di sini
-      child: Column(
-        children: [
-          CircleAvatar(
-            radius: 30,
-            backgroundColor: Colors.blueAccent,
-            child: Icon(icon, color: Colors.white),
-          ),
-          SizedBox(height: 8),
-          Text(label, textAlign: TextAlign.center),
-        ],
-      ),
+  Widget _buildMenuIcon(IconData icon, String label) {
+    return Column(
+      children: [
+        CircleAvatar(
+          radius: 30,
+          backgroundColor: Colors.blueAccent,
+          child: Icon(icon, color: Colors.white),
+        ),
+        SizedBox(height: 8),
+        Text(label, textAlign: TextAlign.center),
+      ],
     );
   }
 
-  // Widget untuk status presensi (Presensi Anda dan Kegiatan Anda)
   Widget _buildPresenceStatusCard(String text) {
     return Card(
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(20), // Membuat sudut melengkung
-      ),
-      elevation: 5, // Menambahkan bayangan
-      color: Colors.lightBlue, // Warna latar belakang sesuai dengan gambar
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+      elevation: 5,
+      color: Colors.lightBlue,
       child: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Row(
-          mainAxisAlignment: MainAxisAlignment.start,
           children: [
             Text(
               text,
-              style: TextStyle(
-                color: Colors.white, // Warna teks putih
-                fontSize: 16, // Ukuran teks yang cukup besar
-                fontWeight: FontWeight.bold, // Teks dibuat tebal
-              ),
+              style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold),
             ),
           ],
         ),
