@@ -695,7 +695,7 @@ Widget getCardJadwalMapel(Map<String, dynamic> item) {
                 color: Colors.blueAccent,
                 size: 28,
               ),
-              SizedBox(width: 10),
+              const SizedBox(width: 10),
               Expanded(
                 child: Text(
                   item['nama_mapel'] ?? 'Tidak ada data', // Nama mata pelajaran
@@ -709,27 +709,7 @@ Widget getCardJadwalMapel(Map<String, dynamic> item) {
               ),
             ],
           ),
-          SizedBox(height: 15),
-
-          // Waktu pelajaran
-          Row(
-            children: [
-              Icon(
-                Icons.access_time_filled_rounded,
-                color: Colors.orangeAccent,
-                size: 20,
-              ),
-              SizedBox(width: 6),
-              Text(
-                "${item['waktu_mulai'] ?? '-'} - ${item['waktu_selesai'] ?? '-'}", // Waktu mulai dan selesai
-                style: TextStyle(
-                  fontSize: 16.0,
-                  color: Colors.grey[700],
-                ),
-              ),
-            ],
-          ),
-          SizedBox(height: 10),
+          const SizedBox(height: 12), // Jarak antar elemen
 
           // Lokasi (Kelas)
           Row(
@@ -739,7 +719,7 @@ Widget getCardJadwalMapel(Map<String, dynamic> item) {
                 color: Colors.purpleAccent,
                 size: 20,
               ),
-              SizedBox(width: 6),
+              const SizedBox(width: 6),
               Text(
                 item['nama_kelas'] ?? 'Tidak ada data', // Nama kelas
                 style: TextStyle(
@@ -749,7 +729,47 @@ Widget getCardJadwalMapel(Map<String, dynamic> item) {
               ),
             ],
           ),
-          SizedBox(height: 10),
+          const SizedBox(height: 10), // Jarak antar elemen
+
+          // Waktu pelajaran
+          Row(
+            children: [
+              Icon(
+                Icons.access_time_filled_rounded,
+                color: Colors.orangeAccent,
+                size: 20,
+              ),
+              const SizedBox(width: 6),
+              Text(
+                "${item['waktu_mulai'] ?? '-'} - ${item['waktu_selesai'] ?? '-'}", // Waktu mulai dan selesai
+                style: TextStyle(
+                  fontSize: 16.0,
+                  color: Colors.grey[700],
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 10), // Jarak antar elemen
+
+          // Hari pelajaran
+          Row(
+            children: [
+              Icon(
+                Icons.calendar_today_rounded,
+                color: Colors.greenAccent,
+                size: 20,
+              ),
+              const SizedBox(width: 6),
+              Text(
+                "Hari: ${item['hari'] ?? '-'}", // Hari
+                style: TextStyle(
+                  fontSize: 16.0,
+                  color: Colors.grey[700],
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 10), // Jarak antar elemen
 
           // Tanggal
           Row(
@@ -759,7 +779,7 @@ Widget getCardJadwalMapel(Map<String, dynamic> item) {
                 color: Colors.redAccent,
                 size: 20,
               ),
-              SizedBox(width: 6),
+              const SizedBox(width: 6),
               Text(
                 item['tanggal'] != null && item['tanggal'].isNotEmpty
                     ? item['tanggal'] // Tanggal pelajaran
@@ -771,26 +791,7 @@ Widget getCardJadwalMapel(Map<String, dynamic> item) {
               ),
             ],
           ),
-          SizedBox(height: 10),
-
-          // Hari pelajaran
-          Row(
-            children: [
-              Icon(
-                Icons.calendar_today_rounded,
-                color: Colors.greenAccent,
-                size: 20,
-              ),
-              SizedBox(width: 6),
-              Text(
-                "Hari: ${item['hari'] ?? '-'}", // Hari
-                style: TextStyle(
-                  fontSize: 16.0,
-                  color: Colors.grey[700],
-                ),
-              ),
-            ],
-          ),
+          const SizedBox(height: 10), // Jarak antar elemen
         ],
       ),
     ),
