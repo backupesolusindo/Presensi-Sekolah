@@ -117,7 +117,6 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
     print("Login Pref :" + UUID);
     getDataDash();
     fetchKegiatan();
-    // Fetch Jadwal Mapel setelah login
     fetchJadwalMapel();
   }
 
@@ -210,13 +209,12 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
         }
       });
 
-      // Menambahkan pemanggilan fetchJadwalMapel di sini
-      await fetchJadwalMapel(); // Pastikan Anda menunggu sampai jadwal diambil
+      await fetchJadwalMapel();
       print(resBody);
       return "";
     } catch (e) {
       print("Error fetching data: $e");
-      return "Error"; // Kembalikan error jika terjadi kesalahan
+      return "Error";
     }
   }
 
@@ -590,234 +588,236 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
   }
 
   SliverToBoxAdapter _buildJadwalMapelHariIni(double screenHeight) {
-  Size size = MediaQuery.of(context).size;
+    Size size = MediaQuery.of(context).size;
 
-  return SliverToBoxAdapter(
-    child: AnimatedOpacity(
-      opacity: ssFooter ? 1 : 0,
-      duration: const Duration(milliseconds: 500),
-      child: AnimatedContainer(
-        margin: ssFooter ? EdgeInsets.only(top: 0) : EdgeInsets.only(top: 30),
+    return SliverToBoxAdapter(
+      child: AnimatedOpacity(
+        opacity: ssFooter ? 1 : 0,
         duration: const Duration(milliseconds: 500),
-        curve: Curves.fastEaseInToSlowEaseOut,
+        child: AnimatedContainer(
+          margin: ssFooter ? EdgeInsets.only(top: 0) : EdgeInsets.only(top: 30),
+          duration: const Duration(milliseconds: 500),
+          curve: Curves.fastEaseInToSlowEaseOut,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: <Widget>[
+              const SizedBox(height: 10),
+              Padding(
+                padding: const EdgeInsets.only(top: 8, left: 20),
+                child: const Text(
+                  'Jadwal Mapel Hari Ini :',
+                  style: TextStyle(
+                    fontSize: 15.0,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ),
+              if (ListJadwalMapel.isEmpty)
+                Container(
+                  padding: const EdgeInsets.all(15.0),
+                  margin:
+                      const EdgeInsets.symmetric(vertical: 5, horizontal: 20.0),
+                  width: size.width,
+                  decoration: BoxDecoration(
+                    color: Colors.blue,
+                    borderRadius: BorderRadius.circular(10.0),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.blue.withOpacity(0.5),
+                        blurRadius: 3,
+                        offset: const Offset(2, 2),
+                      ),
+                    ],
+                  ),
+                  child: Row(
+                    children: [
+                      const Icon(
+                        Icons.error_outline,
+                        color: Colors.white70,
+                        size: 24,
+                      ),
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: const Text(
+                          "Tidak ada jadwal mapel untuk hari ini.",
+                          style: TextStyle(
+                            color: Colors.white70,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                )
+              else
+                Container(
+                  width: double.infinity,
+                  height: size.height * 0.3,
+                  child: ListView.builder(
+                    itemCount: ListJadwalMapel.length,
+                    itemBuilder: (context, index) {
+                      return getCardJadwalMapel(ListJadwalMapel[index]);
+                    },
+                  ),
+                ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget getCardJadwalMapel(Map<String, dynamic> item) {
+    return GestureDetector(
+      onTap: () {
+        // Ensure id_kelas is safely parsed as an integer
+        int idKelas = item['kelas'] != null
+            ? int.tryParse(item['kelas'].toString()) ?? 0
+            : 0; // Parse kelas to idKelas
+
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => PresensiSiswaPage(
+              namaMapel: item['nama_mapel'],
+              namaKelas: item['nama_kelas'],
+              idKelas: idKelas, // Pass the idKelas as an integer
+              waktuMulai: item['waktu_mulai'],
+              waktuSelesai: item['waktu_selesai'],
+              hari: item['hari'],
+              tanggal: item['tanggal'],
+            ),
+          ),
+        );
+      },
+      child: Container(
+        margin: const EdgeInsets.symmetric(vertical: 10.0, horizontal: 20.0),
+        padding: const EdgeInsets.all(20.0),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(15.0),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.1),
+              blurRadius: 8.0,
+              offset: const Offset(0, 4),
+            ),
+          ],
+        ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: <Widget>[
-            const SizedBox(height: 10),
-            Padding(
-              padding: const EdgeInsets.only(top: 8, left: 20),
-              child: const Text(
-                'Jadwal Mapel Hari Ini :',
-                style: TextStyle(
-                  fontSize: 15.0,
-                  fontWeight: FontWeight.w600,
+            // Header: Mata pelajaran dan ikon buku
+            Row(
+              children: [
+                const Icon(
+                  Icons.book_rounded,
+                  color: Colors.blueAccent,
+                  size: 28,
                 ),
-              ),
+                const SizedBox(width: 10),
+                Expanded(
+                  child: Text(
+                    item['nama_mapel'] ??
+                        'Tidak ada data', // Nama mata pelajaran
+                    style: const TextStyle(
+                      fontSize: 20.0,
+                      fontWeight: FontWeight.w700,
+                      color: Colors.black87,
+                    ),
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ),
+              ],
             ),
-            if (ListJadwalMapel.isEmpty)
-              Container(
-                padding: const EdgeInsets.all(15.0),
-                margin: const EdgeInsets.symmetric(vertical: 5, horizontal: 20.0),
-                width: size.width,
-                decoration: BoxDecoration(
-                  color: Colors.blue,
-                  borderRadius: BorderRadius.circular(10.0),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.blue.withOpacity(0.5),
-                      blurRadius: 3,
-                      offset: const Offset(2, 2),
-                    ),
-                  ],
+            const SizedBox(height: 12), // Jarak antar elemen
+
+            // Lokasi (Kelas)
+            Row(
+              children: [
+                const Icon(
+                  Icons.class_rounded,
+                  color: Colors.purpleAccent,
+                  size: 20,
                 ),
-                child: Row(
-                  children: [
-                    const Icon(
-                      Icons.error_outline,
-                      color: Colors.white70,
-                      size: 24,
-                    ),
-                    const SizedBox(width: 8),
-                    Expanded(
-                      child: const Text(
-                        "Tidak ada jadwal mapel untuk hari ini.",
-                        style: TextStyle(
-                          color: Colors.white70,
-                          fontWeight: FontWeight.w600,
-                        ),
-                      ),
-                    ),
-                  ],
+                const SizedBox(width: 6),
+                Text(
+                  item['nama_kelas'] ?? 'Tidak ada data', // Nama kelas
+                  style: const TextStyle(
+                    fontSize: 16.0,
+                    color: Colors.grey,
+                  ),
                 ),
-              )
-            else
-              Container(
-                width: double.infinity,
-                height: size.height * 0.3,
-                child: ListView.builder(
-                  itemCount: ListJadwalMapel.length,
-                  itemBuilder: (context, index) {
-                    return getCardJadwalMapel(ListJadwalMapel[index]);
-                  },
+              ],
+            ),
+            const SizedBox(height: 10), // Jarak antar elemen
+
+            // Waktu pelajaran
+            Row(
+              children: [
+                const Icon(
+                  Icons.access_time_filled_rounded,
+                  color: Colors.orangeAccent,
+                  size: 20,
                 ),
-              ),
+                const SizedBox(width: 6),
+                Text(
+                  "${item['waktu_mulai'] ?? '-'} - ${item['waktu_selesai'] ?? '-'}", // Waktu mulai dan selesai
+                  style: const TextStyle(
+                    fontSize: 16.0,
+                    color: Colors.grey,
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 10), // Jarak antar elemen
+
+            // Hari pelajaran
+            Row(
+              children: [
+                const Icon(
+                  Icons.calendar_today_rounded,
+                  color: Colors.greenAccent,
+                  size: 20,
+                ),
+                const SizedBox(width: 6),
+                Text(
+                  "Hari: ${item['hari'] ?? '-'}", // Hari
+                  style: const TextStyle(
+                    fontSize: 16.0,
+                    color: Colors.grey,
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 10), // Jarak antar elemen
+
+            // Tanggal
+            Row(
+              children: [
+                const Icon(
+                  Icons.date_range_rounded,
+                  color: Colors.redAccent,
+                  size: 20,
+                ),
+                const SizedBox(width: 6),
+                Text(
+                  item['tanggal'] != null && item['tanggal'].isNotEmpty
+                      ? item['tanggal'] // Tanggal pelajaran
+                      : 'Tanggal belum ditentukan',
+                  style: const TextStyle(
+                    fontSize: 16.0,
+                    color: Colors.grey,
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 10), // Jarak antar elemen
           ],
         ),
       ),
-    ),
-  );
-}
-
-Widget getCardJadwalMapel(Map<String, dynamic> item) {
-  return GestureDetector(
-    onTap: () {
-      // Ensure id_kelas is safely parsed as an integer
-      int idKelas = item['kelas'] != null ? int.tryParse(item['kelas'].toString()) ?? 0 : 0; // Parse kelas to idKelas
-
-      Navigator.push(
-        context,
-        MaterialPageRoute(
-          builder: (context) => PresensiSiswaPage(
-            namaMapel: item['nama_mapel'],
-            namaKelas: item['nama_kelas'],
-            idKelas: idKelas, // Pass the idKelas as an integer
-            waktuMulai: item['waktu_mulai'],
-            waktuSelesai: item['waktu_selesai'],
-            hari: item['hari'],
-            tanggal: item['tanggal'],
-          ),
-        ),
-      );
-    },
-    child: Container(
-      margin: const EdgeInsets.symmetric(vertical: 10.0, horizontal: 20.0),
-      padding: const EdgeInsets.all(20.0),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(15.0),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.1),
-            blurRadius: 8.0,
-            offset: const Offset(0, 4),
-          ),
-        ],
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: <Widget>[
-          // Header: Mata pelajaran dan ikon buku
-          Row(
-            children: [
-              const Icon(
-                Icons.book_rounded,
-                color: Colors.blueAccent,
-                size: 28,
-              ),
-              const SizedBox(width: 10),
-              Expanded(
-                child: Text(
-                  item['nama_mapel'] ?? 'Tidak ada data', // Nama mata pelajaran
-                  style: const TextStyle(
-                    fontSize: 20.0,
-                    fontWeight: FontWeight.w700,
-                    color: Colors.black87,
-                  ),
-                  overflow: TextOverflow.ellipsis,
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 12), // Jarak antar elemen
-
-          // Lokasi (Kelas)
-          Row(
-            children: [
-              const Icon(
-                Icons.class_rounded,
-                color: Colors.purpleAccent,
-                size: 20,
-              ),
-              const SizedBox(width: 6),
-              Text(
-                item['nama_kelas'] ?? 'Tidak ada data', // Nama kelas
-                style: const TextStyle(
-                  fontSize: 16.0,
-                  color: Colors.grey,
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 10), // Jarak antar elemen
-
-          // Waktu pelajaran
-          Row(
-            children: [
-              const Icon(
-                Icons.access_time_filled_rounded,
-                color: Colors.orangeAccent,
-                size: 20,
-              ),
-              const SizedBox(width: 6),
-              Text(
-                "${item['waktu_mulai'] ?? '-'} - ${item['waktu_selesai'] ?? '-'}", // Waktu mulai dan selesai
-                style: const TextStyle(
-                  fontSize: 16.0,
-                  color: Colors.grey,
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 10), // Jarak antar elemen
-
-          // Hari pelajaran
-          Row(
-            children: [
-              const Icon(
-                Icons.calendar_today_rounded,
-                color: Colors.greenAccent,
-                size: 20,
-              ),
-              const SizedBox(width: 6),
-              Text(
-                "Hari: ${item['hari'] ?? '-'}", // Hari
-                style: const TextStyle(
-                  fontSize: 16.0,
-                  color: Colors.grey,
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 10), // Jarak antar elemen
-
-          // Tanggal
-          Row(
-            children: [
-              const Icon(
-                Icons.date_range_rounded,
-                color: Colors.redAccent,
-                size: 20,
-              ),
-              const SizedBox(width: 6),
-              Text(
-                item['tanggal'] != null && item['tanggal'].isNotEmpty
-                    ? item['tanggal'] // Tanggal pelajaran
-                    : 'Tanggal belum ditentukan',
-                style: const TextStyle(
-                  fontSize: 16.0,
-                  color: Colors.grey,
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 10), // Jarak antar elemen
-        ],
-      ),
-    ),
-  );
-}
-
-
+    );
+  }
 
   Widget getCardKegiatan(item) {
     return Container(
