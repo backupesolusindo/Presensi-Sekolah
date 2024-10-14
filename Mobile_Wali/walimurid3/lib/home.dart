@@ -77,126 +77,139 @@ class _HomePageState extends State<HomePage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: SingleChildScrollView(
-        child: Padding(
-          padding: const EdgeInsets.all(16.0),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // Kartu Profil
-              Card(
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(15.0),
-                ),
-                elevation: 5,
-                color: Colors.white,
-                child: Padding(
-                  padding: const EdgeInsets.all(16.0),
-                  child: Row(
-                    children: [
-                      CircleAvatar(
-                        backgroundImage: AssetImage('assets/logopoltek.png'),
-                      ),
-                      SizedBox(width: 16),
-                      Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
+      body: Stack(
+        children: [
+          // Gambar background
+          Container(
+            decoration: BoxDecoration(
+              image: DecorationImage(
+                image: AssetImage('assets/walibg.png'),
+                fit: BoxFit.cover, // Sesuaikan gambar dengan layar
+              ),
+            ),
+          ),
+          SingleChildScrollView(
+            child: Padding(
+              padding: const EdgeInsets.all(16.0),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // Kartu Profil
+                  Card(
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(15.0),
+                    ),
+                    elevation: 5,
+                    color: Colors.white,
+                    child: Padding(
+                      padding: const EdgeInsets.all(16.0),
+                      child: Row(
                         children: [
-                          Text(
-                            'Good Day!',
-                            style: TextStyle(
-                              fontSize: 18,
-                              fontWeight: FontWeight.bold,
-                              color: Colors.black,
-                            ),
+                          CircleAvatar(
+                            backgroundImage: AssetImage('assets/logopoltek.png'),
                           ),
-                          Text(
-                            namaWali,
-                            style: TextStyle(
-                              fontSize: 16,
-                              fontWeight: FontWeight.bold,
-                              color: Colors.black,
-                            ),
-                          ),
-                          Text(
-                            noHp,
-                            style: TextStyle(
-                              fontSize: 14,
-                              color: Colors.grey[600],
-                            ),
+                          SizedBox(width: 16),
+                          Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                'Good Day!',
+                                style: TextStyle(
+                                  fontSize: 18,
+                                  fontWeight: FontWeight.bold,
+                                  color: Colors.black,
+                                ),
+                              ),
+                              Text(
+                                namaWali,
+                                style: TextStyle(
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.bold,
+                                  color: Colors.black,
+                                ),
+                              ),
+                              Text(
+                                noHp,
+                                style: TextStyle(
+                                  fontSize: 14,
+                                  color: Colors.grey[600],
+                                ),
+                              ),
+                            ],
                           ),
                         ],
                       ),
-                    ],
-                  ),
-                ),
-              ),
-              SizedBox(height: 16),
-
-              // Bagian Tanggal dan Lokasi
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                children: [
-                  _buildInfoCard('$_currentTime\n$_currentDate', Icons.access_time, Colors.white),
-                  _buildInfoCard('Kampus POLIJE\nLokasi Anda', Icons.location_on, Colors.white),
-                ],
-              ),
-              SizedBox(height: 16),
-
-              // Menu Presensi
-              Text(
-                'Menu Presensi:',
-                style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-              ),
-              SizedBox(height: 8),
-              Card(
-                elevation: 5,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(15),
-                ),
-                child: Padding(
-                  padding: const EdgeInsets.all(16.0),
-                  child: SingleChildScrollView(
-                    scrollDirection: Axis.horizontal,
-                    child: Row(
-                      children: [
-                        _buildMenuIcon(Icons.menu, 'Semua Menu'),
-                        SizedBox(width: 20),
-                        _buildMenuIcon(Icons.login, 'Presensi Masuk'),
-                        SizedBox(width: 20),
-                        _buildMenuIcon(Icons.coffee, 'Istirahat Keluar'),
-                        SizedBox(width: 20),
-                        _buildMenuIcon(Icons.logout, 'Presensi Pulang'),
-                        SizedBox(width: 20),
-                        _buildMenuIcon(Icons.history, 'Istirahat Masuk'),
-                        SizedBox(width: 20),
-                        _buildMenuIcon(Icons.face, 'Daftarkan Wajah Anak'),
-                      ],
                     ),
                   ),
-                ),
-              ),
-              SizedBox(height: 16),
+                  SizedBox(height: 16),
 
-              // Presensi Anda
-              Text(
-                'Presensi Anda:',
-                style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-              ),
-              SizedBox(height: 8),
-              _buildPresenceStatusCard('Anda Hari ini Belum Melakukan Presensi'),
+                  // Bagian Tanggal dan Lokasi
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                    children: [
+                      _buildInfoCard('$_currentTime\n$_currentDate', Icons.access_time, Colors.white),
+                      _buildInfoCard('Kampus POLIJE\nLokasi Anda', Icons.location_on, Colors.white),
+                    ],
+                  ),
+                  SizedBox(height: 16),
 
-              SizedBox(height: 16),
+                  // Menu Presensi
+                  Text(
+                    'Menu Presensi:',
+                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                  ),
+                  SizedBox(height: 8),
+                  Card(
+                    elevation: 5,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(15),
+                    ),
+                    child: Padding(
+                      padding: const EdgeInsets.all(16.0),
+                      child: SingleChildScrollView(
+                        scrollDirection: Axis.horizontal,
+                        child: Row(
+                          children: [
+                            _buildMenuIcon(Icons.menu, 'Semua Menu'),
+                            SizedBox(width: 20),
+                            _buildMenuIcon(Icons.login, 'Presensi Masuk'),
+                            SizedBox(width: 20),
+                            _buildMenuIcon(Icons.coffee, 'Istirahat Keluar'),
+                            SizedBox(width: 20),
+                            _buildMenuIcon(Icons.logout, 'Presensi Pulang'),
+                            SizedBox(width: 20),
+                            _buildMenuIcon(Icons.history, 'Istirahat Masuk'),
+                            SizedBox(width: 20),
+                            _buildMenuIcon(Icons.face, 'Daftarkan Wajah Anak'),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
+                  SizedBox(height: 16),
 
-              // Jadwal Mapel Hari Ini
-              Text(
-                'Jadwal Mapel Hari Ini:',
-                style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                  // Presensi Anda
+                  Text(
+                    'Presensi Anda:',
+                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                  ),
+                  SizedBox(height: 8),
+                  _buildPresenceStatusCard('Anda Hari ini Belum Melakukan Presensi'),
+
+                  SizedBox(height: 16),
+
+                  // Jadwal Mapel Hari Ini
+                  Text(
+                    'Jadwal Mapel Hari Ini:',
+                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                  ),
+                  SizedBox(height: 8),
+                  _buildPresenceStatusCard('Tidak ada jadwal mapel untuk hari ini.'),
+                ],
               ),
-              SizedBox(height: 8),
-              _buildPresenceStatusCard('Tidak ada jadwal mapel untuk hari ini.'),
-            ],
+            ),
           ),
-        ),
+        ],
       ),
       bottomNavigationBar: CustomBottomBar(
         currentIndex: _currentIndex,
