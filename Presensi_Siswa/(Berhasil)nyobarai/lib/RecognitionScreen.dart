@@ -413,17 +413,33 @@ class _RecognitionScreenState extends State<RecognitionScreen> {
           else if (cameraController != null &&
               cameraController!.value.isInitialized &&
               showPreview)
-            // Tampilkan preview kamera dengan ukuran penuh
             Expanded(
-              child: CameraPreview(cameraController!),
+              child: Stack(
+                children: [
+                  // Tampilkan preview kamera dengan ukuran penuh
+                  ClipRect(
+                    child: Align(
+                      alignment: Alignment.center,
+                      child: CameraPreview(cameraController!),
+                    ),
+                  ),
+                  // Menambahkan kotak wajah di atas preview kamera
+                  Positioned.fill(
+                    child: Image.asset(
+                      'assets/kotakwajah.png',
+                      fit: BoxFit
+                          .cover, // Menyesuaikan ukuran gambar dengan layar
+                    ),
+                  ),
+                ],
+              ),
             )
           else if (!showPreview && _image != null)
             Expanded(
               child: Container(
-                margin: const EdgeInsets.all(20),
+                margin: const EdgeInsets.all(0),
                 child: FittedBox(
-                  fit: BoxFit
-                      .contain, // Sesuaikan gambar agar pas dengan ukuran layar
+                  fit: BoxFit.cover, // Mengubah ini untuk memperbesar gambar
                   child: SizedBox(
                     width: image.width
                         .toDouble(), // Menggunakan ukuran asli gambar
@@ -442,13 +458,12 @@ class _RecognitionScreenState extends State<RecognitionScreen> {
               onPressed: () async {
                 await captureImage(); // Mengambil gambar langsung dari kamera
               },
-              child: Text('Ambil Gambar'),
+              child: const Text('Ambil Gambar'),
               style: ElevatedButton.styleFrom(
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(20),
                 ),
-                padding: EdgeInsets.symmetric(horizontal: 40, vertical: 20),
-                textStyle: TextStyle(fontSize: 16),
+                padding: EdgeInsets.symmetric(horizontal: 20, vertical: 0),
               ),
             ),
           if (!showPreview && detectedNISList.isNotEmpty)
@@ -462,13 +477,12 @@ class _RecognitionScreenState extends State<RecognitionScreen> {
                       showPreview = true; // Kembali ke tampilan preview kamera
                     });
                   },
-                  child: Text('Ambil Ulang'),
+                  child: const Text('Ambil Ulang'),
                   style: ElevatedButton.styleFrom(
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(20),
                     ),
-                    padding: EdgeInsets.symmetric(horizontal: 10, vertical: 20),
-                    textStyle: TextStyle(fontSize: 16),
+                    padding: EdgeInsets.symmetric(horizontal: 20, vertical: 0),
                   ),
                 ),
                 SizedBox(width: 20), // Spasi di antara tombol
@@ -476,13 +490,14 @@ class _RecognitionScreenState extends State<RecognitionScreen> {
                   onPressed: () async {
                     await verifyAttendance(); // Mengirim data untuk verifikasi absen
                   },
-                  child: Text('Verifikasi Kehadiran'),
+                  child: const Text('Verifikasi Kehadiran'),
                   style: ElevatedButton.styleFrom(
+                    foregroundColor: Colors.white,
+                    backgroundColor: Colors.green, // Teks berwarna putih
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(20),
                     ),
-                    padding: EdgeInsets.symmetric(horizontal: 10, vertical: 20),
-                    textStyle: TextStyle(fontSize: 16),
+                    padding: EdgeInsets.symmetric(horizontal: 20, vertical: 0),
                   ),
                 ),
               ],

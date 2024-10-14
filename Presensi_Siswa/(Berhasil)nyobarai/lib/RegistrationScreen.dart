@@ -163,8 +163,13 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
           TextButton(
             onPressed: () {
               Navigator.pop(ctx); // Tutup dialog dan kembali
+              setState(() {
+                showPreview = true; // Kembali ke tampilan preview kamera
+              });
             },
-            style: TextButton.styleFrom(foregroundColor: Colors.red),
+            style: TextButton.styleFrom(
+              foregroundColor: Colors.red,
+            ),
             child: const Text("Coba Lagi"),
           ),
         ],
@@ -359,19 +364,32 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
                 ? const CircularProgressIndicator()
                 : Column(
                     children: [
-                      if (showPreview)
-                        Expanded(
-                          child: CameraPreview(cameraController!),
+                      Expanded(
+                        child: Stack(
+                          children: [
+                            if (showPreview) CameraPreview(cameraController!),
+                            if (showPreview)
+                              Positioned.fill(
+                                child: Image.asset(
+                                  'assets/kotakwajah.png',
+                                  fit: BoxFit
+                                      .cover, // Menyesuaikan ukuran gambar dengan layar
+                                ),
+                              ),
+                            if (!showPreview && _image != null)
+                              Image.file(_image!),
+                          ],
                         ),
-                      if (!showPreview && _image != null)
-                        Expanded(
-                          child: Image.file(_image!),
-                        ),
-                      ElevatedButton(
-                        onPressed: captureImage,
-                        child: const Text("Capture Image"),
                       ),
                       const SizedBox(height: 20),
+                      // Jarak antara preview dan tombol
+                      if (showPreview)
+                        ElevatedButton(
+                          onPressed: captureImage,
+                          child: const Text("Ambil Gambar"),
+                        ),
+
+                      // Menampilkan tombol Capture Again hanya jika _image != null
                       if (!showPreview && _image != null)
                         ElevatedButton(
                           onPressed: () {
@@ -380,8 +398,10 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
                               _image = null; // Reset gambar
                             });
                           },
-                          child: const Text("Capture Again"),
+                          child: const Text("Ambil Ulang"),
                         ),
+                      const SizedBox(
+                          height: 20), // Jarak tambahan di bawah tombol
                     ],
                   ),
       ),
