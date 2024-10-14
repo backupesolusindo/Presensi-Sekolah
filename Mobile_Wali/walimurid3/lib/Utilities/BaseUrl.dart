@@ -1,1 +1,1 @@
-presensi-face-recognition/Mobile_Wali/walimurid/lib/Utilities/BaseUrl.dart
+const String UrlApi = "https://presensi-smp1.esolusindo.com/Api/ApiWali";

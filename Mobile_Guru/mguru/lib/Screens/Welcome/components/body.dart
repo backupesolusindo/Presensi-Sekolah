@@ -5,40 +5,100 @@ import 'package:mobile_presensi_kdtg/components/rounded_button.dart';
 import 'package:mobile_presensi_kdtg/constants.dart';
 import 'package:flutter_svg/svg.dart';
 
-class Body extends StatelessWidget {
+class Body extends StatefulWidget {
+  @override
+  _BodyState createState() => _BodyState();
+}
+
+class _BodyState extends State<Body> with SingleTickerProviderStateMixin {
+  late AnimationController _controller;
+  late Animation<double> _opacityAnimation;
+  late Animation<double> _scaleAnimation;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = AnimationController(
+      vsync: this,
+      duration: Duration(seconds: 2),
+    );
+
+    _opacityAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
+      CurvedAnimation(parent: _controller, curve: Curves.easeIn),
+    );
+
+    _scaleAnimation = Tween<double>(begin: 0.5, end: 1.0).animate(
+      CurvedAnimation(parent: _controller, curve: Curves.elasticOut),
+    );
+
+    _controller.forward();
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
   @override
   Widget build(BuildContext context) {
     Size size = MediaQuery.of(context).size;
-    // This size provide us total height and width of our screen
+
     return Background(
       child: SingleChildScrollView(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: <Widget>[
-            Text(
-              "PRESENSI ONLINE",
-              style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-            ),
-            Text(
-              "SMP Negeri 1 Jember",
-              style: TextStyle(fontWeight: FontWeight.bold),
-            ),
-            SizedBox(height: size.height * 0.05),
-            Container(
-              child: Image.asset(
-                "assets/images/smp1logo.png",
-                width: size.width * 0.6, //ukuran gambar
+            FadeTransition(
+              opacity: _opacityAnimation,
+              child: Column(
+                children: [
+                  Text(
+                    "PRESENSI ONLINE",
+                    style: TextStyle(
+                      fontSize: 24,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.blueAccent,
+                    ),
+                  ),
+                  Text(
+                    "SMP Negeri 1 Jember",
+                    style: TextStyle(
+                      fontWeight: FontWeight.bold,
+                      fontSize: 18,
+                      color: Colors.grey[700],
+                    ),
+                  ),
+                ],
               ),
             ),
-            //     Positioned(
-            //       bottom: 100,
-            //       left: 100,
-            //       child: Image.asset(
-            //         "assets/images/splash_screen.png",
-            //         width: size.width * 0.6, //ukuran gambar
-            //       ),
-            //     ),
             SizedBox(height: size.height * 0.05),
+            ScaleTransition(
+              scale: _scaleAnimation,
+              child: Container(
+                child: Image.asset(
+                  "assets/images/smp1logo.png",
+                  width: size.width * 0.6,
+                ),
+              ),
+            ),
+            SizedBox(height: size.height * 0.05),
+            FadeTransition(
+              opacity: _opacityAnimation,
+              child: RoundedButton(
+                text: "LOGIN",
+                press: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) {
+                        return LoginScreen();
+                      },
+                    ),
+                  );
+                },
+              ),
+            ),
           ],
         ),
       ),
