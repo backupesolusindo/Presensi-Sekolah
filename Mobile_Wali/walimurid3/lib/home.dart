@@ -1,20 +1,32 @@
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'recognition/RegistrationScreen.dart';
 import 'bottombar.dart'; // Import bottom bar kustom
 import 'riwayat.dart';   // Import halaman Riwayat
 
 class HomePage extends StatefulWidget {
-  final String nama_wali;
-  final String no_hp;
-
-  HomePage({required this.nama_wali, required this.no_hp});
-
   @override
   _HomePageState createState() => _HomePageState();
 }
 
 class _HomePageState extends State<HomePage> {
+  String namaWali = '';
+  String noHp = '';
   int _currentIndex = 0;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadUserData();
+  }
+
+  Future<void> _loadUserData() async {
+    final prefs = await SharedPreferences.getInstance();
+    setState(() {
+      namaWali = prefs.getString('nama_wali') ?? 'Nama Wali'; // Default jika tidak ada
+      noHp = prefs.getString('no_hp') ?? 'Nomor HP'; // Default jika tidak ada
+    });
+  }
 
   void _onItemTapped(int index) {
     setState(() {
@@ -66,7 +78,7 @@ class _HomePageState extends State<HomePage> {
                             ),
                           ),
                           Text(
-                            widget.nama_wali, // Tampilkan nama_wali
+                            namaWali, // Tampilkan nama_wali
                             style: TextStyle(
                               fontSize: 16,
                               fontWeight: FontWeight.bold,
@@ -74,11 +86,12 @@ class _HomePageState extends State<HomePage> {
                             ),
                           ),
                           Text(
-                            widget.no_hp, // Tampilkan no_hp
+                            noHp, // Tampilkan no_hp
                             style: TextStyle(
                               fontSize: 14,
                               color: Colors.grey[600],
-                            ),),
+                            ),
+                          ),
                         ],
                       ),
                     ],
@@ -92,15 +105,15 @@ class _HomePageState extends State<HomePage> {
                 mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                 children: [
                   _buildInfoCard(
-                      '15:15:38\nTue, 08 October 2024',
-                      Icons.access_time,
-                      Colors.white // Ubah warna latar belakang menjadi putih
-                      ),
+                    '15:15:38\nTue, 08 October 2024',
+                    Icons.access_time,
+                    Colors.white, // Ubah warna latar belakang menjadi putih
+                  ),
                   _buildInfoCard(
-                      'Kampus POLIJE\nLokasi Anda',
-                      Icons.location_on,
-                      Colors.white // Ubah warna latar belakang menjadi putih
-                      ),
+                    'Kampus POLIJE\nLokasi Anda',
+                    Icons.location_on,
+                    Colors.white, // Ubah warna latar belakang menjadi putih
+                  ),
                 ],
               ),
               SizedBox(height: 16),
@@ -147,8 +160,7 @@ class _HomePageState extends State<HomePage> {
                 style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
               ),
               SizedBox(height: 8),
-              _buildPresenceStatusCard(
-                  'Anda Hari ini Belum Melakukan Presensi'), // Presensi Anda
+              _buildPresenceStatusCard('Anda Hari ini Belum Melakukan Presensi'), // Presensi Anda
 
               SizedBox(height: 16),
 
@@ -158,8 +170,7 @@ class _HomePageState extends State<HomePage> {
                 style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
               ),
               SizedBox(height: 8),
-              _buildPresenceStatusCard(
-                  'Tidak ada jadwal mapel untuk hari ini.'), // Kegiatan Anda
+              _buildPresenceStatusCard('Tidak ada jadwal mapel untuk hari ini.'), // Kegiatan Anda
             ],
           ),
         ),

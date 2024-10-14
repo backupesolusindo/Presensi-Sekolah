@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'home.dart';
 import 'riwayat.dart';
 import 'bottombar.dart'; // Import bottom bar
+import 'login.dart'; // Import halaman login
+import 'package:shared_preferences/shared_preferences.dart'; // Import shared_preferences
 
 class ProfilePage extends StatefulWidget {
   @override
@@ -11,7 +13,6 @@ class ProfilePage extends StatefulWidget {
 class _ProfilePageState extends State<ProfilePage> {
   int _currentIndex = 2; // Set index 2 untuk halaman profil
 
- 
   void _onItemTapped(int index) {
     setState(() {
       _currentIndex = index;
@@ -20,12 +21,12 @@ class _ProfilePageState extends State<ProfilePage> {
     if (index == 0) {
       Navigator.pushReplacement(
         context,
-        MaterialPageRoute(builder: (context) => HomePage(nama_wali: '', no_hp: '',)), // Pindah ke halaman Home
+        MaterialPageRoute(builder: (context) => HomePage()), // Pindah ke halaman Home
       );
     } else if (index == 2) {
       Navigator.pushReplacement(
         context,
-        MaterialPageRoute(builder: (context) => RiwayatPage()), // Pindah ke halaman Profile
+        MaterialPageRoute(builder: (context) => RiwayatPage()), // Pindah ke halaman Riwayat
       );
     }
     // Untuk index 1, tetap di halaman Riwayat
@@ -72,6 +73,16 @@ class _ProfilePageState extends State<ProfilePage> {
                 _buildInfoCard(Icons.domain, 'Unit', 'Politeknik Jember'),
                 _buildInfoCard(Icons.check_circle, '0 Presensi', 'Jumlah Presensi Bulan Ini'),
                 _buildInfoCard(Icons.event, '0 Kegiatan', 'Jumlah Kegiatan Bulan Ini'),
+
+                // Tombol Logout
+                SizedBox(height: 32),
+                ElevatedButton(
+                  onPressed: () => _showLogoutConfirmation(context),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.redAccent, // Warna merah untuk tombol logout
+                  ),
+                  child: Text('Logout'),
+                ),
               ],
             ),
           ),
@@ -97,6 +108,42 @@ class _ProfilePageState extends State<ProfilePage> {
         title: Text(title),
         subtitle: Text(subtitle),
       ),
+    );
+  }
+
+  // Menampilkan dialog konfirmasi logout
+  void _showLogoutConfirmation(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text('Konfirmasi Logout'),
+          content: Text('Apakah Anda yakin ingin logout?'),
+          actions: <Widget>[
+            TextButton(
+              child: Text('Batal'),
+              onPressed: () {
+                Navigator.of(context).pop(); // Menutup dialog
+              },
+            ),
+            TextButton(
+              child: Text('Logout'),
+              onPressed: () async {
+                // Hapus data dari SharedPreferences
+                SharedPreferences prefs = await SharedPreferences.getInstance();
+                await prefs.remove('nama_wali');
+                await prefs.remove('no_hp');
+
+                // Arahkan kembali ke halaman login
+                Navigator.pushReplacement(
+                  context,
+                  MaterialPageRoute(builder: (context) => LoginPage()),
+                );
+              },
+            ),
+          ],
+        );
+      },
     );
   }
 }
