@@ -425,10 +425,34 @@ class _RecognitionScreenState extends State<RecognitionScreen> {
                   ),
                   // Menambahkan kotak wajah di atas preview kamera
                   Positioned.fill(
-                    child: Image.asset(
-                      'assets/kotakwajah.png',
-                      fit: BoxFit
-                          .cover, // Menyesuaikan ukuran gambar dengan layar
+                    child: Opacity(
+                      opacity: 0.3, // Menentukan opasitas gambar
+                      child: FractionallySizedBox(
+                        widthFactor: 1.7, // Menentukan lebar
+                        heightFactor: 1.7, // Menentukan tinggi
+                        child: Image.asset(
+                          'assets/kotakwajah.png',
+                          fit: BoxFit
+                              .contain, // Menyesuaikan gambar dengan area yang diberikan
+                        ),
+                      ),
+                    ),
+                  ),
+
+                  Positioned.fill(
+                    child: Opacity(
+                      opacity: 1.0, // Menentukan opasitas gambar
+                      child: FractionallySizedBox(
+                        widthFactor:
+                            1.7, // Menentukan lebar sebagai 80% dari lebar parent
+                        heightFactor:
+                            1.7, // Menentukan tinggi sebagai 80% dari tinggi parent
+                        child: Image.asset(
+                          'assets/kotaknya.png',
+                          fit: BoxFit
+                              .contain, // Menyesuaikan gambar dengan area yang diberikan
+                        ),
+                      ),
                     ),
                   ),
                 ],
@@ -454,17 +478,47 @@ class _RecognitionScreenState extends State<RecognitionScreen> {
             ),
           SizedBox(height: 20),
           if (showPreview)
-            ElevatedButton(
-              onPressed: () async {
-                await captureImage(); // Mengambil gambar langsung dari kamera
-              },
-              child: const Text('Ambil Gambar'),
-              style: ElevatedButton.styleFrom(
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(20),
+            Row(
+              mainAxisAlignment:
+                  MainAxisAlignment.center, // Posisikan tombol di tengah
+              children: [
+                ElevatedButton(
+                  onPressed: () async {
+                    await captureImage(); // Mengambil gambar langsung dari kamera
+                  },
+                  style: ElevatedButton.styleFrom(
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(20),
+                    ),
+                    padding: EdgeInsets.symmetric(
+                        horizontal: 20,
+                        vertical:
+                            12), // Tambahkan padding untuk menyesuaikan ukuran tombol
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize
+                        .min, // Sesuaikan ukuran tombol dengan konten
+                    children: [
+                      Icon(Icons.camera_alt), // Ikon kamera
+                      const SizedBox(width: 8), // Jarak antara ikon dan teks
+                      const Text('Ambil Gambar'),
+                    ],
+                  ),
                 ),
-                padding: EdgeInsets.symmetric(horizontal: 20, vertical: 0),
-              ),
+
+                const SizedBox(width: 10), // Jarak antara dua tombol
+                IconButton(
+                  icon: Icon(Icons.cameraswitch),
+                  onPressed: () async {
+                    setState(() {
+                      isFrontCamera =
+                          !isFrontCamera; // Ubah status kamera (depan/belakang)
+                    });
+                    await initializeCamera(
+                        isFrontCamera); // Inisialisasi ulang kamera
+                  },
+                ),
+              ],
             ),
           if (!showPreview && detectedNISList.isNotEmpty)
             Row(
