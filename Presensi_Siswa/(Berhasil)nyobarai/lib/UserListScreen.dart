@@ -9,14 +9,43 @@ class UserListScreen extends StatefulWidget {
 }
 
 class _UserListScreenState extends State<UserListScreen> {
-  late Future<List<Map<String, dynamic>>> _users;
+  late Future<List<Map<String, dynamic>>> _users =
+      Future.value([]); // Inisialisasi awal
+  Map<String, String> kelasMap =
+      {}; // Map untuk menyimpan id_kelas -> nama_kelas
   bool _isSyncing = false;
   String _sortCriteria = 'nama';
 
   @override
   void initState() {
     super.initState();
-    _users = _fetchUsers();
+    _fetchKelasAndUsers();
+  }
+
+  // Fetch data kelas dan user
+  Future<void> _fetchKelasAndUsers() async {
+    kelasMap = await _fetchKelasData(); // Fetch data kelas
+    _users = _fetchUsers(); // Fetch data user dari lokal
+    setState(() {}); // Update UI setelah data di-fetch
+  }
+
+  // Fetch data kelas dari API
+  Future<Map<String, String>> _fetchKelasData() async {
+    var url = Uri.parse(
+        'https://presensi-smp1.esolusindo.com/Api/ApiKelas/ApiKelas/get_kelas/');
+    var response = await http.get(url);
+
+    if (response.statusCode == 200) {
+      var jsonData = json.decode(response.body);
+      if (jsonData['status'] == true) {
+        Map<String, String> kelasMap = {};
+        for (var kelas in jsonData['data']) {
+          kelasMap[kelas['id_kelas']] = kelas['nama_kelas'];
+        }
+        return kelasMap;
+      }
+    }
+    return {};
   }
 
   Future<List<Map<String, dynamic>>> _fetchUsers() async {
@@ -37,7 +66,7 @@ class _UserListScreenState extends State<UserListScreen> {
       arData.add({
         'nama': user[DatabaseHelper.columnName],
         'nis': user[DatabaseHelper.columnNIS],
-        'kelas': user[DatabaseHelper.columnKelas],
+        'id_kelas': user[DatabaseHelper.columnKelas],
         'no_hp_ortu':
             user[DatabaseHelper.columnNoHpOrtu], // Tambahkan No HP Orang Tua
         'model': user[DatabaseHelper.columnEmbedding],
@@ -67,7 +96,7 @@ class _UserListScreenState extends State<UserListScreen> {
             await dbHelper.insert({
               DatabaseHelper.columnName: user['nama'],
               DatabaseHelper.columnNIS: user['nis'],
-              DatabaseHelper.columnKelas: user['kelas'],
+              DatabaseHelper.columnKelas: user['id_kelas'],
               DatabaseHelper.columnNoHpOrtu:
                   user['no_hp_ortu'], // Menyimpan No HP Orang Tua
               DatabaseHelper.columnEmbedding: user['model'],
@@ -233,9 +262,8 @@ class _UserListScreenState extends State<UserListScreen> {
                     .map<DropdownMenuItem<String>>((String value) {
                   return DropdownMenuItem<String>(
                     value: value,
-                    child: Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 8.0),
-                      child: Text(value[0].toUpperCase() + value.substring(1)),
+                    child: Text(
+                      value[0].toUpperCase() + value.substring(1),
                     ),
                   );
                 }).toList(),
@@ -261,6 +289,10 @@ class _UserListScreenState extends State<UserListScreen> {
                   itemCount: users.length,
                   itemBuilder: (context, index) {
                     final user = users[index];
+                    String namaKelas =
+                        kelasMap[user[DatabaseHelper.columnKelas]] ??
+                            'Kelas tidak ditemukan';
+
                     return Card(
                       margin: const EdgeInsets.symmetric(
                           horizontal: 16.0, vertical: 8.0),
@@ -305,8 +337,7 @@ class _UserListScreenState extends State<UserListScreen> {
                                               TextStyle(color: Colors.black54),
                                         ),
                                         TextSpan(
-                                          text:
-                                              'Kelas: ${user[DatabaseHelper.columnKelas]}',
+                                          text: ' $namaKelas',
                                           style: TextStyle(
                                             fontWeight: FontWeight.bold,
                                             color: Colors.blueAccent,

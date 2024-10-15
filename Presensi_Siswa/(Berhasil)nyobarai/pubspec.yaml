@@ -77,6 +77,7 @@ flutter:
     - images/
     - assets/
     - assets/kotakwajah.png
+    - assets/kotaknya.png
     - assets/logoSMP.png
     - assets/mobile_face_net.tflite
   # An image asset can refer to one or more resolution-specific "variants", see
