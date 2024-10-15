@@ -28,8 +28,9 @@ class _BottomNavScreenState extends State<BottomNavScreen> {
         backgroundColor: Colors.white,
         showSelectedLabels: false,
         showUnselectedLabels: false,
-        selectedItemColor: Color(0xFF336699), // Darker blue
-        unselectedItemColor: Colors.grey[400], // Lighter shade for unselected items
+        selectedItemColor: Colors.blueAccent[700],
+        unselectedItemColor:
+            Colors.grey[400], // Lighter shade for unselected items
         elevation: 30.0,
         items:
             [Icons.home, Icons.history_outlined, Icons.account_circle_outlined]
@@ -45,14 +46,14 @@ class _BottomNavScreenState extends State<BottomNavScreen> {
                           ),
                           decoration: BoxDecoration(
                             color: _currentIndex == key
-                                ? Color(0xFF003366) // Darker blue for selected
+                                ? Colors.blueAccent // Menggunakan blueAccent
                                 : Colors.transparent,
                             borderRadius: BorderRadius.circular(20.0),
                           ),
                           child: Icon(
                             value,
-                            color: _currentIndex == key 
-                                ? Colors.white 
+                            color: _currentIndex == key
+                                ? Colors.white
                                 : Colors.grey[400], // Set icon color
                           ),
                         ),

@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:http/http.dart' as http;
+import 'package:shared_preferences/shared_preferences.dart'; // Tambahkan ini
 import '/Utilities/BaseUrl.dart';
 import 'home.dart'; // Ganti dengan file dashboard kamu
 import 'signup.dart'; // Ganti dengan file signup kamu
@@ -40,7 +41,7 @@ class _LoginPageState extends State<LoginPage>
       return;
     }
 
-    final url = Uri.parse(UrlApi +'/WaliAPI/login');
+    final url = Uri.parse(UrlApi + '/WaliAPI/login');
     setState(() {
       _isLoading = true;
     });
@@ -58,16 +59,14 @@ class _LoginPageState extends State<LoginPage>
         final data = json.decode(response.body);
 
         if (data['status'] == 'success') {
-          List<dynamic> siswaData = data['siswa']; // Data siswa dari API
+          SharedPreferences prefs = await SharedPreferences.getInstance();
+          await prefs.setString('nama_wali', data['nama_wali']);
+          await prefs.setString('no_hp', data['no_hp']);
+          await prefs.setString('password', password);
 
           Navigator.pushReplacement(
             context,
-            MaterialPageRoute(
-              builder: (context) => HomePage(
-                nama_wali: data['nama_wali'],
-                no_hp: data['no_hp'],
-              ),
-            ),
+            MaterialPageRoute(builder: (context) => HomePage()),
           );
         } else {
           _showErrorSnackbar('Nomor telepon atau password salah');
@@ -115,12 +114,12 @@ class _LoginPageState extends State<LoginPage>
     return Scaffold(
       body: Stack(
         children: [
+          // Ganti dengan gambar background walibg.png
           Container(
             decoration: BoxDecoration(
-              gradient: LinearGradient(
-                colors: [Colors.grey[200]!, Colors.grey[400]!],
-                begin: Alignment.topCenter,
-                end: Alignment.bottomCenter,
+              image: DecorationImage(
+                image: AssetImage('assets/walibg.png'),
+                fit: BoxFit.cover, // Sesuaikan gambar dengan layar
               ),
             ),
           ),
@@ -176,7 +175,7 @@ class _LoginPageState extends State<LoginPage>
 
   Widget _buildTitle() {
     return Text(
-      'ABSENSI SMPN 1 JEMBER',
+      'LOGIN WALI SMPN 1 JEMBER',
       style: GoogleFonts.poppins(
         textStyle: TextStyle(
           fontSize: 26.0,
@@ -197,9 +196,6 @@ class _LoginPageState extends State<LoginPage>
     return TextField(
       controller: controller,
       obscureText: isPassword && !_isPasswordVisible,
-      style: GoogleFonts.raleway(
-        textStyle: TextStyle(color: Colors.black87),
-      ),
       decoration: InputDecoration(
         labelText: labelText,
         prefixIcon: Icon(icon, color: Colors.black54),
@@ -216,15 +212,8 @@ class _LoginPageState extends State<LoginPage>
                 },
               )
             : null,
-        labelStyle: GoogleFonts.raleway(
-          textStyle: TextStyle(color: Colors.black87),
-        ),
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12.0),
-        ),
-        enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12.0),
-          borderSide: BorderSide(color: Colors.black38),
         ),
         filled: true,
         fillColor: Colors.white.withOpacity(0.8),
@@ -249,7 +238,6 @@ class _LoginPageState extends State<LoginPage>
             fontSize: 18.0,
             fontWeight: FontWeight.bold,
             color: Colors.white,
-            letterSpacing: 1.2,
           ),
         ),
       ),
@@ -261,7 +249,7 @@ class _LoginPageState extends State<LoginPage>
       onPressed: () {
         Navigator.push(
           context,
-          MaterialPageRoute(builder: (context) => SignupPage()), // Ganti dengan halaman signup
+          MaterialPageRoute(builder: (context) => SignupPage()),
         );
       },
       child: Text(

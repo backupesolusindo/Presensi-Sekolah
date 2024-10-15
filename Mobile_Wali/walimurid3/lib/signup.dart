@@ -121,10 +121,9 @@ class _SignupPageState extends State<SignupPage> {
         children: [
           Container(
             decoration: BoxDecoration(
-              gradient: LinearGradient(
-                colors: [Colors.grey[200]!, Colors.grey[400]!],
-                begin: Alignment.topCenter,
-                end: Alignment.bottomCenter,
+              image: DecorationImage(
+                image: AssetImage('assets/walibg.png'), // Ganti dengan path gambar
+                fit: BoxFit.cover,
               ),
             ),
           ),
@@ -189,7 +188,7 @@ class _SignupPageState extends State<SignupPage> {
 
   Widget _buildTitle() {
     return Text(
-      'DAFTAR AKUN',
+      'DAFTAR AKUN WALI',
       style: GoogleFonts.poppins(
         textStyle: TextStyle(
           fontSize: 26.0,
