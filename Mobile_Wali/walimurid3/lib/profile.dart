@@ -14,8 +14,11 @@ class ProfilePage extends StatefulWidget {
 
 class _ProfilePageState extends State<ProfilePage> {
   int _currentIndex = 2; // Set index 2 untuk halaman profil
-  String NamaWali = "Loading..."; // Default teks sementara
-  String noHp = "Loading..."; // Tambahkan variabel untuk no_hp
+  String namaWali = "Loading..."; // Default teks sementara
+  String noHp = "Loading..."; // Variabel untuk no_hp
+  String nis = ""; // Variabel untuk menyimpan NIS
+  String kelas = "Loading..."; // Variabel untuk menyimpan kelas
+  String namaSiswa = "Loading..."; // Variabel untuk menyimpan nama siswa
 
   @override
   void initState() {
@@ -27,11 +30,13 @@ class _ProfilePageState extends State<ProfilePage> {
     try {
       final prefs = await SharedPreferences.getInstance();
       final savedNamaWali = prefs.getString('nama_wali');
-      final savedNoHp = prefs.getString('no_hp'); // Ambil no_hp dari SharedPreferences
+      final savedNoHp = prefs.getString('no_hp');
+      
+      nis = prefs.getString('nis') ?? ""; // Ambil NIS dari SharedPreferences
 
       if (savedNamaWali != null) {
         setState(() {
-          NamaWali = savedNamaWali;
+          namaWali = savedNamaWali;
         });
       }
 
@@ -39,32 +44,44 @@ class _ProfilePageState extends State<ProfilePage> {
         setState(() {
           noHp = savedNoHp; // Set no_hp jika sudah disimpan
         });
+      }
+
+      // Ambil data siswa dengan NIS
+      await _fetchDataSiswa(nis);
+
+    } catch (e) {
+      setState(() {
+        namaWali = "Error: ${e.toString()}";
+      });
+    }
+  }
+
+  Future<void> _fetchDataSiswa(String nis) async {
+    try {
+      final response = await http.get(
+        Uri.parse('https://presensi-smp1.esolusindo.com/Api/ApiSiswa/Siswa/getSiswaByNIS/$nis'), // Ganti dengan URL API Anda
+      );
+
+      if (response.statusCode == 200) {
+        final data = json.decode(response.body);
+        // Ambil data yang diperlukan dari response
+        final fetchedNamaSiswa = data['nama'] ?? "Tidak ada nama"; // Ambil nama siswa
+        final fetchedKelas = data['kelas'] ?? "Tidak ada kelas"; // Ambil kelas
+
+        setState(() {
+          namaSiswa = fetchedNamaSiswa; // Set nama siswa dari API
+          kelas = fetchedKelas; // Set kelas dari API
+        });
       } else {
-        final response = await http.get(
-          Uri.parse('https://presensi-smp1.esolusindo.com/Api/ApiSiswa/Siswa/getSiswabyHp'), // Ganti dengan URL API Anda
-        );
-
-        if (response.statusCode == 200) {
-          final data = json.decode(response.body);
-          final fetchedNamaWali = data['nama_wali'];
-          final fetchedNoHp = data['no_hp']; // Ambil no_hp dari response
-
-          await prefs.setString('nama_wali', fetchedNamaWali);
-          await prefs.setString('no_hp', fetchedNoHp); // Simpan no_hp ke SharedPreferences
-
-          setState(() {
-            NamaWali = fetchedNamaWali;
-            noHp = fetchedNoHp; // Set no_hp dari API
-          });
-        } else {
-          setState(() {
-            NamaWali = "Gagal memuat data.";
-          });
-        }
+        setState(() {
+          namaSiswa = "Gagal memuat nama.";
+          kelas = "Gagal memuat kelas.";
+        });
       }
     } catch (e) {
       setState(() {
-        NamaWali = "Error: ${e.toString()}";
+        namaSiswa = "Error: ${e.toString()}";
+        kelas = "Error: ${e.toString()}";
       });
     }
   }
@@ -109,7 +126,7 @@ class _ProfilePageState extends State<ProfilePage> {
                 ),
                 SizedBox(height: 16),
                 Text(
-                  NamaWali,
+                  namaWali,
                   style: TextStyle(
                     fontSize: 24,
                     fontWeight: FontWeight.bold,
@@ -117,7 +134,7 @@ class _ProfilePageState extends State<ProfilePage> {
                   ),
                 ),
                 SizedBox(height: 8),
-                Text(noHp), // Ganti 'TEST' dengan noHp
+                Text(noHp), // Menampilkan no_hp
                 SizedBox(height: 32),
                 _buildInfoCard(), // Panggil fungsi yang berisi semua informasi
                 SizedBox(height: 32),
@@ -151,9 +168,9 @@ class _ProfilePageState extends State<ProfilePage> {
         padding: const EdgeInsets.all(16.0),
         child: Column(
           children: [
-            _buildInfoRow(Icons.email, 'Nama', 'user@example.com'),
-            _buildInfoRow(Icons.domain, 'Nis', ''),
-            _buildInfoRow(Icons.check_circle, 'Kelas', ''),
+            _buildInfoRow(Icons.email, 'Nama', namaSiswa), // Menampilkan nama siswa
+            _buildInfoRow(Icons.domain, 'Nis', nis), // Menampilkan NIS
+            _buildInfoRow(Icons.check_circle, 'Kelas', kelas), // Menampilkan kelas
           ],
         ),
       ),
