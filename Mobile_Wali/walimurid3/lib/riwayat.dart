@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
+import 'dart:convert';
 import 'home.dart';
 import 'profile.dart';
 
@@ -11,7 +13,53 @@ class _RiwayatPageState extends State<RiwayatPage> {
   String selectedFilter = 'Semua';
   int _currentIndex = 1;
   bool showRiwayatMasuk = true;
-  int? selectedCardIndex; // Menyimpan index kartu yang dipilih
+  int? selectedCardIndex;
+  List<dynamic> riwayatData = [];
+  bool isLoading = true;
+
+  @override
+  void initState() {
+    super.initState();
+    fetchRiwayatMasuk(); // Ambil data saat halaman dibuka
+  }
+
+  Future<void> fetchRiwayatMasuk() async {
+    final String nis = '12345'; // Ganti dengan NIS yang sesuai
+    final String url =
+        'https://presensi-smp1.esolusindo.com/Api/ApiGerbang/Gerbang/ambilAbsen';
+
+    try {
+      final response = await http.post(
+        Uri.parse(url),
+        body: {'nis': nis},
+      );
+
+      if (response.statusCode == 200) {
+        final result = json.decode(response.body);
+        if (result['status'] == 'success') {
+          setState(() {
+            riwayatData = result['data'];
+            isLoading = false;
+          });
+        } else {
+          showError(result['message']);
+        }
+      } else {
+        showError('Gagal mengambil data. Kode: ${response.statusCode}');
+      }
+    } catch (e) {
+      showError('Terjadi kesalahan: $e');
+    }
+  }
+
+  void showError(String message) {
+    setState(() {
+      isLoading = false;
+    });
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text(message)),
+    );
+  }
 
   void _onItemTapped(int index) {
     setState(() {
@@ -59,8 +107,6 @@ class _RiwayatPageState extends State<RiwayatPage> {
                       ),
                     ),
                     const SizedBox(height: 20),
-
-                    // Cards Riwayat Masuk dan Mapel
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                       children: [
@@ -72,7 +118,7 @@ class _RiwayatPageState extends State<RiwayatPage> {
                           onTap: () {
                             setState(() {
                               showRiwayatMasuk = true;
-                              selectedCardIndex = 0; // Set index kartu yang dipilih
+                              selectedCardIndex = 0;
                             });
                           },
                         ),
@@ -84,32 +130,16 @@ class _RiwayatPageState extends State<RiwayatPage> {
                           onTap: () {
                             setState(() {
                               showRiwayatMasuk = false;
-                              selectedCardIndex = 1; // Set index kartu yang dipilih
+                              selectedCardIndex = 1;
                             });
                           },
                         ),
                       ],
                     ),
                     const SizedBox(height: 20),
-
-                    // Daftar Riwayat
-                    SizedBox(
-                      height: MediaQuery.of(context).size.height * 0.6,
-                      child: ListView.builder(
-                        itemCount: 10,
-                        itemBuilder: (context, index) {
-                          String status = index % 5 == 0 ? 'Hadir' : 'Tidak Hadir';
-
-                          if (selectedFilter != 'Semua' && selectedFilter != status) {
-                            return const SizedBox.shrink();
-                          }
-
-                          return showRiwayatMasuk
-                              ? _buildListItem('Riwayat Masuk', status, index)
-                              : _buildListItem('Riwayat Mapel', status, index);
-                        },
-                      ),
-                    ),
+                    isLoading
+                        ? CircularProgressIndicator()
+                        : _buildRiwayatList(),
                   ],
                 ),
               ),
@@ -136,25 +166,20 @@ class _RiwayatPageState extends State<RiwayatPage> {
     required Color color,
     required VoidCallback onTap,
   }) {
-    // Mengatur ukuran berdasarkan index yang dipilih
-    double scale = selectedCardIndex == index ? 1.2 : 1.0; // Kartu yang dipilih membesar
+    double scale = selectedCardIndex == index ? 1.1 : 1.0;
 
     return GestureDetector(
       onTap: onTap,
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 300),
-        transform: Matrix4.identity()
-          ..scale(scale)
-          ..translate(
-            (selectedCardIndex == index ? -15 : 0), // Menggeser kartu yang dipilih sedikit ke kiri
-            (selectedCardIndex == index ? -15 : 0), // Menggeser kartu yang dipilih sedikit ke atas
-          ),
-        alignment: Alignment.center, // Mengarahkan ke tengah
+        curve: Curves.easeInOut,
+        transformAlignment: Alignment.center,
+        transform: Matrix4.identity()..scale(scale),
         child: InkWell(
           onTap: onTap,
           borderRadius: BorderRadius.circular(22),
           child: Card(
-            elevation: 5,
+            elevation: 8,
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(22),
             ),
@@ -162,13 +187,21 @@ class _RiwayatPageState extends State<RiwayatPage> {
               width: 120,
               padding: const EdgeInsets.all(16.0),
               decoration: BoxDecoration(
-                color: color.withOpacity(0.8),
+                gradient: LinearGradient(
+                  colors: [
+                    color.withOpacity(0.8),
+                    color.withOpacity(0.5),
+                  ],
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                ),
                 borderRadius: BorderRadius.circular(22),
               ),
               child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   Icon(icon, size: 40, color: Colors.white),
-                  const SizedBox(height: 1),
+                  const SizedBox(height: 8),
                   Text(
                     title,
                     textAlign: TextAlign.center,
@@ -187,6 +220,21 @@ class _RiwayatPageState extends State<RiwayatPage> {
     );
   }
 
+  Widget _buildRiwayatList() {
+    return ListView.builder(
+      shrinkWrap: true,
+      itemCount: riwayatData.length,
+      itemBuilder: (context, index) {
+        final item = riwayatData[index];
+        return _buildListItem(
+          'Tanggal: ${item['tanggal']}',
+          item['status'],
+          index,
+        );
+      },
+    );
+  }
+
   Widget _buildListItem(String title, String status, int index) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 8.0),
@@ -196,72 +244,14 @@ class _RiwayatPageState extends State<RiwayatPage> {
           borderRadius: BorderRadius.circular(15),
         ),
         child: Container(
-          decoration: BoxDecoration(
-            gradient: LinearGradient(
-              colors: [
-                status == 'Hadir' ? Colors.greenAccent : Colors.redAccent,
-                Colors.white,
-              ],
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-            ),
-            borderRadius: BorderRadius.circular(15),
-          ),
-          child: Padding(
-            padding: const EdgeInsets.all(16.0),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  '$title - Senin, 29 Maret 2024',
-                  style: TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.w600,
-                    color: Colors.grey[800],
-                  ),
-                ),
-                const Divider(color: Colors.grey),
-                const SizedBox(height: 8),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          'Nama Murid: Siswa ${index + 1}',
-                          style: const TextStyle(
-                            fontSize: 14,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                        const SizedBox(height: 4),
-                        const Text('Kelas: 10A'),
-                        const SizedBox(height: 4),
-                        Text('No Absen: ${index + 1}'),
-                      ],
-                    ),
-                    Column(
-                      crossAxisAlignment: CrossAxisAlignment.end,
-                      children: [
-                        Text(
-                          'Keterangan: $status',
-                          style: TextStyle(
-                            fontSize: 14,
-                            fontWeight: FontWeight.bold,
-                            color: status == 'Hadir'
-                                ? Colors.green
-                                : Colors.redAccent,
-                          ),
-                        ),
-                        const SizedBox(height: 4),
-                        const Text('Alasan: -'),
-                      ],
-                    ),
-                  ],
-                ),
-              ],
-            ),
+          padding: const EdgeInsets.all(16.0),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(title),
+              const SizedBox(height: 8),
+              Text('Status: $status'),
+            ],
           ),
         ),
       ),
