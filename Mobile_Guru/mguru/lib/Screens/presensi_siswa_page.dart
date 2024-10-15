@@ -136,32 +136,45 @@ class _PresensiSiswaPageState extends State<PresensiSiswaPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Presensi Siswa',
-            style: TextStyle(fontWeight: FontWeight.bold)),
-        centerTitle: true,
-        backgroundColor: Colors.blueAccent,
-      ),
+  title: const Text(
+    'Presensi Siswa',
+    style: TextStyle(
+      fontWeight: FontWeight.bold,
+      color: Colors.white, // Set text color to white
+    ),
+  ),
+  centerTitle: true,
+  backgroundColor: Colors.blueAccent,
+  // Alternatively, you can use the foregroundColor property:
+  // foregroundColor: Colors.white,
+),
+
       body: Stack(
-        children: [
-          // Background Image
-          Container(
-            decoration: BoxDecoration(
-              image: DecorationImage(
-                image: AssetImage('assets/images/WaliRename.png'),
-                fit: BoxFit.cover,
-              ),
-            ),
-          ),
-          // Overlay with opacity
-          Container(
-            decoration: BoxDecoration(
-              color: Colors.black.withOpacity(0.3),
-            ),
-          ),
-          // Main content
-          _getSelectedPage(),
-        ],
+  children: [
+    // Background Image
+    Container(
+      decoration: BoxDecoration(
+        image: DecorationImage(
+          image: AssetImage('assets/images/WaliRename.png'),
+          fit: BoxFit.cover,
+        ),
       ),
+    ),
+    // Overlay with opacity
+    Container(
+      decoration: BoxDecoration(
+        color: Colors.black.withOpacity(0.3), // Set the opacity to 0.3
+      ),
+    ),
+    // Main content
+    _isLoading
+        ? Center(
+            child: CircularProgressIndicator(), // Show loading indicator
+          )
+        : _getSelectedPage(), // Show content after data is loaded
+  ],
+),
+
       bottomNavigationBar: _buildBottomNavigationBar(),
     );
   }
