@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'dart:io';
 import 'dart:typed_data';
 import 'package:flutter/material.dart';
@@ -8,6 +9,7 @@ import 'ML/Recognition.dart';
 import 'ML/Recognizer.dart';
 import 'DB/DatabaseHelper.dart';
 import 'package:lottie/lottie.dart';
+import 'package:http/http.dart' as http;
 
 class RegistrationScreen extends StatefulWidget {
   const RegistrationScreen({Key? key}) : super(key: key);
@@ -31,6 +33,8 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
   TextEditingController nameController = TextEditingController();
   TextEditingController nisController = TextEditingController();
   TextEditingController kelasController = TextEditingController();
+  String? selectedKelas;
+  List<dynamic> kelasList = [];
   TextEditingController noHpOrtuController = TextEditingController();
 
   @override
@@ -40,6 +44,7 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
     final options = FaceDetectorOptions();
     faceDetector = FaceDetector(options: options);
     recognizer = Recognizer();
+    fetchKelas();
   }
 
   Future<void> initializeCamera([bool isFront = true]) async {
@@ -177,65 +182,116 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
     );
   }
 
+  Future<void> fetchKelas() async {
+    var url = Uri.parse(
+        'https://presensi-smp1.esolusindo.com/Api/ApiKelas/ApiKelas/get_kelas/');
+    var response = await http.get(url);
+    if (response.statusCode == 200) {
+      var jsonData = json.decode(response.body);
+      if (jsonData['status'] == true) {
+        setState(() {
+          kelasList = jsonData['data'];
+        });
+      }
+    }
+  }
+
   showFaceRegistrationDialogue(Uint8List croppedFace, Recognition recognition) {
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
         title: const Text("Pendaftaran Wajah", textAlign: TextAlign.center),
         content: SingleChildScrollView(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.center,
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              const SizedBox(height: 20),
-              Image.memory(croppedFace, width: 200, height: 200),
-              TextField(
-                controller: nameController,
-                decoration: const InputDecoration(
-                  fillColor: Colors.white,
-                  filled: true,
-                  hintText: "Nama",
+          child: Padding(
+            padding: const EdgeInsets.symmetric(
+                horizontal:
+                    16.0), // Menambah padding untuk membuat form lebih lebar
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.center,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const SizedBox(height: 20),
+                Image.memory(croppedFace, width: 200, height: 200),
+                TextField(
+                  controller: nameController,
+                  decoration: const InputDecoration(
+                    fillColor: Colors.white,
+                    filled: true,
+                    hintText: "Nama",
+                    contentPadding: EdgeInsets.symmetric(
+                        horizontal: 12.0), // Menambah padding dalam inputan
+                  ),
                 ),
-              ),
-              TextField(
-                controller: nisController,
-                decoration: const InputDecoration(
-                  fillColor: Colors.white,
-                  filled: true,
-                  hintText: "NIS",
+                const SizedBox(height: 10), // Jarak antar field
+                TextField(
+                  controller: nisController,
+                  decoration: const InputDecoration(
+                    fillColor: Colors.white,
+                    filled: true,
+                    hintText: "NIS",
+                    contentPadding: EdgeInsets.symmetric(
+                        horizontal: 12.0), // Padding di dalam input
+                  ),
+                  keyboardType: TextInputType.number,
                 ),
-                keyboardType: TextInputType.number,
-              ),
-              TextField(
-                controller: kelasController,
-                decoration: const InputDecoration(
-                  fillColor: Colors.white,
-                  filled: true,
-                  hintText: "Kelas",
+                const SizedBox(height: 10),
+                DropdownButtonFormField<String>(
+                  decoration: const InputDecoration(
+                    fillColor: Colors.white,
+                    filled: true,
+                    contentPadding: EdgeInsets.symmetric(
+                        horizontal: 12.0), // Padding di dalam dropdown
+                  ),
+                  hint: const Text("Pilih Kelas"),
+                  value: selectedKelas,
+                  items: kelasList.map((kelas) {
+                    return DropdownMenuItem<String>(
+                      value: kelas['id_kelas'],
+                      child: Text(kelas['nama_kelas']),
+                    );
+                  }).toList(),
+                  onChanged: (value) {
+                    setState(() {
+                      selectedKelas = value;
+                    });
+                  },
                 ),
-              ),
-              TextField(
-                controller: noHpOrtuController,
-                decoration: const InputDecoration(
-                  fillColor: Colors.white,
-                  filled: true,
-                  hintText: "No HP Orang Tua",
+                const SizedBox(height: 10),
+                TextField(
+                  controller: noHpOrtuController,
+                  decoration: const InputDecoration(
+                    fillColor: Colors.white,
+                    filled: true,
+                    hintText: "No HP Orang Tua",
+                    contentPadding: EdgeInsets.symmetric(
+                        horizontal: 12.0), // Padding di dalam input
+                  ),
                 ),
-              ),
-              const SizedBox(height: 10),
-              ElevatedButton(
-                onPressed: () async {
-                  await registerFace(recognition);
-                },
-                style: ElevatedButton.styleFrom(
+                const SizedBox(height: 10),
+                ElevatedButton(
+                  onPressed: () async {
+                    if (selectedKelas != null) {
+                      await registerFace(recognition);
+                    } else {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(
+                            content: Text("Pilih kelas terlebih dahulu")),
+                      );
+                    }
+                  },
+                  style: ElevatedButton.styleFrom(
                     backgroundColor: Colors.blue,
-                    minimumSize: const Size(200, 40)),
-                child: const Text("Register"),
-              ),
-            ],
+                    foregroundColor: Colors.white,
+                    minimumSize: const Size(200, 40),
+                  ),
+                  child: const Text("Register"),
+                ),
+              ],
+            ),
           ),
         ),
-        contentPadding: EdgeInsets.zero,
+        contentPadding: EdgeInsets
+            .zero, // Pastikan tidak ada padding di sekitar content secara keseluruhan
       ),
     );
   }
@@ -244,7 +300,7 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
     if (nameController.text.isEmpty ||
         nisController.text.isEmpty ||
         noHpOrtuController.text.isEmpty ||
-        kelasController.text.isEmpty) {
+        selectedKelas == null) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text("Isi dengan lengkap")),
       );
@@ -253,12 +309,8 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
         const SnackBar(content: Text("NIS telah terdaftar")),
       );
     } else {
-      recognizer.registerFaceInDB(
-          nameController.text,
-          nisController.text,
-          kelasController.text,
-          noHpOrtuController.text,
-          recognition.embeddings);
+      recognizer.registerFaceInDB(nameController.text, nisController.text,
+          selectedKelas!, noHpOrtuController.text, recognition.embeddings);
 
       showSuccessDialog();
     }
@@ -370,12 +422,37 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
                             if (showPreview) CameraPreview(cameraController!),
                             if (showPreview)
                               Positioned.fill(
-                                child: Image.asset(
-                                  'assets/kotakwajah.png',
-                                  fit: BoxFit
-                                      .cover, // Menyesuaikan ukuran gambar dengan layar
+                                child: Opacity(
+                                  opacity: 0.3, // Menentukan opasitas gambar
+                                  child: FractionallySizedBox(
+                                    widthFactor:
+                                        1.7, // Menentukan lebar sebagai 80% dari lebar parent
+                                    heightFactor:
+                                        1.7, // Menentukan tinggi sebagai 80% dari tinggi parent
+                                    child: Image.asset(
+                                      'assets/kotakwajah.png',
+                                      fit: BoxFit
+                                          .contain, // Menyesuaikan gambar dengan area yang diberikan
+                                    ),
+                                  ),
                                 ),
                               ),
+                            Positioned.fill(
+                              child: Opacity(
+                                opacity: 1.0, // Menentukan opasitas gambar
+                                child: FractionallySizedBox(
+                                  widthFactor:
+                                      1.7, // Menentukan lebar sebagai 80% dari lebar parent
+                                  heightFactor:
+                                      1.7, // Menentukan tinggi sebagai 80% dari tinggi parent
+                                  child: Image.asset(
+                                    'assets/kotaknya.png',
+                                    fit: BoxFit
+                                        .contain, // Menyesuaikan gambar dengan area yang diberikan
+                                  ),
+                                ),
+                              ),
+                            ),
                             if (!showPreview && _image != null)
                               Image.file(_image!),
                           ],
@@ -384,9 +461,43 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
                       const SizedBox(height: 20),
                       // Jarak antara preview dan tombol
                       if (showPreview)
-                        ElevatedButton(
-                          onPressed: captureImage,
-                          child: const Text("Ambil Gambar"),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment
+                              .center, // Posisikan tombol di tengah
+                          children: [
+                            ElevatedButton(
+                              onPressed: captureImage,
+                              style: ElevatedButton.styleFrom(
+                                padding: EdgeInsets.symmetric(
+                                    horizontal: 20,
+                                    vertical: 12), // Menambah padding
+                              ),
+                              child: Row(
+                                mainAxisSize: MainAxisSize
+                                    .min, // Agar ukuran sesuai dengan konten
+                                children: [
+                                  Icon(Icons.camera_alt), // Ikon kamera
+                                  const SizedBox(
+                                      width: 8), // Jarak antara ikon dan teks
+                                  const Text("Ambil Gambar"),
+                                ],
+                              ),
+                            ),
+
+                            const SizedBox(
+                                width: 10), // Jarak antara dua tombol
+                            IconButton(
+                              icon: Icon(Icons.cameraswitch),
+                              onPressed: () async {
+                                setState(() {
+                                  isFrontCamera =
+                                      !isFrontCamera; // Ubah status kamera (depan/belakang)
+                                });
+                                await initializeCamera(
+                                    isFrontCamera); // Inisialisasi ulang kamera
+                              },
+                            ),
+                          ],
                         ),
 
                       // Menampilkan tombol Capture Again hanya jika _image != null

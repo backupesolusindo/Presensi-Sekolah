@@ -26,7 +26,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:http/http.dart' as http;
 import 'package:trust_location/trust_location.dart';
 import 'package:launch_review/launch_review.dart';
-import 'package:mobile_presensi_kdtg/Screens/presensi_siswa_page.dart'; 
+import 'package:mobile_presensi_kdtg/Screens/presensi_siswa_page.dart';
 
 import 'Absen/WorkFrom/absen_selesai_wf_screen.dart';
 import 'Absen/WorkFrom/absen_wf_screen.dart';
@@ -77,7 +77,6 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
     getPref();
     cekFakeGPS();
     Timer.periodic(Duration(seconds: 1), (Timer t) => _getTime());
-    
   }
 
   cekFakeGPS() async {
@@ -93,133 +92,131 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
   }
 
   getPref() async {
-  SharedPreferences prefs = await SharedPreferences.getInstance();
-  UUID = prefs.getString("ID")!;
-  NIP = prefs.getString("NIP")!;
-  Nama = prefs.getString("Nama")!;
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    UUID = prefs.getString("ID")!;
+    NIP = prefs.getString("NIP")!;
+    Nama = prefs.getString("Nama")!;
 
-  if (prefs.getInt("CameraSelect") == null) {
-    prefs.setInt("CameraSelect", 1);
+    if (prefs.getInt("CameraSelect") == null) {
+      prefs.setInt("CameraSelect", 1);
+    }
+
+    bool status = await Geolocator.isLocationServiceEnabled();
+    if (!status) {
+      Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) {
+        return AktifGPS();
+      }));
+    }
+
+    var url = Uri.parse(Core().ApiUrl + "Login/set_token");
+    var response = await http.post(url, body: {
+      "uuid": prefs.getString("ID"),
+      "token": prefs.getString("token"),
+    });
+    print(response.body);
+    print("Login Pref :" + UUID);
+    getDataDash();
+    fetchKegiatan();
+    fetchJadwalMapel();
   }
-
-  bool status = await Geolocator.isLocationServiceEnabled();
-  if (!status) {
-    Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) {
-      return AktifGPS();
-    }));
-  }
-
-  var url = Uri.parse(Core().ApiUrl + "Login/set_token");
-  var response = await http.post(url, body: {
-    "uuid": prefs.getString("ID"),
-    "token": prefs.getString("token"),
-  });
-  print(response.body);
-  print("Login Pref :" + UUID);
-  getDataDash();
-  fetchKegiatan();
-  // Fetch Jadwal Mapel setelah login
-  fetchJadwalMapel();
-}
 
   Future<String> getDataDash() async {
-  SharedPreferences prefs = await SharedPreferences.getInstance();
-  
-  try {
-    var res = await http.get(Uri.parse(Core().ApiUrl + "Dash/get_dash/" + UUID),
-        headers: {"Accept": "application/json"});
-    
-    var resBody = json.decode(res.body);
-    
-    setState(() {
-      statusLoading = 0;
-      ssHeader = true;
-      Timer(Duration(milliseconds: 250), () {
-        ssBody = true;
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+
+    try {
+      var res = await http.get(
+          Uri.parse(Core().ApiUrl + "Dash/get_dash/" + UUID),
+          headers: {"Accept": "application/json"});
+
+      var resBody = json.decode(res.body);
+
+      setState(() {
+        statusLoading = 0;
+        ssHeader = true;
         Timer(Duration(milliseconds: 250), () {
-          ssFooter = true;
+          ssBody = true;
+          Timer(Duration(milliseconds: 250), () {
+            ssFooter = true;
+          });
         });
+
+        // Mengambil data pegawai, lokasi, dan lainnya
+        DataPegawai = resBody['data']["pegawai"];
+        DataLokasi = resBody['data']["lokasi"];
+        DataAbsen = resBody['data']["absen"];
+        DataAbsenPulang = resBody['data']["absensi_pulang"];
+        DataIstirahat = resBody['data']["istirahat"];
+        DataSelesaiIstirahat = resBody['data']["selesai_istirahat"];
+        DataKegiatan = resBody['data']["kegiatan"];
+        DataDinasLuar = resBody['data']["dinasluar"];
+        DataTugasBelajar = resBody['data']["tugas_belajar"];
+        StatusDinasLuar = int.parse(DataDinasLuar['status']);
+        AdaDinasLuar = int.parse(DataDinasLuar['ada_surat']);
+        AdaTugasBelajar = int.parse(DataTugasBelajar['ada_tugas_belajar']);
+        Foto = DataPegawai["foto_profil"];
+
+        // Simpan data ke SharedPreferences
+        prefs.setString("NIP", DataPegawai['NIP']);
+        prefs.setString("Nama", DataPegawai['nama_pegawai']);
+        prefs.setString("Lokasi", DataLokasi['nama_kampus']);
+        LokasiAnda = prefs.getString("Lokasi")!;
+        prefs.setString("idKampus", DataLokasi['idkampus']);
+        prefs.setDouble("LokasiLat", double.parse(DataLokasi['latitude']));
+        prefs.setDouble("LokasiLng", double.parse(DataLokasi['longtitude']));
+        prefs.setDouble("Radius", double.parse(DataLokasi['radius']));
+
+        // Cek versi
+        if (resBody['data']["version"] > Core().Version) {
+          _showNotifUpdate();
+        }
+
+        // Status lintas hari
+        if (resBody['data']["jabatan"]["lintas_hari"] != null) {
+          status_lintashari =
+              int.parse(resBody['data']["jabatan"]["lintas_hari"]);
+        }
+
+        // Set status kerja dan keterangan
+        if (DataAbsen["jenis_absen"] == "1") {
+          statusWF = 1;
+          KeteranganMulai = "Jam Presensi Datang";
+          KeteranganSelesai = "Jam Presensi Pulang";
+        } else if (DataAbsen["jenis_absen"] == "4") {
+          statusWF = 4;
+          KeteranganMulai = "Jam Presensi Mulai WFH";
+          KeteranganSelesai = "Jam Presensi Selesai WFH";
+        }
+
+        // Waktu pulang
+        if (DataAbsenPulang != null) {
+          jam_pulang = formatDate(
+              DateTime.parse(DataAbsenPulang['waktu']), [HH, ':', nn, ':', ss]);
+          tgl_pulang = formatDate(DateTime.parse(DataAbsenPulang['waktu']),
+              [dd, '/', mm, '/', yyyy]);
+        }
+
+        // Waktu istirahat
+        if (DataSelesaiIstirahat != null) {
+          jam_istirahat = formatDate(DateTime.parse(DataIstirahat['waktu']),
+                  [HH, ':', nn, ':', ss]) +
+              " s/d " +
+              formatDate(DateTime.parse(DataSelesaiIstirahat['waktu']),
+                  [HH, ':', nn, ':', ss]);
+        } else {
+          jam_istirahat = formatDate(DateTime.parse(DataIstirahat['waktu']),
+                  [HH, ':', nn, ':', ss]) +
+              " - Belum Presensi";
+        }
       });
 
-      // Mengambil data pegawai, lokasi, dan lainnya
-      DataPegawai = resBody['data']["pegawai"];
-      DataLokasi = resBody['data']["lokasi"];
-      DataAbsen = resBody['data']["absen"];
-      DataAbsenPulang = resBody['data']["absensi_pulang"];
-      DataIstirahat = resBody['data']["istirahat"];
-      DataSelesaiIstirahat = resBody['data']["selesai_istirahat"];
-      DataKegiatan = resBody['data']["kegiatan"];
-      DataDinasLuar = resBody['data']["dinasluar"];
-      DataTugasBelajar = resBody['data']["tugas_belajar"];
-      StatusDinasLuar = int.parse(DataDinasLuar['status']);
-      AdaDinasLuar = int.parse(DataDinasLuar['ada_surat']);
-      AdaTugasBelajar = int.parse(DataTugasBelajar['ada_tugas_belajar']);
-      Foto = DataPegawai["foto_profil"];
-
-      // Simpan data ke SharedPreferences
-      prefs.setString("NIP", DataPegawai['NIP']);
-      prefs.setString("Nama", DataPegawai['nama_pegawai']);
-      prefs.setString("Lokasi", DataLokasi['nama_kampus']);
-      LokasiAnda = prefs.getString("Lokasi")!;
-      prefs.setString("idKampus", DataLokasi['idkampus']);
-      prefs.setDouble("LokasiLat", double.parse(DataLokasi['latitude']));
-      prefs.setDouble("LokasiLng", double.parse(DataLokasi['longtitude']));
-      prefs.setDouble("Radius", double.parse(DataLokasi['radius']));
-
-      // Cek versi
-      if (resBody['data']["version"] > Core().Version) {
-        _showNotifUpdate();
-      }
-
-      // Status lintas hari
-      if (resBody['data']["jabatan"]["lintas_hari"] != null) {
-        status_lintashari =
-            int.parse(resBody['data']["jabatan"]["lintas_hari"]);
-      }
-
-      // Set status kerja dan keterangan
-      if (DataAbsen["jenis_absen"] == "1") {
-        statusWF = 1;
-        KeteranganMulai = "Jam Presensi Datang";
-        KeteranganSelesai = "Jam Presensi Pulang";
-      } else if (DataAbsen["jenis_absen"] == "4") {
-        statusWF = 4;
-        KeteranganMulai = "Jam Presensi Mulai WFH";
-        KeteranganSelesai = "Jam Presensi Selesai WFH";
-      }
-
-      // Waktu pulang
-      if (DataAbsenPulang != null) {
-        jam_pulang = formatDate(
-            DateTime.parse(DataAbsenPulang['waktu']), [HH, ':', nn, ':', ss]);
-        tgl_pulang = formatDate(
-            DateTime.parse(DataAbsenPulang['waktu']), [dd, '/', mm, '/', yyyy]);
-      }
-
-      // Waktu istirahat
-      if (DataSelesaiIstirahat != null) {
-        jam_istirahat = formatDate(DateTime.parse(DataIstirahat['waktu']),
-                [HH, ':', nn, ':', ss]) +
-            " s/d " +
-            formatDate(DateTime.parse(DataSelesaiIstirahat['waktu']),
-                [HH, ':', nn, ':', ss]);
-      } else {
-        jam_istirahat = formatDate(DateTime.parse(DataIstirahat['waktu']),
-                [HH, ':', nn, ':', ss]) +
-            " - Belum Presensi";
-      }
-    });
-
-    // Menambahkan pemanggilan fetchJadwalMapel di sini
-    await fetchJadwalMapel(); // Pastikan Anda menunggu sampai jadwal diambil
-    print(resBody);
-    return "";
-    
-  } catch (e) {
-    print("Error fetching data: $e");
-    return "Error"; // Kembalikan error jika terjadi kesalahan
+      await fetchJadwalMapel();
+      print(resBody);
+      return "";
+    } catch (e) {
+      print("Error fetching data: $e");
+      return "Error";
+    }
   }
-}
 
   fetchKegiatan() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
@@ -238,566 +235,589 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
     }
   }
 
-Future<List<Map<String, dynamic>>> fetchJadwalMapel() async {
-  SharedPreferences prefs = await SharedPreferences.getInstance();
-  String? uuid = prefs.getString("ID");
+  Future<List<Map<String, dynamic>>> fetchJadwalMapel() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    String? uuid = prefs.getString("ID");
 
-  if (uuid == null) {
-    print("Error: UUID is null.");
-    return []; 
-  }
-
-  var url = Uri.parse(Core().ApiUrl + "ApiJadwalMapel/JadwalMapel/getJadwalMapel_byUUID/$uuid");
-  try {
-    var response = await http.get(url);
-
-    if (response.statusCode == 200) {
-      var responseData = json.decode(response.body);
-      if (responseData['data'] != null && responseData['status'] == true) {
-        // Convert the data into list of maps
-        ListJadwalMapel = List<Map<String, dynamic>>.from(responseData['data']);
-        setState(() {}); // Update UI after getting data
-        return ListJadwalMapel;
-      } else {
-        print("Error: ${responseData['message']}");
-        return [];
-      }
-    } else {
-      print("Failed to fetch data: ${response.statusCode}");
-      throw Exception("Failed to load jadwal mapel");
+    if (uuid == null) {
+      print("Error: UUID is null.");
+      return [];
     }
-  } catch (e) {
-    print("Error fetching data: $e");
-    return [];
+
+    var url = Uri.parse(Core().ApiUrl +
+        "ApiJadwalMapel/JadwalMapel/getJadwalMapel_byUUID/$uuid");
+    try {
+      var response = await http.get(url);
+
+      if (response.statusCode == 200) {
+        var responseData = json.decode(response.body);
+        if (responseData['data'] != null && responseData['status'] == true) {
+          // Convert the data into list of maps
+          ListJadwalMapel =
+              List<Map<String, dynamic>>.from(responseData['data']);
+          setState(() {}); // Update UI after getting data
+          return ListJadwalMapel;
+        } else {
+          print("Error: ${responseData['message']}");
+          return [];
+        }
+      } else {
+        print("Failed to fetch data: ${response.statusCode}");
+        throw Exception("Failed to load jadwal mapel");
+      }
+    } catch (e) {
+      print("Error fetching data: $e");
+      return [];
+    }
   }
-}
-
-
 
   @override
-Widget build(BuildContext context) {
-  Size size = MediaQuery.of(context).size;
-  final screenHeight = MediaQuery.of(context).size.height;
-  
-  return Scaffold(
-    body: Container(
-      color: CBackground, // Background color
-      child: Stack(
-        children: [
-          // Positioned background image to cover the full screen
-          Positioned.fill(
-            child: Image.asset(
-              "assets/images/WaliRename.png",
-              fit: BoxFit.cover, // Ensures the image covers the full background
-            ),
-          ),
-          
-          // The rest of the scrollable content
-          CustomScrollView(
-            physics: ClampingScrollPhysics(),
-            slivers: <Widget>[
-              _buildHeader(screenHeight),
-              SliverToBoxAdapter(
-                child: (statusLoading == 1)
-                    ? Container(
-                        width: size.width,
-                        alignment: Alignment.center,
-                        child: CircularProgressIndicator(),
-                      )
-                    : SizedBox(),
+  Widget build(BuildContext context) {
+    Size size = MediaQuery.of(context).size;
+    final screenHeight = MediaQuery.of(context).size.height;
+
+    return Scaffold(
+      body: Container(
+        color: CBackground, // Background color
+        child: Stack(
+          children: [
+            // Positioned background image to cover the full screen
+            Positioned.fill(
+              child: Image.asset(
+                "assets/images/WaliRename.png",
+                fit: BoxFit
+                    .cover, // Ensures the image covers the full background
               ),
-              (statusWF == 1)
-                  ? _buildMenuWFO(screenHeight)
-                  : _buildMenuWFH(screenHeight),
-              _buildBox(screenHeight),
-              _buildKegiatanTerkini(screenHeight),
-              _buildJadwalMapelHariIni(screenHeight),
-            ],
-          ),
-        ],
+            ),
+
+            // The rest of the scrollable content
+            CustomScrollView(
+              physics: ClampingScrollPhysics(),
+              slivers: <Widget>[
+                _buildHeader(screenHeight),
+                SliverToBoxAdapter(
+                  child: (statusLoading == 1)
+                      ? Container(
+                          width: size.width,
+                          alignment: Alignment.center,
+                          child: CircularProgressIndicator(),
+                        )
+                      : SizedBox(),
+                ),
+                (statusWF == 1)
+                    ? _buildMenuWFO(screenHeight)
+                    : _buildMenuWFH(screenHeight),
+                _buildBox(screenHeight),
+                _buildKegiatanTerkini(screenHeight),
+                _buildJadwalMapelHariIni(screenHeight),
+              ],
+            ),
+          ],
+        ),
       ),
-    ),
-  );
-}
+    );
+  }
 
+  SliverToBoxAdapter _buildBox(double screenHeight) {
+    Size size = MediaQuery.of(context).size;
 
-SliverToBoxAdapter _buildBox(double screenHeight) {
-  Size size = MediaQuery.of(context).size;
-
-  return SliverToBoxAdapter(
-    child: AnimatedOpacity(
-      opacity: ssFooter ? 1 : 0,
-      duration: const Duration(milliseconds: 500),
-      child: AnimatedContainer(
-        margin: ssFooter ? EdgeInsets.only(top: 0) : EdgeInsets.only(top: 30),
+    return SliverToBoxAdapter(
+      child: AnimatedOpacity(
+        opacity: ssFooter ? 1 : 0,
         duration: const Duration(milliseconds: 500),
-        curve: Curves.fastEaseInToSlowEaseOut,
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: <Widget>[
-            SizedBox(height: 10),
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
-              child: Text(
-                'Presensi Anda :',
-                style: const TextStyle(
-                  fontSize: 15.0,
-                  fontWeight: FontWeight.w600,
+        child: AnimatedContainer(
+          margin: ssFooter ? EdgeInsets.only(top: 0) : EdgeInsets.only(top: 30),
+          duration: const Duration(milliseconds: 500),
+          curve: Curves.fastEaseInToSlowEaseOut,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: <Widget>[
+              SizedBox(height: 10),
+              Padding(
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
+                child: Text(
+                  'Presensi Anda :',
+                  style: const TextStyle(
+                    fontSize: 15.0,
+                    fontWeight: FontWeight.w600,
+                  ),
                 ),
               ),
-            ),
-            // Card for missing presence with icon
-            if (DataAbsen == null && DataKegiatan.length < 1 && StatusDinasLuar == 1)
-              Container(
-                padding: const EdgeInsets.all(15.0), // Smaller padding for compact look
-                margin: const EdgeInsets.symmetric(vertical: 0, horizontal: 15.0),
-                width: size.width,
-                decoration: BoxDecoration(
-                  color: Colors.blue, // Change CWarning to a blue color
-                  borderRadius: BorderRadius.circular(10.0), // Adjust corner radius
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.blue.withOpacity(0.5), // Softer shadow in blue
-                      blurRadius: 4,
-                      offset: Offset(2, 2), // Softer shadow position
+              // Card for missing presence with icon
+              if (DataAbsen == null &&
+                  DataKegiatan.length < 1 &&
+                  StatusDinasLuar == 1)
+                Container(
+                  padding: const EdgeInsets.all(
+                      15.0), // Smaller padding for compact look
+                  margin:
+                      const EdgeInsets.symmetric(vertical: 0, horizontal: 15.0),
+                  width: size.width,
+                  decoration: BoxDecoration(
+                    color: Colors.blue, // Change CWarning to a blue color
+                    borderRadius:
+                        BorderRadius.circular(10.0), // Adjust corner radius
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.blue
+                            .withOpacity(0.5), // Softer shadow in blue
+                        blurRadius: 4,
+                        offset: Offset(2, 2), // Softer shadow position
+                      ),
+                    ],
+                  ),
+                  child: Row(
+                    children: [
+                      Icon(
+                        Icons.error_outline, // Using "!" symbol
+                        color: Colors.white70,
+                        size: 24, // Adjusted icon size for compactness
+                      ),
+                      SizedBox(width: 10), // Space between icon and text
+                      Expanded(
+                        child: Text(
+                          "Anda Hari Ini Belum Melakukan Presensi",
+                          style: const TextStyle(
+                            color: Colors.white70,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              // Cards for Absen if available
+              if (DataAbsen != null)
+                Row(
+                  children: <Widget>[
+                    _buildStatCard(
+                      KeteranganMulai,
+                      formatDate(DateTime.parse(DataAbsen['waktu']),
+                          [HH, ':', nn, ':', ss]),
+                      formatDate(DateTime.parse(DataAbsen['waktu']),
+                          [dd, '/', mm, '/', yyyy]),
+                      Colors.lightBlue, // Change this if needed
+                    ),
+                    _buildStatCard(
+                        KeteranganSelesai, jam_pulang, tgl_pulang, Colors.cyan),
+                  ],
+                ),
+              // Cards for Istirahat if available
+              if (DataIstirahat != null)
+                Row(
+                  children: <Widget>[
+                    _buildStatCard(
+                      'Jam Presensi Istirahat',
+                      jam_istirahat,
+                      "",
+                      Colors.lightGreen,
                     ),
                   ],
                 ),
-                child: Row(
-                  children: [
-                    Icon(
-                      Icons.error_outline, // Using "!" symbol
-                      color: Colors.white70,
-                      size: 24, // Adjusted icon size for compactness
-                    ),
-                    SizedBox(width: 10), // Space between icon and text
-                    Expanded(
-                      child: Text(
-                        "Anda Hari Ini Belum Melakukan Presensi",
+              // Card for Dinas Luar if applicable
+              if (AdaDinasLuar == 1)
+                Container(
+                  width: size.width,
+                  margin: const EdgeInsets.symmetric(
+                      vertical: 5.0, horizontal: 15.0),
+                  padding: const EdgeInsets.all(
+                      12.0), // Adjusted padding for consistency
+                  decoration: BoxDecoration(
+                    color: Colors.blue.withOpacity(
+                        0.8), // Change kPrimaryColor to a blue color
+                    borderRadius: BorderRadius.circular(12.0),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.blue
+                            .withOpacity(0.8), // Change to blue shadow
+                        blurRadius: 4,
+                        offset: Offset(4, 4),
+                      ),
+                    ],
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: <Widget>[
+                      Text(
+                        "Dinas Luar :",
                         style: const TextStyle(
-                          color: Colors.white70,
+                          color: Colors.white,
+                          fontSize: 16.0,
                           fontWeight: FontWeight.w600,
                         ),
                       ),
-                    ),
-                  ],
-                ),
-              ),
-            // Cards for Absen if available
-            if (DataAbsen != null)
-              Row(
-                children: <Widget>[
-                  _buildStatCard(
-                    KeteranganMulai,
-                    formatDate(DateTime.parse(DataAbsen['waktu']), [HH, ':', nn, ':', ss]),
-                    formatDate(DateTime.parse(DataAbsen['waktu']), [dd, '/', mm, '/', yyyy]),
-                    Colors.lightBlue, // Change this if needed
-                  ),
-                  _buildStatCard(KeteranganSelesai, jam_pulang, tgl_pulang, Colors.cyan),
-                ],
-              ),
-            // Cards for Istirahat if available
-            if (DataIstirahat != null)
-              Row(
-                children: <Widget>[
-                  _buildStatCard(
-                    'Jam Presensi Istirahat',
-                    jam_istirahat,
-                    "",
-                    Colors.lightGreen,
-                  ),
-                ],
-              ),
-            // Card for Dinas Luar if applicable
-            if (AdaDinasLuar == 1)
-              Container(
-                width: size.width,
-                margin: const EdgeInsets.symmetric(vertical: 5.0, horizontal: 15.0),
-                padding: const EdgeInsets.all(12.0), // Adjusted padding for consistency
-                decoration: BoxDecoration(
-                  color: Colors.blue.withOpacity(0.8), // Change kPrimaryColor to a blue color
-                  borderRadius: BorderRadius.circular(12.0),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.blue.withOpacity(0.8), // Change to blue shadow
-                      blurRadius: 4,
-                      offset: Offset(4, 4),
-                    ),
-                  ],
-                ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: <Widget>[
-                    Text(
-                      "Dinas Luar :",
-                      style: const TextStyle(
-                        color: Colors.white,
-                        fontSize: 16.0,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                    SizedBox(height: 8),
-                    Text(
-                      DataDinasLuar['no_surat'],
-                      style: const TextStyle(
-                        color: Colors.white,
-                        fontSize: 14.0,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                    SizedBox(height: 4),
-                    Text(
-                      DataDinasLuar['nama_surat'],
-                      style: const TextStyle(
-                        color: Colors.white,
-                        fontSize: 14.0,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                    Text(
-                      "Tanggal: " +
-                          DataDinasLuar['tanggal_mulai'] +
-                          " s/d " +
-                          DataDinasLuar['tanggal_selesai'],
-                      style: const TextStyle(
-                        color: Colors.white,
-                        fontSize: 14.0,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            // Card for Tugas Belajar if applicable
-            if (AdaTugasBelajar == 1)
-              Container(
-                width: size.width,
-                margin: const EdgeInsets.symmetric(vertical: 5.0, horizontal: 15.0),
-                padding: const EdgeInsets.all(12.0), // Consistent padding
-                decoration: BoxDecoration(
-                  color: Colors.blue, // Change kPrimaryColor to a blue color
-                  borderRadius: BorderRadius.circular(10.0),
-                ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: <Widget>[
-                    Text(
-                      "Tugas Belajar :",
-                      style: const TextStyle(
-                        color: Colors.white,
-                        fontSize: 16.0,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                    SizedBox(height: 8),
-                    Text(
-                      "Kampus: " + DataTugasBelajar['tugas_belajar']['nama_kampus'],
-                      style: const TextStyle(
-                        color: Colors.white,
-                        fontSize: 14.0,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                    SizedBox(height: 4),
-                    Text(
-                      "Keterangan: " + DataTugasBelajar['tugas_belajar']['keterangan'],
-                      style: const TextStyle(
-                        color: Colors.white,
-                        fontSize: 14.0,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                    Text(
-                      "Tahun: " + DataTugasBelajar['tugas_belajar']['tahun'],
-                      style: const TextStyle(
-                        color: Colors.white,
-                        fontSize: 14.0,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-          ],
-        ),
-      ),
-    ),
-  );
-}
-
-
-  SliverToBoxAdapter _buildKegiatanTerkini(double screenHeight) {
-  Size size = MediaQuery.of(context).size;
-
-  // If there are no activities, return an empty container, which results in no UI being shown
-  if (ListKegiatan.isEmpty) {
-    return SliverToBoxAdapter(child: SizedBox.shrink());
-  }
-
-  // If there are activities, show the 'Kegiatan Anda' section and the list
-  return SliverToBoxAdapter(
-    child: AnimatedOpacity(
-      opacity: ssFooter ? 1 : 0,
-      duration: const Duration(milliseconds: 500),
-      child: AnimatedContainer(
-        margin: ssFooter ? EdgeInsets.only(top: 0) : EdgeInsets.only(top: 30),
-        duration: const Duration(milliseconds: 500),
-        curve: Curves.fastEaseInToSlowEaseOut,
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: <Widget>[
-            SizedBox(height: 10),
-            Padding(
-              padding: const EdgeInsets.only(top: 8, left: 20),
-              child: Text(
-                'Kegiatan Anda :',
-                style: const TextStyle(
-                  fontSize: 15.0,
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
-            ),
-            Container(
-              width: double.infinity,
-              height: size.height * 0.3,
-              child: ListView.builder(
-                itemCount: ListKegiatan.length,
-                itemBuilder: (context, index) {
-                  return getCardKegiatan(ListKegiatan[index]);
-                },
-              ),
-            ),
-          ],
-        ),
-      ),
-    ),
-  );
-}
-
-SliverToBoxAdapter _buildJadwalMapelHariIni(double screenHeight) {
-  Size size = MediaQuery.of(context).size;
-
-  return SliverToBoxAdapter(
-    child: AnimatedOpacity(
-      opacity: ssFooter ? 1 : 0,
-      duration: const Duration(milliseconds: 500),
-      child: AnimatedContainer(
-        margin: ssFooter ? EdgeInsets.only(top: 0) : EdgeInsets.only(top: 30),
-        duration: const Duration(milliseconds: 500),
-        curve: Curves.fastEaseInToSlowEaseOut,
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: <Widget>[
-            SizedBox(height: 10),
-            Padding(
-              padding: const EdgeInsets.only(top: 8, left: 20),
-              child: Text(
-                'Jadwal Mapel Hari Ini :',
-                style: const TextStyle(
-                  fontSize: 15.0,
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
-            ),
-            if (ListJadwalMapel.isEmpty)
-              Container(
-                padding: const EdgeInsets.all(15.0),
-                margin: const EdgeInsets.symmetric(vertical: 5, horizontal: 20.0),
-                width: size.width,
-                decoration: BoxDecoration(
-                  color: Colors.blue,
-                  borderRadius: BorderRadius.circular(10.0),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.blue.withOpacity(0.5),
-                      blurRadius: 3,
-                      offset: Offset(2, 2),
-                    ),
-                  ],
-                ),
-                child: Row(
-                  children: [
-                    Icon(
-                      Icons.error_outline,
-                      color: Colors.white70,
-                      size: 24,
-                    ),
-                    SizedBox(width: 8),
-                    Expanded(
-                      child: Text(
-                        "Tidak ada jadwal mapel untuk hari ini.",
+                      SizedBox(height: 8),
+                      Text(
+                        DataDinasLuar['no_surat'],
                         style: const TextStyle(
-                          color: Colors.white70,
-                          fontWeight: FontWeight.w600
+                          color: Colors.white,
+                          fontSize: 14.0,
+                          fontWeight: FontWeight.w600,
                         ),
                       ),
-                    ),
-                  ],
+                      SizedBox(height: 4),
+                      Text(
+                        DataDinasLuar['nama_surat'],
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 14.0,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      Text(
+                        "Tanggal: " +
+                            DataDinasLuar['tanggal_mulai'] +
+                            " s/d " +
+                            DataDinasLuar['tanggal_selesai'],
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 14.0,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
-              )
-            else
+              // Card for Tugas Belajar if applicable
+              if (AdaTugasBelajar == 1)
+                Container(
+                  width: size.width,
+                  margin: const EdgeInsets.symmetric(
+                      vertical: 5.0, horizontal: 15.0),
+                  padding: const EdgeInsets.all(12.0), // Consistent padding
+                  decoration: BoxDecoration(
+                    color: Colors.blue, // Change kPrimaryColor to a blue color
+                    borderRadius: BorderRadius.circular(10.0),
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: <Widget>[
+                      Text(
+                        "Tugas Belajar :",
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 16.0,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                      SizedBox(height: 8),
+                      Text(
+                        "Kampus: " +
+                            DataTugasBelajar['tugas_belajar']['nama_kampus'],
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 14.0,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                      SizedBox(height: 4),
+                      Text(
+                        "Keterangan: " +
+                            DataTugasBelajar['tugas_belajar']['keterangan'],
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 14.0,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      Text(
+                        "Tahun: " + DataTugasBelajar['tugas_belajar']['tahun'],
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 14.0,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  SliverToBoxAdapter _buildKegiatanTerkini(double screenHeight) {
+    Size size = MediaQuery.of(context).size;
+
+    // If there are no activities, return an empty container, which results in no UI being shown
+    if (ListKegiatan.isEmpty) {
+      return SliverToBoxAdapter(child: SizedBox.shrink());
+    }
+
+    // If there are activities, show the 'Kegiatan Anda' section and the list
+    return SliverToBoxAdapter(
+      child: AnimatedOpacity(
+        opacity: ssFooter ? 1 : 0,
+        duration: const Duration(milliseconds: 500),
+        child: AnimatedContainer(
+          margin: ssFooter ? EdgeInsets.only(top: 0) : EdgeInsets.only(top: 30),
+          duration: const Duration(milliseconds: 500),
+          curve: Curves.fastEaseInToSlowEaseOut,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: <Widget>[
+              SizedBox(height: 10),
+              Padding(
+                padding: const EdgeInsets.only(top: 8, left: 20),
+                child: Text(
+                  'Kegiatan Anda :',
+                  style: const TextStyle(
+                    fontSize: 15.0,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ),
               Container(
                 width: double.infinity,
                 height: size.height * 0.3,
                 child: ListView.builder(
-                  itemCount: ListJadwalMapel.length,
+                  itemCount: ListKegiatan.length,
                   itemBuilder: (context, index) {
-                    return getCardJadwalMapel(ListJadwalMapel[index]);
+                    return getCardKegiatan(ListKegiatan[index]);
                   },
                 ),
               ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  SliverToBoxAdapter _buildJadwalMapelHariIni(double screenHeight) {
+    Size size = MediaQuery.of(context).size;
+
+    return SliverToBoxAdapter(
+      child: AnimatedOpacity(
+        opacity: ssFooter ? 1 : 0,
+        duration: const Duration(milliseconds: 500),
+        child: AnimatedContainer(
+          margin: ssFooter ? EdgeInsets.only(top: 0) : EdgeInsets.only(top: 30),
+          duration: const Duration(milliseconds: 500),
+          curve: Curves.fastEaseInToSlowEaseOut,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: <Widget>[
+              const SizedBox(height: 10),
+              Padding(
+                padding: const EdgeInsets.only(top: 8, left: 20),
+                child: const Text(
+                  'Jadwal Mapel Hari Ini :',
+                  style: TextStyle(
+                    fontSize: 15.0,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ),
+              if (ListJadwalMapel.isEmpty)
+                Container(
+                  padding: const EdgeInsets.all(15.0),
+                  margin:
+                      const EdgeInsets.symmetric(vertical: 5, horizontal: 20.0),
+                  width: size.width,
+                  decoration: BoxDecoration(
+                    color: Colors.blue,
+                    borderRadius: BorderRadius.circular(10.0),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.blue.withOpacity(0.5),
+                        blurRadius: 3,
+                        offset: const Offset(2, 2),
+                      ),
+                    ],
+                  ),
+                  child: Row(
+                    children: [
+                      const Icon(
+                        Icons.error_outline,
+                        color: Colors.white70,
+                        size: 24,
+                      ),
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: const Text(
+                          "Tidak ada jadwal mapel untuk hari ini.",
+                          style: TextStyle(
+                            color: Colors.white70,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                )
+              else
+                Container(
+                  width: double.infinity,
+                  height: size.height * 0.3,
+                  child: ListView.builder(
+                    itemCount: ListJadwalMapel.length,
+                    itemBuilder: (context, index) {
+                      return getCardJadwalMapel(ListJadwalMapel[index]);
+                    },
+                  ),
+                ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget getCardJadwalMapel(Map<String, dynamic> item) {
+    return GestureDetector(
+      onTap: () {
+        // Ensure id_kelas is safely parsed as an integer
+        int idKelas = item['kelas'] != null
+            ? int.tryParse(item['kelas'].toString()) ?? 0
+            : 0; // Parse kelas to idKelas
+
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => PresensiSiswaPage(
+              namaMapel: item['nama_mapel'],
+              namaKelas: item['nama_kelas'],
+              idKelas: idKelas, // Pass the idKelas as an integer
+              waktuMulai: item['waktu_mulai'],
+              waktuSelesai: item['waktu_selesai'],
+              hari: item['hari'],
+              tanggal: item['tanggal'],
+            ),
+          ),
+        );
+      },
+      child: Container(
+        margin: const EdgeInsets.symmetric(vertical: 10.0, horizontal: 20.0),
+        padding: const EdgeInsets.all(20.0),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(15.0),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.1),
+              blurRadius: 8.0,
+              offset: const Offset(0, 4),
+            ),
+          ],
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: <Widget>[
+            // Header: Mata pelajaran dan ikon buku
+            Row(
+              children: [
+                const Icon(
+                  Icons.book_rounded,
+                  color: Colors.blueAccent,
+                  size: 28,
+                ),
+                const SizedBox(width: 10),
+                Expanded(
+                  child: Text(
+                    item['nama_mapel'] ??
+                        'Tidak ada data', // Nama mata pelajaran
+                    style: const TextStyle(
+                      fontSize: 20.0,
+                      fontWeight: FontWeight.w700,
+                      color: Colors.black87,
+                    ),
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 12), // Jarak antar elemen
+
+            // Lokasi (Kelas)
+            Row(
+              children: [
+                const Icon(
+                  Icons.class_rounded,
+                  color: Colors.purpleAccent,
+                  size: 20,
+                ),
+                const SizedBox(width: 6),
+                Text(
+                  item['nama_kelas'] ?? 'Tidak ada data', // Nama kelas
+                  style: const TextStyle(
+                    fontSize: 16.0,
+                    color: Colors.grey,
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 10), // Jarak antar elemen
+
+            // Waktu pelajaran
+            Row(
+              children: [
+                const Icon(
+                  Icons.access_time_filled_rounded,
+                  color: Colors.orangeAccent,
+                  size: 20,
+                ),
+                const SizedBox(width: 6),
+                Text(
+                  "${item['waktu_mulai'] ?? '-'} - ${item['waktu_selesai'] ?? '-'}", // Waktu mulai dan selesai
+                  style: const TextStyle(
+                    fontSize: 16.0,
+                    color: Colors.grey,
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 10), // Jarak antar elemen
+
+            // Hari pelajaran
+            Row(
+              children: [
+                const Icon(
+                  Icons.calendar_today_rounded,
+                  color: Colors.greenAccent,
+                  size: 20,
+                ),
+                const SizedBox(width: 6),
+                Text(
+                  "Hari: ${item['hari'] ?? '-'}", // Hari
+                  style: const TextStyle(
+                    fontSize: 16.0,
+                    color: Colors.grey,
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 10), // Jarak antar elemen
+
+            // Tanggal
+            Row(
+              children: [
+                const Icon(
+                  Icons.date_range_rounded,
+                  color: Colors.redAccent,
+                  size: 20,
+                ),
+                const SizedBox(width: 6),
+                Text(
+                  item['tanggal'] != null && item['tanggal'].isNotEmpty
+                      ? item['tanggal'] // Tanggal pelajaran
+                      : 'Tanggal belum ditentukan',
+                  style: const TextStyle(
+                    fontSize: 16.0,
+                    color: Colors.grey,
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 10), // Jarak antar elemen
           ],
         ),
       ),
-    ),
-  );
-}
-
-Widget getCardJadwalMapel(Map<String, dynamic> item) {
-  return GestureDetector(
-    onTap: () {
-      Navigator.push(
-        context,
-        MaterialPageRoute(
-          builder: (context) => PresensiSiswaPage(
-            namaMapel: item['nama_mapel'],
-            namaKelas: item['nama_kelas'],
-            waktuMulai: item['waktu_mulai'],
-            waktuSelesai: item['waktu_selesai'],
-            hari: item['hari'],
-            tanggal: item['tanggal'],
-          ),
-        ),
-      );
-    },
-    child: Container(
-      margin: const EdgeInsets.symmetric(vertical: 10.0, horizontal: 20.0),
-      padding: const EdgeInsets.all(20.0),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(15.0),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.1),
-            blurRadius: 8.0,
-            offset: Offset(0, 4),
-          ),
-        ],
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: <Widget>[
-          // Header: Mata pelajaran dan ikon buku
-          Row(
-            children: [
-              Icon(
-                Icons.book_rounded,
-                color: Colors.blueAccent,
-                size: 28,
-              ),
-              const SizedBox(width: 10),
-              Expanded(
-                child: Text(
-                  item['nama_mapel'] ?? 'Tidak ada data', // Nama mata pelajaran
-                  style: TextStyle(
-                    fontSize: 20.0,
-                    fontWeight: FontWeight.w700,
-                    color: Colors.black87,
-                  ),
-                  overflow: TextOverflow.ellipsis,
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 12), // Jarak antar elemen
-
-          // Lokasi (Kelas)
-          Row(
-            children: [
-              Icon(
-                Icons.class_rounded,
-                color: Colors.purpleAccent,
-                size: 20,
-              ),
-              const SizedBox(width: 6),
-              Text(
-                item['nama_kelas'] ?? 'Tidak ada data', // Nama kelas
-                style: TextStyle(
-                  fontSize: 16.0,
-                  color: Colors.grey[700],
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 10), // Jarak antar elemen
-
-          // Waktu pelajaran
-          Row(
-            children: [
-              Icon(
-                Icons.access_time_filled_rounded,
-                color: Colors.orangeAccent,
-                size: 20,
-              ),
-              const SizedBox(width: 6),
-              Text(
-                "${item['waktu_mulai'] ?? '-'} - ${item['waktu_selesai'] ?? '-'}", // Waktu mulai dan selesai
-                style: TextStyle(
-                  fontSize: 16.0,
-                  color: Colors.grey[700],
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 10), // Jarak antar elemen
-
-          // Hari pelajaran
-          Row(
-            children: [
-              Icon(
-                Icons.calendar_today_rounded,
-                color: Colors.greenAccent,
-                size: 20,
-              ),
-              const SizedBox(width: 6),
-              Text(
-                "Hari: ${item['hari'] ?? '-'}", // Hari
-                style: TextStyle(
-                  fontSize: 16.0,
-                  color: Colors.grey[700],
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 10), // Jarak antar elemen
-
-          // Tanggal
-          Row(
-            children: [
-              Icon(
-                Icons.date_range_rounded,
-                color: Colors.redAccent,
-                size: 20,
-              ),
-              const SizedBox(width: 6),
-              Text(
-                item['tanggal'] != null && item['tanggal'].isNotEmpty
-                    ? item['tanggal'] // Tanggal pelajaran
-                    : 'Tanggal belum ditentukan',
-                style: TextStyle(
-                  fontSize: 16.0,
-                  color: Colors.grey[700],
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 10), // Jarak antar elemen
-        ],
-      ),
-    ),
-  );
-}
-
+    );
+  }
 
   Widget getCardKegiatan(item) {
     return Container(
@@ -990,11 +1010,12 @@ Widget getCardJadwalMapel(Map<String, dynamic> item) {
                         height: 59,
                         width: 59,
                         decoration: BoxDecoration(
-  borderRadius: BorderRadius.circular(70),
-  image: DecorationImage(
-    image: AssetImage('assets/images/smp1logo.png'),// Optional: adjust how the image fits the box
-  ),
-),
+                          borderRadius: BorderRadius.circular(70),
+                          image: DecorationImage(
+                            image: AssetImage(
+                                'assets/images/smp1logo.png'), // Optional: adjust how the image fits the box
+                          ),
+                        ),
                       ),
                       SizedBox(
                         width: 15,
