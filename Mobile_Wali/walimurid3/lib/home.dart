@@ -2,7 +2,6 @@ import 'dart:async';  // Untuk Timer
 import 'package:flutter/material.dart';
 import 'package:intl/date_symbol_data_local.dart';
 import 'package:intl/intl.dart';  // Untuk format tanggal dan waktu
-import 'package:intl/intl_standalone.dart';  // Inisialisasi Locale
 import 'package:shared_preferences/shared_preferences.dart';
 import 'recognition/RegistrationScreen.dart';
 import 'bottombar.dart'; // Import bottom bar kustom
@@ -170,17 +169,22 @@ class _HomePageState extends State<HomePage> {
                         scrollDirection: Axis.horizontal,
                         child: Row(
                           children: [
-                            _buildMenuIcon(Icons.menu, 'Semua Menu'),
+                            _buildMenuIcon(Icons.menu, 'Semua Menu', () {}),
                             SizedBox(width: 20),
-                            _buildMenuIcon(Icons.login, 'Presensi Masuk'),
+                            _buildMenuIcon(Icons.login, 'Presensi Masuk', () {}),
                             SizedBox(width: 20),
-                            _buildMenuIcon(Icons.coffee, 'Istirahat Keluar'),
+                            _buildMenuIcon(Icons.coffee, 'Istirahat Keluar', () {}),
                             SizedBox(width: 20),
-                            _buildMenuIcon(Icons.logout, 'Presensi Pulang'),
+                            _buildMenuIcon(Icons.logout, 'Presensi Pulang', () {}),
                             SizedBox(width: 20),
-                            _buildMenuIcon(Icons.history, 'Istirahat Masuk'),
+                            _buildMenuIcon(Icons.history, 'Istirahat Masuk', () {}),
                             SizedBox(width: 20),
-                            _buildMenuIcon(Icons.face, 'Daftarkan Wajah Anak'),
+                            _buildMenuIcon(Icons.face, 'Daftarkan Wajah Anak', () {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(builder: (context) => RegistrationScreen()),
+                              );
+                            }),
                           ],
                         ),
                       ),
@@ -235,17 +239,20 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
-  Widget _buildMenuIcon(IconData icon, String label) {
-    return Column(
-      children: [
-        CircleAvatar(
-          radius: 30,
-          backgroundColor: Colors.blueAccent,
-          child: Icon(icon, color: Colors.white),
-        ),
-        SizedBox(height: 8),
-        Text(label, textAlign: TextAlign.center),
-      ],
+  Widget _buildMenuIcon(IconData icon, String label, VoidCallback onTap) {
+    return InkWell(
+      onTap: onTap,
+      child: Column(
+        children: [
+          CircleAvatar(
+            radius: 30,
+            backgroundColor: Colors.blueAccent,
+            child: Icon(icon, color: Colors.white),
+          ),
+          SizedBox(height: 8),
+          Text(label, textAlign: TextAlign.center),
+        ],
+      ),
     );
   }
 

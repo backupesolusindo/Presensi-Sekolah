@@ -65,23 +65,22 @@ class _RiwayatSiswaPageState extends State<RiwayatSiswaPage> {
                             10.0), // Padding inside the card
                         decoration: BoxDecoration(
                           color:
-                              Colors.blueAccent, // Background color of the card
+                              Colors.white, // Background color of the card
                           borderRadius: BorderRadius.circular(
                               15), // Ensures the corners are rounded
                         ),
                         child: Text(
                           'Riwayat Presensi Siswa',
                           style: TextStyle(
-                            fontSize: 26, // Increased font size
-                            fontWeight: FontWeight.bold,
+                            fontSize: 16, // Increased font size
                             color: Colors
-                                .white, // Changed color for better visibility
+                                .black, // Changed color for better visibility
                           ),
                         ),
                       ),
                     ),
                   ),
-                  SizedBox(height: 20),
+                  SizedBox(height: 10),
                   // Filter buttons with cleaner layout
                   Container(
                     padding: EdgeInsets.symmetric(vertical: 8.0),
@@ -120,7 +119,7 @@ class _RiwayatSiswaPageState extends State<RiwayatSiswaPage> {
                       ],
                     ),
                   ),
-                  SizedBox(height: 20),
+                  SizedBox(height: 10),
 
                   // Loading Indicator
                   if (_isLoading) Center(child: CircularProgressIndicator()),
