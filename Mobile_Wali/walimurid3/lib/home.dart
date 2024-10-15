@@ -51,7 +51,7 @@ class _HomePageState extends State<HomePage> {
     setState(() {
       namaWali = prefs.getString('nama_wali') ?? 'Nama Wali';
       noHp = prefs.getString('no_hp') ?? 'Nomor HP';
-      
+
       // Ambil NIS dari SharedPreferences
       String nis = prefs.getString('nis') ?? 'NIS tidak tersedia';
       print('NIS: $nis'); // Anda bisa mencetak NIS untuk memastikan
@@ -74,10 +74,12 @@ class _HomePageState extends State<HomePage> {
         if (data['data'].isNotEmpty) {
           setState(() {
             siswaList = data['data']; // Simpan data siswa ke siswaList
-            selectedSiswa = siswaList.first['nama']; // Pilih siswa pertama sebagai default
+            selectedSiswa =
+                siswaList.first['nama']; // Pilih siswa pertama sebagai default
 
             // Simpan NIS ke SharedPreferences
-            String nis = siswaList.first['nis']; // Pastikan key benar sesuai JSON
+            String nis =
+                siswaList.first['nis']; // Pastikan key benar sesuai JSON
             final prefs = SharedPreferences.getInstance();
             prefs.then((prefs) {
               prefs.setString('nis', nis); // Simpan NIS
@@ -147,11 +149,13 @@ class _HomePageState extends State<HomePage> {
                   Row(
                     children: [
                       Expanded(
-                        child: _buildInfoCard('$_currentTime\n$_currentDate', Icons.access_time, Colors.white),
+                        child: _buildInfoCard('$_currentTime\n$_currentDate',
+                            Icons.access_time, Colors.white),
                       ),
                       SizedBox(width: 8),
                       Expanded(
-                        child: _buildInfoCard('Kampus POLIJE\nLokasi Anda', Icons.location_on, Colors.white),
+                        child: _buildInfoCard('Kampus POLIJE\nLokasi Anda',
+                            Icons.location_on, Colors.white),
                       ),
                     ],
                   ),
@@ -173,7 +177,8 @@ class _HomePageState extends State<HomePage> {
                     style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
                   ),
                   SizedBox(height: 8),
-                  _buildPresenceStatusCard('Anda Hari ini Belum Melakukan Presensi'),
+                  _buildPresenceStatusCard(
+                      'Anda Hari ini Belum Melakukan Presensi'),
 
                   SizedBox(height: 16),
 
@@ -183,7 +188,8 @@ class _HomePageState extends State<HomePage> {
                     style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
                   ),
                   SizedBox(height: 8),
-                  _buildPresenceStatusCard('Tidak ada jadwal mapel untuk hari ini.'),
+                  _buildPresenceStatusCard(
+                      'Tidak ada jadwal mapel untuk hari ini.'),
                 ],
               ),
             ),
@@ -313,6 +319,13 @@ class _HomePageState extends State<HomePage> {
               _buildMenuIcon(Icons.coffee, 'Istirahat Keluar', () {}),
               SizedBox(width: 20),
               _buildMenuIcon(Icons.logout, 'Presensi Pulang', () {}),
+              SizedBox(width: 20),
+              _buildMenuIcon(Icons.face, 'Daftarkan Wajah Anak', () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => RegistrationScreen()),
+                );
+              }),
             ],
           ),
         ),
