@@ -47,6 +47,122 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
     fetchKelas();
   }
 
+  Future<void> syncData() async {
+    setState(() {
+      isLoading = true;
+    });
+
+    final dbHelper = DatabaseHelper.instance;
+    final users = await dbHelper.queryAllRows();
+    List<Map<String, dynamic>> arData = [];
+
+    for (var user in users) {
+      arData.add({
+        'nama': user[DatabaseHelper.columnName],
+        'nis': user[DatabaseHelper.columnNIS],
+        'id_kelas': user[DatabaseHelper.columnKelas],
+        'no_hp_ortu':
+            user[DatabaseHelper.columnNoHpOrtu], // Tambahkan No HP Orang Tua
+        'model': user[DatabaseHelper.columnEmbedding],
+      });
+    }
+    String bodyraw = jsonEncode(<String, dynamic>{'data': arData});
+    print(bodyraw);
+
+    try {
+      final response = await http.post(
+        Uri.parse(
+            'https://presensi-smp1.esolusindo.com/Api/ApiSiswa/Siswa/SyncSiswa'),
+        headers: <String, String>{
+          'Content-Type': 'application/json; charset=UTF-8',
+        },
+        body: bodyraw,
+      );
+
+      if (response.statusCode == 200) {
+        final responseData = jsonDecode(response.body);
+        if (responseData['message']['status'] == 200 ||
+            responseData['message']['status'] == 201) {
+          final List<dynamic> users = responseData['data'];
+          await dbHelper.deleteAll();
+
+          for (var user in users) {
+            await dbHelper.insert({
+              DatabaseHelper.columnName: user['nama'],
+              DatabaseHelper.columnNIS: user['nis'],
+              DatabaseHelper.columnKelas: user['id_kelas'],
+              DatabaseHelper.columnNoHpOrtu:
+                  user['no_hp_ortu'], // Menyimpan No HP Orang Tua
+              DatabaseHelper.columnEmbedding: user['model'],
+            });
+          }
+        }
+      } else {
+        _showErrorDialog(
+            'Gagal mengupload data, status: ${response.statusCode}');
+      }
+    } catch (e) {
+      _showErrorDialog('Koneksi gagal. Pastikan Anda terhubung ke internet.');
+    } finally {
+      setState(() {
+        isLoading = false;
+      });
+    }
+  }
+
+    void showSyncDialog() {
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text("Success", textAlign: TextAlign.center),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const Icon(Icons.check_circle, color: Colors.green, size: 100),
+            const SizedBox(height: 20),
+            const Text("Berhasil Sinkronisasi", textAlign: TextAlign.center),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () async {
+              Navigator.pop(ctx); // Tutup dialog sukses
+              Navigator.pop(context); // Kembali ke halaman sebelumnya
+            },
+            child: const Text("OK"),
+          ),
+        ],
+      ),
+    );
+
+    // Reset text controllers setelah dialog sukses ditutup
+    nameController.clear();
+    nisController.clear();
+    kelasController.clear();
+    noHpOrtuController.clear();
+  }
+
+
+  void _showErrorDialog(String message) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text('Kesalahan'),
+          content: Text(message),
+          actions: <Widget>[
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+              child: Text('OK'),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
   Future<void> initializeCamera([bool isFront = true]) async {
     final cameras = await availableCameras();
     final selectedCamera = isFront
@@ -304,45 +420,15 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text("Isi dengan lengkap")),
       );
+    } else if (await DatabaseHelper.instance.isNisExists(nisController.text)) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("NIS telah terdaftar")),
+      );
     } else {
-      var url = Uri.parse(
-          'https://presensi-smp1.esolusindo.com/Api/ApiSiswa/Siswa/createSiswa');
-      var headers = {
-        'Content-Type': 'application/json',
-      };
+      recognizer.registerFaceInDB(nameController.text, nisController.text,
+          selectedKelas!, noHpOrtuController.text, recognition.embeddings);
 
-      var body = jsonEncode({
-        'nama': nameController.text,
-        'nis': nisController.text,
-        'id_kelas': selectedKelas,
-        'no_hp_ortu': noHpOrtuController.text,
-        'model': recognition.embeddings
-            .toString(), // Asumsikan embeddings adalah array atau list
-      });
-
-      try {
-        var response = await http.post(url, headers: headers, body: body);
-
-        if (response.statusCode == 200) {
-          var jsonData = json.decode(response.body);
-          if (jsonData['status'] == true) {
-            showSuccessDialog();
-          } else {
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(content: Text(jsonData['message'] ?? 'Gagal mendaftar')),
-            );
-          }
-        } else {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Gagal terhubung ke server')),
-          );
-        }
-      } catch (e) {
-        print('Error during API call: $e');
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Terjadi kesalahan')),
-        );
-      }
+      showSuccessDialog();
     }
   }
 
@@ -361,9 +447,11 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
         ),
         actions: [
           TextButton(
-            onPressed: () {
+            onPressed: () async {
               Navigator.pop(ctx); // Tutup dialog sukses
+              await syncData(); // Panggil fungsi sinkronisasi
               Navigator.pop(context); // Kembali ke halaman sebelumnya
+              showSyncDialog();
             },
             child: const Text("OK"),
           ),
