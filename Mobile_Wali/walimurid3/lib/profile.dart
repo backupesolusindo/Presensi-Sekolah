@@ -14,50 +14,57 @@ class ProfilePage extends StatefulWidget {
 
 class _ProfilePageState extends State<ProfilePage> {
   int _currentIndex = 2; // Set index 2 untuk halaman profil
-  String namaPegawai = "Loading..."; // Default teks sementara
+  String NamaWali = "Loading..."; // Default teks sementara
+  String noHp = "Loading..."; // Tambahkan variabel untuk no_hp
 
   @override
   void initState() {
     super.initState();
-    _fetchNamaPegawai(); // Panggil API saat halaman dimuat
+    _fetchData(); // Panggil fungsi untuk mengambil data saat halaman dimuat
   }
 
-  Future<void> _fetchNamaPegawai() async {
+  Future<void> _fetchData() async {
     try {
       final prefs = await SharedPreferences.getInstance();
       final savedNamaWali = prefs.getString('nama_wali');
+      final savedNoHp = prefs.getString('no_hp'); // Ambil no_hp dari SharedPreferences
 
       if (savedNamaWali != null) {
-        // Jika nama_wali sudah ada di SharedPreferences, gunakan itu
         setState(() {
-          namaPegawai = savedNamaWali;
+          NamaWali = savedNamaWali;
+        });
+      }
+
+      if (savedNoHp != null) {
+        setState(() {
+          noHp = savedNoHp; // Set no_hp jika sudah disimpan
         });
       } else {
-        // Lakukan request API jika tidak ada data di SharedPreferences
         final response = await http.get(
-          Uri.parse('https://api.example.com/nama_wali'), // Ganti dengan URL API Anda
+          Uri.parse('https://presensi-smp1.esolusindo.com/Api/ApiSiswa/Siswa/getSiswabyHp'), // Ganti dengan URL API Anda
         );
 
         if (response.statusCode == 200) {
           final data = json.decode(response.body);
           final fetchedNamaWali = data['nama_wali'];
+          final fetchedNoHp = data['no_hp']; // Ambil no_hp dari response
 
-          // Simpan nama_wali ke SharedPreferences
           await prefs.setString('nama_wali', fetchedNamaWali);
+          await prefs.setString('no_hp', fetchedNoHp); // Simpan no_hp ke SharedPreferences
 
-          // Update state dengan nama wali yang diambil dari API
           setState(() {
-            namaPegawai = fetchedNamaWali;
+            NamaWali = fetchedNamaWali;
+            noHp = fetchedNoHp; // Set no_hp dari API
           });
         } else {
           setState(() {
-            namaPegawai = "Gagal memuat data.";
+            NamaWali = "Gagal memuat data.";
           });
         }
       }
     } catch (e) {
       setState(() {
-        namaPegawai = "Error: ${e.toString()}";
+        NamaWali = "Error: ${e.toString()}";
       });
     }
   }
@@ -72,7 +79,7 @@ class _ProfilePageState extends State<ProfilePage> {
         context,
         MaterialPageRoute(builder: (context) => HomePage()),
       );
-    } else if (index == 2) {
+    } else if (index == 1) {
       Navigator.pushReplacement(
         context,
         MaterialPageRoute(builder: (context) => RiwayatPage()),
@@ -102,7 +109,7 @@ class _ProfilePageState extends State<ProfilePage> {
                 ),
                 SizedBox(height: 16),
                 Text(
-                  namaPegawai, // Tampilkan nama pegawai yang diambil dari API
+                  NamaWali,
                   style: TextStyle(
                     fontSize: 24,
                     fontWeight: FontWeight.bold,
@@ -110,12 +117,9 @@ class _ProfilePageState extends State<ProfilePage> {
                   ),
                 ),
                 SizedBox(height: 8),
-                Text('TEST'),
+                Text(noHp), // Ganti 'TEST' dengan noHp
                 SizedBox(height: 32),
-                _buildInfoCard(Icons.email, 'Email', 'user@example.com'),
-                _buildInfoCard(Icons.domain, 'Unit', 'Politeknik Jember'),
-                _buildInfoCard(Icons.check_circle, '0 Presensi', 'Jumlah Presensi Bulan Ini'),
-                _buildInfoCard(Icons.event, '0 Kegiatan', 'Jumlah Kegiatan Bulan Ini'),
+                _buildInfoCard(), // Panggil fungsi yang berisi semua informasi
                 SizedBox(height: 32),
                 ElevatedButton(
                   onPressed: () => _showLogoutConfirmation(context),
@@ -136,18 +140,31 @@ class _ProfilePageState extends State<ProfilePage> {
     );
   }
 
-  Widget _buildInfoCard(IconData icon, String title, String subtitle) {
+  Widget _buildInfoCard() {
     return Card(
       margin: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(12),
       ),
       elevation: 4,
-      child: ListTile(
-        leading: Icon(icon, color: Colors.blueAccent),
-        title: Text(title),
-        subtitle: Text(subtitle),
+      child: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
+          children: [
+            _buildInfoRow(Icons.email, 'Nama', 'user@example.com'),
+            _buildInfoRow(Icons.domain, 'Nis', ''),
+            _buildInfoRow(Icons.check_circle, 'Kelas', ''),
+          ],
+        ),
       ),
+    );
+  }
+
+  Widget _buildInfoRow(IconData icon, String title, String subtitle) {
+    return ListTile(
+      leading: Icon(icon, color: Colors.blueAccent),
+      title: Text(title),
+      subtitle: Text(subtitle),
     );
   }
 
@@ -169,7 +186,7 @@ class _ProfilePageState extends State<ProfilePage> {
               child: Text('Logout'),
               onPressed: () async {
                 SharedPreferences prefs = await SharedPreferences.getInstance();
-                await prefs.clear(); // Hapus semua data SharedPreferences
+                await prefs.clear();
                 Navigator.pushReplacement(
                   context,
                   MaterialPageRoute(builder: (context) => LoginPage()),
