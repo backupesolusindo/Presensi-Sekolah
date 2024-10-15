@@ -4,6 +4,7 @@ import 'package:http/http.dart' as http;
 import 'riwayat_siswa_page.dart';
 import 'data_murid_page.dart';
 import 'package:mobile_presensi_kdtg/core.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class Student {
   final String name;
@@ -74,11 +75,18 @@ class _PresensiSiswaPageState extends State<PresensiSiswaPage> {
   List<bool> _hadirList = [];
   List<Student> _students = [];
   bool _isLoading = true;
+  String? NIP; // Declare NIP here
+  bool _isTeacherPresent = false; // Declare teacher presence status
 
   @override
   void initState() {
     super.initState();
     _fetchStudents();
+  }
+
+  getPref() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    NIP = prefs.getString("NIP")!;
   }
 
   Future<void> _fetchStudents() async {
@@ -385,126 +393,230 @@ class _PresensiSiswaPageState extends State<PresensiSiswaPage> {
       ),
     );
   }
+Future<void> _submitAttendance() async {
+  SharedPreferences prefs = await SharedPreferences.getInstance();
+  
+  // Get NIP from SharedPreferences
+  String? NIP = prefs.getString("NIP");
+  print("Attempting to retrieve NIP from SharedPreferences...");
 
-  Future<void> _submitAttendance() async {
-    // Prepare the attendance data
-    List<Map<String, dynamic>> attendanceData = [];
-    for (int i = 0; i < _students.length; i++) {
-      attendanceData.add({
-        'nis': _students[i].nis,
-        'hadir': _hadirList[i],
-      });
-    }
-
-    // Replace the URL with your API endpoint for submitting attendance
-    var url = Uri.parse(Core().ApiUrl + "ApiSiswa/Siswa/submitAttendance");
-
-    try {
-      final response = await http.post(
-        url,
-        body: json.encode({'attendance': attendanceData}),
-        headers: {'Content-Type': 'application/json'},
-      );
-
-      if (response.statusCode == 200) {
-        // Handle successful submission (optional)
-        _showSuccessDialog('Attendance submitted successfully!');
-      } else {
-        // Handle submission error
-        _showErrorDialog('Failed to submit attendance. Please try again.');
-      }
-    } catch (e) {
-      // Handle any exceptions
-      _showErrorDialog('An error occurred while submitting attendance: $e');
-    }
+  if (NIP == null) {
+    print("NIP not found in SharedPreferences");
+    return; // Handle the case as needed
   }
 
-  void _showSuccessDialog(String message) {
-    showDialog(
-      context: context,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          title: const Text('Success', style: TextStyle(color: Colors.green)),
-          content: Text(message),
-          actions: [
-            TextButton(
-              onPressed: () {
-                Navigator.of(context).pop();
-              },
-              child: const Text('OK'),
-            ),
-          ],
-        );
+  print("Retrieved NIP: $NIP");
+  List<Map<String, dynamic>> attendanceData = [];
+
+  // Prepare attendance data
+  for (int i = 0; i < _students.length; i++) {
+    attendanceData.add({
+      'id_siswa': _students[i].nis,
+      'id_jadwal': widget.idKelas.toString(),
+      'status': _hadirList[i] ? 1 : 0,
+      'id_kelas': widget.idKelas.toString(),
+    });
+  }
+  
+  // Log attendance data
+  print("Prepared attendance data: $attendanceData");
+
+  Map<String, dynamic> presensiData = {
+    'presensi': {
+      'guru': {
+        'id_jadwal_mapel': widget.idKelas.toString(),
+        'id_guru': NIP,
+        'status': _isTeacherPresent ? 1 : 0,
       },
+      'siswa': attendanceData,
+    },
+  };
+
+  // Log the presensiData being sent
+  print("Presensi Data to be sent: ${jsonEncode(presensiData)}");
+
+  var url = Uri.parse(Core().ApiUrl + "ApiPresensi/ApiPresensi/storePresensiGdanS/");
+  print("API URL: $url");
+
+  try {
+    final response = await http.post(
+      url,
+      headers: {'Content-Type': 'application/json'},
+      body: jsonEncode(presensiData),
     );
+
+    // Log the response status and body
+    print('Response status: ${response.statusCode}');
+    print('Response body: ${response.body}');
+
+    if (response.statusCode == 200) {
+      print('Attendance submitted successfully!');
+      _showSuccessDialog('Presensi Berhasil!'); // Pass success message
+    } else {
+      print('Failed to submit attendance: ${response.body}');
+      _showSuccessDialog('Presensi Gagal'); // Pass failure message
+    }
+  } catch (e) {
+    print('Error submitting attendance: $e');
+    _showSuccessDialog('Terjadi kesalahan saat Presensi: $e'); // Pass error message
   }
+}
+
+
+void _showSuccessDialog(String message) {
+  showDialog(
+    context: context,
+    builder: (BuildContext context) {
+      return Dialog(
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(16.0), // Rounded corners
+        ),
+        child: Padding(
+          padding: const EdgeInsets.all(20.0),
+          child: Column(
+            mainAxisSize: MainAxisSize.min, // Ensure the dialog is small
+            children: [
+              const Icon(
+                Icons.check_circle,
+                color: Colors.green,
+                size: 60, // Icon size
+              ),
+              const SizedBox(height: 20), // Space between icon and text
+              Text(
+                'Success',
+                style: TextStyle(
+                  fontSize: 24, // Title font size
+                  fontWeight: FontWeight.bold,
+                  color: Colors.green,
+                ),
+              ),
+              const SizedBox(height: 10), // Space between title and message
+              Text(
+                message,
+                textAlign: TextAlign.center, // Center the text
+                style: const TextStyle(fontSize: 16),
+              ),
+              const SizedBox(height: 20), // Space before the button
+              ElevatedButton(
+                onPressed: () {
+                  Navigator.of(context).pop(); // Close the dialog
+                },
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.green, // Button color
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(10.0), // Rounded button
+                  ),
+                ),
+                child: const Text('OK', style: TextStyle(color: Colors.white)),
+              ),
+            ],
+          ),
+        ),
+      );
+    },
+  );
+}
+
 
   Widget _buildInfoCard() {
-    return Card(
-      elevation: 4,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-      color: Colors.white,
-      child: Padding(
-        padding: const EdgeInsets.all(8.0), // Reduced padding for the card
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // Mata Pelajaran (Header)
-            _buildRow(
-              icon: Icons.book_rounded,
-              color: Colors.blueAccent,
-              text: widget.namaMapel, // Mata pelajaran
-              fontSize: 18, // Slightly reduced font size for header
-              isBold: true, // Bold text
-              backgroundColor: Colors.blue[50], // Light background for contrast
-              padding: const EdgeInsets.symmetric(
-                  vertical: 8, horizontal: 12), // Adjusted padding for spacing
-              textColor:
-                  Colors.blueAccent, // Change text color to match the theme
-            ),
+  return Card(
+    elevation: 4,
+    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+    color: Colors.white,
+    child: Padding(
+      padding: const EdgeInsets.all(8.0), // Reduced padding for the card
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Mata Pelajaran (Header)
+          _buildRow(
+            icon: Icons.book_rounded,
+            color: Colors.blueAccent,
+            text: widget.namaMapel, // Mata pelajaran
+            fontSize: 18, // Slightly reduced font size for header
+            isBold: true, // Bold text
+            backgroundColor: Colors.blue[50], // Light background for contrast
+            padding: const EdgeInsets.symmetric(
+                vertical: 8, horizontal: 12), // Adjusted padding for spacing
+            textColor: Colors.blueAccent, // Change text color to match the theme
+          ),
 
-            const SizedBox(height: 8), // Reduced vertical space after header
+          const SizedBox(height: 8), // Reduced vertical space after header
 
-            // Kelas
-            _buildRow(
-              icon: Icons.class_,
-              color: Colors.purpleAccent,
-              text: 'Kelas: ${widget.namaKelas}', // Nama kelas
-            ),
+          // Kelas
+          _buildRow(
+            icon: Icons.class_,
+            color: Colors.purpleAccent,
+            text: 'Kelas: ${widget.namaKelas}', // Nama kelas
+          ),
 
-            const SizedBox(height: 8), // Reduced vertical space between rows
+          const SizedBox(height: 8), // Reduced vertical space between rows
 
-            // Waktu
-            _buildRow(
-              icon: Icons.access_time,
-              color: Colors.orangeAccent,
-              text:
-                  'Waktu: ${widget.waktuMulai} - ${widget.waktuSelesai}', // Waktu mulai dan selesai
-            ),
+          // Waktu
+          _buildRow(
+            icon: Icons.access_time,
+            color: Colors.orangeAccent,
+            text: 'Waktu: ${widget.waktuMulai} - ${widget.waktuSelesai}', // Waktu mulai dan selesai
+          ),
 
-            const SizedBox(height: 8), // Reduced vertical space between rows
+          const SizedBox(height: 8), // Reduced vertical space between rows
 
-            // Hari
-            _buildRow(
-              icon: Icons.calendar_today_outlined,
-              color: Colors.greenAccent,
-              text: 'Hari: ${widget.hari}', // Hari pelajaran
-            ),
+          // Hari
+          _buildRow(
+            icon: Icons.calendar_today_outlined,
+            color: Colors.greenAccent,
+            text: 'Hari: ${widget.hari}', // Hari pelajaran
+          ),
 
-            const SizedBox(height: 8), // Reduced vertical space between rows
+          const SizedBox(height: 8), // Reduced vertical space between rows
 
-            // Tanggal
-            _buildRow(
-              icon: Icons.calendar_today,
-              color: Colors.redAccent,
-              text:
-                  'Tanggal: ${widget.tanggal.isNotEmpty ? widget.tanggal : 'Belum ditentukan'}', // Tanggal pelajaran
-            ),
-          ],
+          // Tanggal
+          _buildRow(
+            icon: Icons.calendar_today,
+            color: Colors.redAccent,
+            text: 'Tanggal: ${widget.tanggal.isNotEmpty ? widget.tanggal : 'Belum ditentukan'}', // Tanggal pelajaran
+          ),
+
+          const SizedBox(height: 8), // Reduced vertical space between rows
+
+// Checkbox for Teacher's Presence
+GestureDetector(
+  onTap: () {
+    setState(() {
+      _isTeacherPresent = !_isTeacherPresent; // Toggle presence status
+    });
+  },
+  child: Row(
+    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+    children: [
+      Row(
+        children: [
+          const Icon(Icons.person, color: Colors.blue), // Icon next to the text
+          const SizedBox(width: 8), // Space between icon and text
+          const Text('Presensi Guru', style: TextStyle(fontSize: 16)),
+        ],
+      ),
+      Container(
+        width: 30, // Width of the circle
+        height: 30, // Height of the circle
+        decoration: BoxDecoration(
+          shape: BoxShape.circle,
+          color: _isTeacherPresent ? Colors.green : Colors.grey[300], // Change color based on status
+        ),
+        child: Center(
+          child: _isTeacherPresent 
+              ? const Icon(Icons.check, color: Colors.white) // Checkmark icon
+              : const SizedBox.shrink(), // Empty space if not present
         ),
       ),
-    );
-  }
+    ],
+  ),
+),
+        ],
+      ),
+    ),
+  );
+}
 
   Widget _buildRow({
     required IconData icon,
