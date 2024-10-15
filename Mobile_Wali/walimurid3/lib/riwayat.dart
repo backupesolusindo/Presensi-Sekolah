@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
-import 'home.dart';      // Import home page
-import 'profile.dart';  // Import profile page
-import 'bottombar.dart'; // Import bottom bar
+import 'home.dart';
+import 'profile.dart';
 
 class RiwayatPage extends StatefulWidget {
   @override
@@ -9,7 +8,10 @@ class RiwayatPage extends StatefulWidget {
 }
 
 class _RiwayatPageState extends State<RiwayatPage> {
-  int _currentIndex = 1; // Set index 1 untuk halaman Riwayat
+  String selectedFilter = 'Semua';
+  int _currentIndex = 1;
+  bool showRiwayatMasuk = true;
+  int? selectedCardIndex; // Menyimpan index kartu yang dipilih
 
   void _onItemTapped(int index) {
     setState(() {
@@ -19,221 +21,248 @@ class _RiwayatPageState extends State<RiwayatPage> {
     if (index == 0) {
       Navigator.pushReplacement(
         context,
-        MaterialPageRoute(builder: (context) => HomePage()), // Pindah ke halaman Home
+        MaterialPageRoute(builder: (context) => HomePage()),
       );
     } else if (index == 2) {
       Navigator.pushReplacement(
         context,
-        MaterialPageRoute(builder: (context) => ProfilePage()), // Pindah ke halaman Profile
+        MaterialPageRoute(builder: (context) => ProfilePage()),
       );
     }
-    // Untuk index 1, tetap di halaman Riwayat
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        backgroundColor: Colors.lightBlue, // Warna atas disesuaikan
-        title: Text('Riwayat'),
-        leading: IconButton(
-          icon: Icon(Icons.menu),
-          onPressed: () {
-            // Aksi untuk membuka drawer atau menu
-          },
-        ),
-        actions: [
-          IconButton(
-            icon: Icon(Icons.info_outline),
-            onPressed: () {
-              // Aksi untuk membuka info
-            },
-          ),
-        ],
-      ),
-      body: SingleChildScrollView(
-        child: Padding(
-          padding: const EdgeInsets.all(16.0),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // Banner untuk mata pelajaran dan kelas
-              Container(
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(12.0),
-                  image: DecorationImage(
-                    image: AssetImage('assets/banner.png'), // Sesuaikan path gambar
-                    fit: BoxFit.cover,
-                  ),
+      backgroundColor: Colors.white,
+      body: SafeArea(
+        child: Stack(
+          children: [
+            Container(
+              decoration: BoxDecoration(
+                image: DecorationImage(
+                  image: AssetImage('assets/walibg.png'),
+                  fit: BoxFit.cover,
                 ),
-                height: 150,
-                width: double.infinity,
-                child: Padding(
-                  padding: const EdgeInsets.all(12.0),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    mainAxisAlignment: MainAxisAlignment.end,
-                    children: [
-                      Text(
-                        'Bahasa Indonesia',
-                        style: TextStyle(
-                          color: Colors.white,
-                          fontSize: 20,
-                          fontWeight: FontWeight.bold,
+              ),
+            ),
+            SingleChildScrollView(
+              child: Padding(
+                padding: const EdgeInsets.all(16.0),
+                child: Column(
+                  children: <Widget>[
+                    Text(
+                      'Riwayat Presensi Siswa',
+                      style: TextStyle(
+                        fontSize: 26,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    const SizedBox(height: 20),
+
+                    // Cards Riwayat Masuk dan Mapel
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                      children: [
+                        _buildRiwayatCard(
+                          index: 0,
+                          icon: Icons.door_front_door,
+                          title: 'Riwayat\nMasuk',
+                          color: Colors.orangeAccent,
+                          onTap: () {
+                            setState(() {
+                              showRiwayatMasuk = true;
+                              selectedCardIndex = 0; // Set index kartu yang dipilih
+                            });
+                          },
                         ),
-                      ),
-                      Text(
-                        'Tahun Ajaran 2023-2024 - 9A',
-                        style: TextStyle(
-                          color: Colors.white,
+                        _buildRiwayatCard(
+                          index: 1,
+                          icon: Icons.book,
+                          title: 'Riwayat\nMapel',
+                          color: Colors.purpleAccent,
+                          onTap: () {
+                            setState(() {
+                              showRiwayatMasuk = false;
+                              selectedCardIndex = 1; // Set index kartu yang dipilih
+                            });
+                          },
                         ),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-              SizedBox(height: 16.0),
-
-              // Tombol Riwayat
-              Center(
-                child: ElevatedButton(
-                  onPressed: () {
-                    // Aksi tombol Riwayat
-                  },
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.lightBlue,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(16.0),
+                      ],
                     ),
-                  ),
-                  child: Text('Riwayat'),
-                ),
-              ),
-              SizedBox(height: 16.0),
+                    const SizedBox(height: 20),
 
-              // Tanggal dan opsi pencarian
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Text(
-                    'Senin, 29 Maret 2024',
-                    style: TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                  ElevatedButton.icon(
-                    onPressed: () {
-                      // Aksi pencarian
-                    },
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.lightBlue,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12.0),
+                    // Daftar Riwayat
+                    SizedBox(
+                      height: MediaQuery.of(context).size.height * 0.6,
+                      child: ListView.builder(
+                        itemCount: 10,
+                        itemBuilder: (context, index) {
+                          String status = index % 5 == 0 ? 'Hadir' : 'Tidak Hadir';
+
+                          if (selectedFilter != 'Semua' && selectedFilter != status) {
+                            return const SizedBox.shrink();
+                          }
+
+                          return showRiwayatMasuk
+                              ? _buildListItem('Riwayat Masuk', status, index)
+                              : _buildListItem('Riwayat Mapel', status, index);
+                        },
                       ),
                     ),
-                    icon: Icon(Icons.search),
-                    label: Text('Cari'),
-                  ),
-                ],
+                  ],
+                ),
               ),
-              SizedBox(height: 16.0),
-
-              // Kategori filter
-              Wrap(
-                spacing: 8.0,
-                children: [
-                  _buildFilterButton('Semua', true),
-                  _buildFilterButton('Hadir', false),
-                  _buildFilterButton('Tidak Hadir', false),
-                  _buildFilterButton('Terlambat', false),
-                  _buildFilterButton('Izin', false),
-                  _buildFilterButton('Sakit', false),
-                ],
-              ),
-              SizedBox(height: 16.0),
-
-              // Daftar murid dan riwayat absen
-              _buildAttendanceCard(
-                  'Senin, 29 Maret 2024', 'Ihsan Haadi Nugroho', 1, 'Hadir', '-'),
-              _buildAttendanceCard('Senin, 29 Maret 2024', 'Aliefian Cahya Nugroho', 2,
-                  'Sakit', 'Pusing dan Batuk'),
-              _buildAttendanceCard(
-                  'Senin, 29 Maret 2024', 'Ihsan Haadi Nugroho', 3, 'Izin', 'Acara Keluarga'),
-            ],
-          ),
+            ),
+          ],
         ),
       ),
       bottomNavigationBar: BottomNavigationBar(
         currentIndex: _currentIndex,
-        selectedItemColor: Colors.blue,
-        unselectedItemColor: Colors.grey,
-        items: [
-          BottomNavigationBarItem(
-            icon: Icon(Icons.home),
-            label: 'Home',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.history),
-            label: 'Riwayat',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.person),
-            label: 'Profile',
-          ),
+        onTap: _onItemTapped,
+        items: const [
+          BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Home'),
+          BottomNavigationBarItem(icon: Icon(Icons.history), label: 'Riwayat'),
+          BottomNavigationBarItem(icon: Icon(Icons.person), label: 'Profile'),
         ],
-        onTap: _onItemTapped, // Fungsi navigasi
       ),
     );
   }
 
-  // Widget untuk tombol filter
-  Widget _buildFilterButton(String label, bool isSelected) {
-    return ElevatedButton(
-      onPressed: () {
-        // Aksi filter
-      },
-      style: ElevatedButton.styleFrom(
-        backgroundColor: isSelected ? Colors.blue : Colors.grey[300],
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(12.0),
-        ),
-      ),
-      child: Text(
-        label,
-        style: TextStyle(
-          color: isSelected ? Colors.white : Colors.black,
-        ),
-      ),
-    );
-  }
+  Widget _buildRiwayatCard({
+    required int index,
+    required IconData icon,
+    required String title,
+    required Color color,
+    required VoidCallback onTap,
+  }) {
+    // Mengatur ukuran berdasarkan index yang dipilih
+    double scale = selectedCardIndex == index ? 1.2 : 1.0; // Kartu yang dipilih membesar
 
-  // Widget untuk card absensi
-  Widget _buildAttendanceCard(
-      String date, String name, int noAbsen, String status, String reason) {
-    return Card(
-      margin: EdgeInsets.symmetric(vertical: 8.0),
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(12.0),
-      ),
-      child: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              date,
-              style: TextStyle(
-                fontSize: 14,
-                fontWeight: FontWeight.bold,
+    return GestureDetector(
+      onTap: onTap,
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 300),
+        transform: Matrix4.identity()
+          ..scale(scale)
+          ..translate(
+            (selectedCardIndex == index ? -15 : 0), // Menggeser kartu yang dipilih sedikit ke kiri
+            (selectedCardIndex == index ? -15 : 0), // Menggeser kartu yang dipilih sedikit ke atas
+          ),
+        alignment: Alignment.center, // Mengarahkan ke tengah
+        child: InkWell(
+          onTap: onTap,
+          borderRadius: BorderRadius.circular(22),
+          child: Card(
+            elevation: 5,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(22),
+            ),
+            child: Container(
+              width: 120,
+              padding: const EdgeInsets.all(16.0),
+              decoration: BoxDecoration(
+                color: color.withOpacity(0.8),
+                borderRadius: BorderRadius.circular(22),
+              ),
+              child: Column(
+                children: [
+                  Icon(icon, size: 40, color: Colors.white),
+                  const SizedBox(height: 1),
+                  Text(
+                    title,
+                    textAlign: TextAlign.center,
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontWeight: FontWeight.bold,
+                      fontSize: 16,
+                    ),
+                  ),
+                ],
               ),
             ),
-            SizedBox(height: 8.0),
-            Text('Nama Murid : $name'),
-            Text('No Absen : $noAbsen'),
-            Text('Keterangan : $status'),
-            Text('Alasan : $reason'),
-          ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildListItem(String title, String status, int index) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 8.0),
+      child: Card(
+        elevation: 8,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(15),
+        ),
+        child: Container(
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              colors: [
+                status == 'Hadir' ? Colors.greenAccent : Colors.redAccent,
+                Colors.white,
+              ],
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+            ),
+            borderRadius: BorderRadius.circular(15),
+          ),
+          child: Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  '$title - Senin, 29 Maret 2024',
+                  style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w600,
+                    color: Colors.grey[800],
+                  ),
+                ),
+                const Divider(color: Colors.grey),
+                const SizedBox(height: 8),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'Nama Murid: Siswa ${index + 1}',
+                          style: const TextStyle(
+                            fontSize: 14,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                        const SizedBox(height: 4),
+                        const Text('Kelas: 10A'),
+                        const SizedBox(height: 4),
+                        Text('No Absen: ${index + 1}'),
+                      ],
+                    ),
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.end,
+                      children: [
+                        Text(
+                          'Keterangan: $status',
+                          style: TextStyle(
+                            fontSize: 14,
+                            fontWeight: FontWeight.bold,
+                            color: status == 'Hadir'
+                                ? Colors.green
+                                : Colors.redAccent,
+                          ),
+                        ),
+                        const SizedBox(height: 4),
+                        const Text('Alasan: -'),
+                      ],
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
         ),
       ),
     );
