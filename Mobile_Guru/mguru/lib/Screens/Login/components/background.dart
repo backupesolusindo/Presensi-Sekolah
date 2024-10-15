@@ -10,25 +10,25 @@ class Background extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     Size size = MediaQuery.of(context).size;
-    return Container(
+    return SizedBox(
       width: double.infinity,
       height: size.height,
       child: Stack(
         alignment: Alignment.center,
         children: <Widget>[
-          // Center the image in the middle
-          Center(
+          // Fullscreen image as background
+          Positioned.fill(
             child: Image.asset(
               "assets/images/WaliRename.png",
+              fit: BoxFit.cover,
             ),
           ),
           // Black overlay with 0.3 opacity
           Container(
-            width: double.infinity,
-            height: size.height,
             color: Colors.black.withOpacity(0.3),
           ),
-          child,  // Main content on top of the overlay
+          // Main content on top of the overlay
+          child,
         ],
       ),
     );
