@@ -6,7 +6,7 @@
 
 
     <application
-        android:label="nyobarai"
+        android:label="FaceRecognitionSMPN1"
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher">
         <activity
