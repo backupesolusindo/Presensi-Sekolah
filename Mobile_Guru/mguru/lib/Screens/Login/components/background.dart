@@ -16,39 +16,19 @@ class Background extends StatelessWidget {
       child: Stack(
         alignment: Alignment.center,
         children: <Widget>[
-          Positioned(
-            top: 0,
-            left: 0,
+          // Center the image in the middle
+          Center(
             child: Image.asset(
-              "assets/images/blob_left.png",
-              width: size.width * 0.35,
+              "assets/images/WaliRename.png",
             ),
           ),
-          Positioned(
-            top: 0,
-            right: 0,
-            child: Image.asset(
-              "assets/images/blob_right.png",
-              width: size.width * 0.35,
-            ),
+          // Black overlay with 0.3 opacity
+          Container(
+            width: double.infinity,
+            height: size.height,
+            color: Colors.black.withOpacity(0.3),
           ),
-          Positioned(
-            bottom: 0,
-            right: 0,
-            child: Image.asset(
-              "assets/images/main_bottom_right.png",
-              width: size.width * 0.25,
-            ),
-          ),
-          Positioned(
-            bottom: 0,
-            left: 0,
-            child: Image.asset(
-              "assets/images/main_bottom_left.png",
-              width: size.width * 0.25,
-            ),
-          ),
-          child,
+          child,  // Main content on top of the overlay
         ],
       ),
     );
