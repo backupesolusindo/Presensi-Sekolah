@@ -103,24 +103,25 @@ class _DataMuridPageState extends State<DataMuridPage> {
               children: [
                 // Profile icon at the center and larger size
                 CircleAvatar(
-                  radius: 50, // Increased radius for larger icon
+                  radius: 25, // Increased radius for larger icon
                   backgroundColor: Colors.blue[200],
                   child: Icon(Icons.person,
-                      size: 50,
+                      size: 25,
                       color: Colors.white), // Larger icon size with white color
                 ),
                 SizedBox(height: 16), // Spacing between icon and text
                 // Student's name with better styling
-                Text(
-                  student.name,
-                  style: TextStyle(
-                    fontSize: 22,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.black,
+                ListTile(
+                  contentPadding: EdgeInsets.zero,
+                  title: Text(
+                    student.name,
+                    style: TextStyle(
+                      fontSize: 12,
+                      color: Colors.black,
+                    ),
+                    textAlign: TextAlign.center,
                   ),
-                  textAlign: TextAlign.center,
                 ),
-                SizedBox(height: 8), // Spacing between name and NIS
                 // NIS and class name as list tiles for better alignment
                 ListTile(
                   contentPadding:
@@ -128,8 +129,8 @@ class _DataMuridPageState extends State<DataMuridPage> {
                   title: Text(
                     'NIS: ${student.nis}',
                     style: TextStyle(
-                      fontSize: 18,
-                      color: Colors.grey[700],
+                      fontSize: 12,
+                      color: Colors.black,
                     ),
                   ),
                 ),
@@ -139,8 +140,8 @@ class _DataMuridPageState extends State<DataMuridPage> {
                   title: Text(
                     '${student.namaKelas}', // Display 'Kelas' instead of just the name
                     style: TextStyle(
-                      fontSize: 18,
-                      color: Colors.grey[700],
+                      fontSize: 12,
+                      color: Colors.black,
                     ),
                   ),
                 ),

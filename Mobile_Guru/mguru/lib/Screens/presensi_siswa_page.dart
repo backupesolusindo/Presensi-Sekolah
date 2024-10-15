@@ -155,11 +155,15 @@ class _PresensiSiswaPageState extends State<PresensiSiswaPage> {
           // Overlay with opacity
           Container(
             decoration: BoxDecoration(
-              color: Colors.black.withOpacity(0.3),
+              color: Colors.white.withOpacity(0.3),
             ),
           ),
           // Main content
-          _getSelectedPage(),
+          _isLoading
+              ? Center(
+                  child: CircularProgressIndicator(), // Show loading indicator
+                )
+              : _getSelectedPage(), // Show content after data is loaded
         ],
       ),
       bottomNavigationBar: _buildBottomNavigationBar(),

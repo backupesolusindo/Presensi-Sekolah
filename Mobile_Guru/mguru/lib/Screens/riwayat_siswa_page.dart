@@ -35,45 +35,53 @@ class _RiwayatSiswaPageState extends State<RiwayatSiswaPage> {
             Container(
               decoration: BoxDecoration(
                 image: DecorationImage(
-                  image: AssetImage('assets/images/WaliRename.png'), // Ensure the image path is correct
+                  image: AssetImage(
+                      'assets/images/WaliRename.png'), // Ensure the image path is correct
                   fit: BoxFit.cover,
                 ),
               ),
             ),
             // Dark overlay for readability
             Container(
-              color: Colors.black.withOpacity(0.3), // Increased opacity for better contrast
+              color: Colors.black
+                  .withOpacity(0.3), // Increased opacity for better contrast
             ),
             Padding(
               padding: const EdgeInsets.all(16.0),
               child: Column(
                 children: <Widget>[
                   // Page title
-Padding(
-  padding: const EdgeInsets.symmetric(vertical: 16.0), // Add some padding
-  child: Card(
-    elevation: 8, // Shadow effect for the card
-    shape: RoundedRectangleBorder(
-      borderRadius: BorderRadius.circular(15), // Rounded corners
-    ),
-    child: Container(
-      padding: const EdgeInsets.all(16.0), // Padding inside the card
-      decoration: BoxDecoration(
-        color: Colors.blueAccent, // Background color of the card
-        borderRadius: BorderRadius.circular(15), // Ensures the corners are rounded
-      ),
-      child: Text(
-        'Riwayat Presensi Siswa',
-        style: TextStyle(
-          fontSize: 26, // Increased font size
-          fontWeight: FontWeight.bold,
-          color: Colors.white, // Changed color for better visibility
-        ),
-      ),
-    ),
-  ),
-),
-SizedBox(height: 20),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(
+                        vertical: 16.0), // Add some padding
+                    child: Card(
+                      elevation: 8, // Shadow effect for the card
+                      shape: RoundedRectangleBorder(
+                        borderRadius:
+                            BorderRadius.circular(15), // Rounded corners
+                      ),
+                      child: Container(
+                        padding: const EdgeInsets.all(
+                            10.0), // Padding inside the card
+                        decoration: BoxDecoration(
+                          color:
+                              Colors.blueAccent, // Background color of the card
+                          borderRadius: BorderRadius.circular(
+                              15), // Ensures the corners are rounded
+                        ),
+                        child: Text(
+                          'Riwayat Presensi Siswa',
+                          style: TextStyle(
+                            fontSize: 26, // Increased font size
+                            fontWeight: FontWeight.bold,
+                            color: Colors
+                                .white, // Changed color for better visibility
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                  SizedBox(height: 20),
                   // Filter buttons with cleaner layout
                   Container(
                     padding: EdgeInsets.symmetric(vertical: 8.0),
@@ -115,8 +123,7 @@ SizedBox(height: 20),
                   SizedBox(height: 20),
 
                   // Loading Indicator
-                  if (_isLoading)
-                    Center(child: CircularProgressIndicator()),
+                  if (_isLoading) Center(child: CircularProgressIndicator()),
                   if (!_isLoading)
                     // Attendance history list
                     Expanded(
@@ -134,15 +141,18 @@ SizedBox(height: 20),
                           // Apply the filter logic to show only relevant records
                           if (selectedFilter != 'Semua' &&
                               selectedFilter != status) {
-                            return SizedBox.shrink(); // Hide entries not matching the filter
+                            return SizedBox
+                                .shrink(); // Hide entries not matching the filter
                           }
 
                           return Padding(
                             padding: const EdgeInsets.symmetric(vertical: 8.0),
                             child: Card(
-                              elevation: 8, // Increased elevation for a stronger shadow effect
+                              elevation:
+                                  8, // Increased elevation for a stronger shadow effect
                               shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(15), // More rounded corners
+                                borderRadius: BorderRadius.circular(
+                                    15), // More rounded corners
                               ),
                               child: Container(
                                 decoration: BoxDecoration(
@@ -152,7 +162,8 @@ SizedBox(height: 20),
                                 child: Padding(
                                   padding: const EdgeInsets.all(16.0),
                                   child: Column(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
                                     children: [
                                       Text(
                                         'Senin, 29 Maret 2024', // Example date
@@ -165,7 +176,8 @@ SizedBox(height: 20),
                                       Divider(color: Colors.grey),
                                       SizedBox(height: 8),
                                       Column(
-                                        crossAxisAlignment: CrossAxisAlignment.start,
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
                                         children: [
                                           Text(
                                             'Nama Murid: Siswa ${index + 1}', // Student name example
@@ -185,19 +197,28 @@ SizedBox(height: 20),
                                           ),
                                           SizedBox(height: 8),
                                           Row(
-                                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                            mainAxisAlignment:
+                                                MainAxisAlignment.spaceBetween,
                                             children: [
                                               Text(
                                                 'Keterangan: $status', // Status displayed
                                                 style: TextStyle(
                                                   fontSize: 14,
-                                                  fontWeight: FontWeight.bold, // Bold for emphasis
-                                                  color: status == 'Hadir' ? Colors.green : Colors.redAccent, // Color for status
+                                                  fontWeight: FontWeight
+                                                      .bold, // Bold for emphasis
+                                                  color: status == 'Hadir'
+                                                      ? Colors.green
+                                                      : Colors
+                                                          .redAccent, // Color for status
                                                 ),
                                               ),
                                               Icon(
-                                                status == 'Hadir' ? Icons.check_circle : Icons.cancel,
-                                                color: status == 'Hadir' ? Colors.green : Colors.redAccent,
+                                                status == 'Hadir'
+                                                    ? Icons.check_circle
+                                                    : Icons.cancel,
+                                                color: status == 'Hadir'
+                                                    ? Colors.green
+                                                    : Colors.redAccent,
                                                 size: 20,
                                               ),
                                             ],
