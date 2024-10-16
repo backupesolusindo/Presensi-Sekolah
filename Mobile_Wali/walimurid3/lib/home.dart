@@ -60,41 +60,48 @@ class _HomePageState extends State<HomePage> {
     await _fetchSiswaData(); // Panggil API setelah data pengguna di-load
   }
 
-  Future<void> _fetchSiswaData() async {
-    final url = Uri.parse(
-        'https://presensi-smp1.esolusindo.com/Api/ApiSiswa/Siswa/getSiswabyHp/$noHp');
-    try {
-      final response = await http.get(url);
-      if (response.statusCode == 200) {
-        // Log respons API untuk debugging
-        print('Respons API: ${response.body}');
-        final data = json.decode(response.body);
+Future<void> _fetchSiswaData() async {
+  final url = Uri.parse(
+      'https://presensi-smp1.esolusindo.com/Api/ApiSiswa/Siswa/getSiswabyHp/$noHp');
+  try {
+    final response = await http.get(url);
+    if (response.statusCode == 200) {
+      // Log respons API untuk debugging
+      print('Respons API: ${response.body}');
+      final data = json.decode(response.body);
 
-        // Periksa apakah data kosong
-        if (data['data'].isNotEmpty) {
-          setState(() {
-            siswaList = data['data']; // Simpan data siswa ke siswaList
-            selectedSiswa =
-                siswaList.first['nama']; // Pilih siswa pertama sebagai default
+      // Periksa apakah data kosong
+      if (data['data'].isNotEmpty) {
+        setState(() {
+          siswaList = data['data']; // Simpan data siswa ke siswaList
+          selectedSiswa = siswaList.first['nama']; // Pilih siswa pertama sebagai default
 
-            // Simpan NIS ke SharedPreferences
-            String nis =
-                siswaList.first['nis']; // Pastikan key benar sesuai JSON
-            final prefs = SharedPreferences.getInstance();
-            prefs.then((prefs) {
-              prefs.setString('nis', nis); // Simpan NIS
-            });
+          // Simpan seluruh data siswa ke SharedPreferences
+          final prefs = SharedPreferences.getInstance();
+          prefs.then((prefs) {
+            // Konversi list siswa menjadi list JSON string
+            List<String> siswaJsonList = siswaList.map((siswa) {
+              return json.encode({
+                'nama': siswa['nama'],
+                'nis': siswa['nis'],
+                'nama_kelas': siswa['nama_kelas']
+              });
+            }).toList();
+
+            // Simpan list JSON ke SharedPreferences
+            prefs.setStringList('siswa_list', siswaJsonList);
           });
-        } else {
-          print('Data siswa kosong atau tidak ditemukan.');
-        }
+        });
       } else {
-        print('Gagal mengambil data siswa: ${response.statusCode}');
+        print('Data siswa kosong atau tidak ditemukan.');
       }
-    } catch (e) {
-      print('Terjadi kesalahan: $e');
+    } else {
+      print('Gagal mengambil data siswa: ${response.statusCode}');
     }
+  } catch (e) {
+    print('Terjadi kesalahan: $e');
   }
+}
 
   void _updateTime() {
     final now = DateTime.now();

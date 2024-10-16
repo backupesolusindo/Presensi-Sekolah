@@ -20,6 +20,9 @@ class _ProfilePageState extends State<ProfilePage> {
   String kelas = "Loading..."; // Variabel untuk menyimpan kelas
   String namaSiswa = "Loading..."; // Variabel untuk menyimpan nama siswa
 
+  List<dynamic> siswaList = []; // Menyimpan list siswa dari SharedPreferences
+  String? selectedSiswa; // Menyimpan siswa yang dipilih
+
   @override
   void initState() {
     super.initState();
@@ -31,8 +34,6 @@ class _ProfilePageState extends State<ProfilePage> {
       final prefs = await SharedPreferences.getInstance();
       final savedNamaWali = prefs.getString('nama_wali');
       final savedNoHp = prefs.getString('no_hp');
-      
-      nis = prefs.getString('nis') ?? ""; // Ambil NIS dari SharedPreferences
 
       if (savedNamaWali != null) {
         setState(() {
@@ -46,9 +47,20 @@ class _ProfilePageState extends State<ProfilePage> {
         });
       }
 
-      // Ambil data siswa dengan NIS
-      await _fetchDataSiswa(nis);
-
+      // Ambil data siswa yang disimpan di SharedPreferences
+      List<String>? siswaJsonList = prefs.getStringList('siswa_list');
+      if (siswaJsonList != null) {
+        setState(() {
+          siswaList = siswaJsonList.map((siswaJson) {
+            return json.decode(siswaJson);
+          }).toList();
+          selectedSiswa =
+              siswaList.first['nama']; // Set default pilihan siswa pertama
+          _updateSiswaDetail(siswaList.first); // Tampilkan detail siswa pertama
+        });
+      } else {
+        print('Tidak ada data siswa yang tersimpan.');
+      }
     } catch (e) {
       setState(() {
         namaWali = "Error: ${e.toString()}";
@@ -56,34 +68,13 @@ class _ProfilePageState extends State<ProfilePage> {
     }
   }
 
-  Future<void> _fetchDataSiswa(String nis) async {
-    try {
-      final response = await http.get(
-        Uri.parse('https://presensi-smp1.esolusindo.com/Api/ApiSiswa/Siswa/getSiswaByNIS/$nis'), // Ganti dengan URL API Anda
-      );
-
-      if (response.statusCode == 200) {
-        final data = json.decode(response.body);
-        // Ambil data yang diperlukan dari response
-        final fetchedNamaSiswa = data['nama'] ?? "Tidak ada nama"; // Ambil nama siswa
-        final fetchedKelas = data['kelas'] ?? "Tidak ada kelas"; // Ambil kelas
-
-        setState(() {
-          namaSiswa = fetchedNamaSiswa; // Set nama siswa dari API
-          kelas = fetchedKelas; // Set kelas dari API5
-        });
-      } else {
-        setState(() {
-          namaSiswa = "Gagal memuat nama.";
-          kelas = "Gagal memuat kelas.";
-        });
-      }
-    } catch (e) {
-      setState(() {
-        namaSiswa = "Error: ${e.toString()}";
-        kelas = "Error: ${e.toString()}";
-      });
-    }
+  // Update detail siswa saat dropdown berubah
+  void _updateSiswaDetail(Map<String, dynamic> siswa) {
+    setState(() {
+      namaSiswa = siswa['nama'];
+      nis = siswa['nis'];
+      kelas = siswa['nama_kelas'];
+    });
   }
 
   void _onItemTapped(int index) {
@@ -136,6 +127,11 @@ class _ProfilePageState extends State<ProfilePage> {
                 SizedBox(height: 8),
                 Text(noHp), // Menampilkan no_hp
                 SizedBox(height: 32),
+
+                // Dropdown untuk memilih siswa
+                _buildDropdownSiswa(),
+
+                SizedBox(height: 32),
                 _buildInfoCard(), // Panggil fungsi yang berisi semua informasi
                 SizedBox(height: 32),
                 ElevatedButton(
@@ -157,6 +153,32 @@ class _ProfilePageState extends State<ProfilePage> {
     );
   }
 
+  // Dropdown untuk memilih siswa
+  Widget _buildDropdownSiswa() {
+    return siswaList.isEmpty
+        ? Text('Tidak ada data siswa tersedia')
+        : DropdownButton<String>(
+            value: selectedSiswa,
+            hint: Text('Pilih Siswa'),
+            isExpanded: true,
+            items: siswaList.map((siswa) {
+              return DropdownMenuItem<String>(
+                value: siswa['nama'], // Pilih berdasarkan nama siswa
+                child: Text(siswa['nama']),
+              );
+            }).toList(),
+            onChanged: (value) {
+              setState(() {
+                selectedSiswa = value;
+                final selected =
+                    siswaList.firstWhere((siswa) => siswa['nama'] == value);
+                _updateSiswaDetail(
+                    selected); // Update detail siswa yang dipilih
+              });
+            },
+          );
+  }
+
   Widget _buildInfoCard() {
     return Card(
       margin: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
@@ -168,9 +190,11 @@ class _ProfilePageState extends State<ProfilePage> {
         padding: const EdgeInsets.all(16.0),
         child: Column(
           children: [
-            _buildInfoRow(Icons.email, 'Nama', namaSiswa), // Menampilkan nama siswa
+            _buildInfoRow(
+                Icons.email, 'Nama', namaSiswa), // Menampilkan nama siswa
             _buildInfoRow(Icons.domain, 'Nis', nis), // Menampilkan NIS
-            _buildInfoRow(Icons.check_circle, 'Kelas', kelas), // Menampilkan kelas
+            _buildInfoRow(
+                Icons.check_circle, 'Kelas', kelas), // Menampilkan kelas
           ],
         ),
       ),
