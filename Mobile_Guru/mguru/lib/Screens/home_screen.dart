@@ -667,157 +667,167 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
     );
   }
 
-  Widget getCardJadwalMapel(Map<String, dynamic> item) {
-    return GestureDetector(
-      onTap: () {
-        // Ensure id_kelas is safely parsed as an integer
-        int idKelas = item['kelas'] != null
-            ? int.tryParse(item['kelas'].toString()) ?? 0
-            : 0; // Parse kelas to idKelas
+ Widget getCardJadwalMapel(Map<String, dynamic> item) {
+  return GestureDetector(
+    onTap: () {
+      // Ensure id_kelas is safely parsed as an integer
+      int idKelas = item['kelas'] != null
+          ? int.tryParse(item['kelas'].toString()) ?? 0
+          : 0; // Parse kelas to idKelas
 
-        Navigator.push(
-          context,
-          MaterialPageRoute(
-            builder: (context) => PresensiSiswaPage(
-              namaMapel: item['nama_mapel'],
-              namaKelas: item['nama_kelas'],
-              idKelas: idKelas, // Pass the idKelas as an integer
-              waktuMulai: item['waktu_mulai'],
-              waktuSelesai: item['waktu_selesai'],
-              hari: item['hari'],
-              tanggal: item['tanggal'],
-            ),
+      // Ensure id_jadwal_mapel is safely parsed as an integer
+      int idMapel = item['mapel'] != null
+          ? int.tryParse(item['mapel'].toString()) ?? 0
+          : 0; // Parse id_jadwal_mapel to int
+
+      // Debug print to check the ID being passed
+      print("Navigating to PresensiSiswaPage with idMapel: $idMapel");
+      print("Navigating to PresensiSiswaPage with idkls: $idKelas");
+
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+    builder: (context) => PresensiSiswaPage(
+      namaMapel: item['nama_mapel'] ?? 'Tidak ada data',
+      namaKelas: item['nama_kelas'] ?? 'Tidak ada data',
+      idKelas: idKelas,
+      idMapel: idMapel, // Ensure this matches the constructor
+      waktuMulai: item['waktu_mulai'] ?? 'Tidak ada data',
+      waktuSelesai: item['waktu_selesai'] ?? 'Tidak ada data',
+      hari: item['hari'] ?? 'Tidak ada data',
+      tanggal: item['tanggal'] ?? 'Tanggal belum ditentukan',
+    ),
+  ),
+      );
+    },
+    child: Container(
+      margin: const EdgeInsets.symmetric(vertical: 10.0, horizontal: 20.0),
+      padding: const EdgeInsets.all(20.0),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(15.0),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.1),
+            blurRadius: 8.0,
+            offset: const Offset(0, 4),
           ),
-        );
-      },
-      child: Container(
-        margin: const EdgeInsets.symmetric(vertical: 10.0, horizontal: 20.0),
-        padding: const EdgeInsets.all(20.0),
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(15.0),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withOpacity(0.1),
-              blurRadius: 8.0,
-              offset: const Offset(0, 4),
-            ),
-          ],
-        ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: <Widget>[
-            // Header: Mata pelajaran dan ikon buku
-            Row(
-              children: [
-                const Icon(
-                  Icons.book_rounded,
-                  color: Colors.blueAccent,
-                  size: 28,
-                ),
-                const SizedBox(width: 10),
-                Expanded(
-                  child: Text(
-                    item['nama_mapel'] ??
-                        'Tidak ada data', // Nama mata pelajaran
-                    style: const TextStyle(
-                      fontSize: 20.0,
-                      fontWeight: FontWeight.w700,
-                      color: Colors.black87,
-                    ),
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 12), // Jarak antar elemen
-
-            // Lokasi (Kelas)
-            Row(
-              children: [
-                const Icon(
-                  Icons.class_rounded,
-                  color: Colors.purpleAccent,
-                  size: 20,
-                ),
-                const SizedBox(width: 6),
-                Text(
-                  item['nama_kelas'] ?? 'Tidak ada data', // Nama kelas
-                  style: const TextStyle(
-                    fontSize: 16.0,
-                    color: Colors.grey,
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 10), // Jarak antar elemen
-
-            // Waktu pelajaran
-            Row(
-              children: [
-                const Icon(
-                  Icons.access_time_filled_rounded,
-                  color: Colors.orangeAccent,
-                  size: 20,
-                ),
-                const SizedBox(width: 6),
-                Text(
-                  "${item['waktu_mulai'] ?? '-'} - ${item['waktu_selesai'] ?? '-'}", // Waktu mulai dan selesai
-                  style: const TextStyle(
-                    fontSize: 16.0,
-                    color: Colors.grey,
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 10), // Jarak antar elemen
-
-            // Hari pelajaran
-            Row(
-              children: [
-                const Icon(
-                  Icons.calendar_today_rounded,
-                  color: Colors.greenAccent,
-                  size: 20,
-                ),
-                const SizedBox(width: 6),
-                Text(
-                  "Hari: ${item['hari'] ?? '-'}", // Hari
-                  style: const TextStyle(
-                    fontSize: 16.0,
-                    color: Colors.grey,
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 10), // Jarak antar elemen
-
-            // Tanggal
-            Row(
-              children: [
-                const Icon(
-                  Icons.date_range_rounded,
-                  color: Colors.redAccent,
-                  size: 20,
-                ),
-                const SizedBox(width: 6),
-                Text(
-                  item['tanggal'] != null && item['tanggal'].isNotEmpty
-                      ? item['tanggal'] // Tanggal pelajaran
-                      : 'Tanggal belum ditentukan',
-                  style: const TextStyle(
-                    fontSize: 16.0,
-                    color: Colors.grey,
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 10), // Jarak antar elemen
-          ],
-        ),
+        ],
       ),
-    );
-  }
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: <Widget>[
+          // Header: Mata pelajaran dan ikon buku
+          Row(
+            children: [
+              const Icon(
+                Icons.book_rounded,
+                color: Colors.blueAccent,
+                size: 28,
+              ),
+              const SizedBox(width: 10),
+              Expanded(
+                child: Text(
+                  item['nama_mapel'] ?? 'Tidak ada data',
+                  style: const TextStyle(
+                    fontSize: 20.0,
+                    fontWeight: FontWeight.w700,
+                    color: Colors.black87,
+                  ),
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 12), // Jarak antar elemen
+
+          // Lokasi (Kelas)
+          Row(
+            children: [
+              const Icon(
+                Icons.class_rounded,
+                color: Colors.purpleAccent,
+                size: 20,
+              ),
+              const SizedBox(width: 6),
+              Text(
+                item['nama_kelas'] ?? 'Tidak ada data',
+                style: const TextStyle(
+                  fontSize: 16.0,
+                  color: Colors.grey,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 10), // Jarak antar elemen
+
+          // Waktu pelajaran
+          Row(
+            children: [
+              const Icon(
+                Icons.access_time_filled_rounded,
+                color: Colors.orangeAccent,
+                size: 20,
+              ),
+              const SizedBox(width: 6),
+              Text(
+                "${item['waktu_mulai'] ?? '-'} - ${item['waktu_selesai'] ?? '-'}",
+                style: const TextStyle(
+                  fontSize: 16.0,
+                  color: Colors.grey,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 10), // Jarak antar elemen
+
+          // Hari pelajaran
+          Row(
+            children: [
+              const Icon(
+                Icons.calendar_today_rounded,
+                color: Colors.greenAccent,
+                size: 20,
+              ),
+              const SizedBox(width: 6),
+              Text(
+                "Hari: ${item['hari'] ?? '-'}",
+                style: const TextStyle(
+                  fontSize: 16.0,
+                  color: Colors.grey,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 10), // Jarak antar elemen
+
+          // Tanggal
+          Row(
+            children: [
+              const Icon(
+                Icons.date_range_rounded,
+                color: Colors.redAccent,
+                size: 20,
+              ),
+              const SizedBox(width: 6),
+              Text(
+                item['tanggal'] != null && item['tanggal'].isNotEmpty
+                    ? item['tanggal']
+                    : 'Tanggal belum ditentukan',
+                style: const TextStyle(
+                  fontSize: 16.0,
+                  color: Colors.grey,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 10), // Jarak antar elemen
+        ],
+      ),
+    ),
+  );
+}
+
 
   Widget getCardKegiatan(item) {
     return Container(
