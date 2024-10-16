@@ -66,23 +66,26 @@ class _HomePageState extends State<HomePage> {
     try {
       final response = await http.get(url);
       if (response.statusCode == 200) {
-        // Log respons API untuk debugging
         print('Respons API: ${response.body}');
         final data = json.decode(response.body);
 
-        // Periksa apakah data kosong
         if (data['data'].isNotEmpty) {
           setState(() {
             siswaList = data['data']; // Simpan data siswa ke siswaList
-            selectedSiswa =
-                siswaList.first['nama']; // Pilih siswa pertama sebagai default
+            selectedSiswa = siswaList.first['nama']; // Pilih siswa pertama sebagai default
 
-            // Simpan NIS ke SharedPreferences
-            String nis =
-                siswaList.first['nis']; // Pastikan key benar sesuai JSON
+            // Simpan seluruh data siswa ke SharedPreferences
             final prefs = SharedPreferences.getInstance();
             prefs.then((prefs) {
-              prefs.setString('nis', nis); // Simpan NIS
+              List<String> siswaJsonList = siswaList.map((siswa) {
+                return json.encode({
+                  'nama': siswa['nama'],
+                  'nis': siswa['nis'],
+                  'nama_kelas': siswa['nama_kelas']
+                });
+              }).toList();
+
+              prefs.setStringList('siswa_list', siswaJsonList);
             });
           });
         } else {
@@ -122,7 +125,6 @@ class _HomePageState extends State<HomePage> {
     return Scaffold(
       body: Stack(
         children: [
-          // Background
           Container(
             decoration: BoxDecoration(
               image: DecorationImage(
@@ -137,15 +139,10 @@ class _HomePageState extends State<HomePage> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  // Kartu Profil
                   _buildProfileCard(),
                   SizedBox(height: 16),
-
-                  // Dropdown Siswa
                   _buildDropdownSiswa(),
                   SizedBox(height: 16),
-
-                  // Tanggal dan Lokasi
                   Row(
                     children: [
                       Expanded(
@@ -160,18 +157,13 @@ class _HomePageState extends State<HomePage> {
                     ],
                   ),
                   SizedBox(height: 16),
-
-                  // Menu Presensi
                   Text(
                     'Menu :',
                     style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
                   ),
                   SizedBox(height: 8),
                   _buildMenuPresensi(),
-
                   SizedBox(height: 16),
-
-                  // Presensi Anda
                   Text(
                     'Presensi Anda:',
                     style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
@@ -179,7 +171,6 @@ class _HomePageState extends State<HomePage> {
                   SizedBox(height: 8),
                   _buildPresenceStatusCard(
                       'Anda Hari ini Belum Melakukan Presensi'),
-
                   SizedBox(height: 16),
                 ],
               ),
@@ -197,7 +188,7 @@ class _HomePageState extends State<HomePage> {
   Widget _buildProfileCard() {
     return Column(
       children: [
-        SizedBox(height: 40), // Menambahkan jarak vertikal sebelum card
+        SizedBox(height: 40),
         Card(
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(15.0),
@@ -271,12 +262,18 @@ class _HomePageState extends State<HomePage> {
                   onChanged: (value) {
                     setState(() {
                       selectedSiswa = value; // Mengubah nilai yang dipilih
+                      _saveSelectedSiswa(selectedSiswa!); // Simpan ke SharedPreferences
                     });
                   },
                 ),
         ),
       ],
     );
+  }
+
+  _saveSelectedSiswa(String siswa) async {
+    final prefs = await SharedPreferences.getInstance();
+    prefs.setString('selectedSiswa', siswa); // Simpan siswa yang dipilih
   }
 
   Widget _buildInfoCard(String text, IconData icon, Color cardColor) {
@@ -332,16 +329,14 @@ class _HomePageState extends State<HomePage> {
             ),
           ),
         ),
-        // Ikon < di sisi kiri
         Positioned(
           left: 7,
-          top: 50, // Sesuaikan posisi vertikal
+          top: 50,
           child: Icon(Icons.arrow_back_ios, color: Colors.grey),
         ),
-        // Ikon > di sisi kanan
         Positioned(
           right: 0,
-          top: 50, // Sesuaikan posisi vertikal
+          top: 50,
           child: Icon(Icons.arrow_forward_ios, color: Colors.grey),
         ),
       ],
@@ -360,13 +355,13 @@ class _HomePageState extends State<HomePage> {
           ),
           SizedBox(height: 8),
           Container(
-            width: 80, // Atur lebar agar teks tidak terlalu panjang
+            width: 80,
             child: Text(
               label,
-              textAlign: TextAlign.center, // Agar teks berada di tengah
+              textAlign: TextAlign.center,
               style: TextStyle(
-                fontSize: 14, // Atur ukuran teks
-                fontWeight: FontWeight.bold, // Agar teks lebih menonjol
+                fontSize: 14,
+                fontWeight: FontWeight.bold,
                 color: Colors.black,
               ),
             ),
