@@ -3,6 +3,7 @@ import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'home.dart';
 import 'profile.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class RiwayatPage extends StatefulWidget {
   @override
@@ -10,37 +11,57 @@ class RiwayatPage extends StatefulWidget {
 }
 
 class _RiwayatPageState extends State<RiwayatPage> {
-  String selectedFilter = 'Semua';
+  String selectedNis = ''; // Untuk menyimpan NIS yang dipilih
   int _currentIndex = 1;
   bool showRiwayatMasuk = true;
   int? selectedCardIndex;
   List<dynamic> riwayatData = [];
+  List<dynamic> siswaList = [];
   bool isLoading = true;
 
   @override
   void initState() {
     super.initState();
-    fetchRiwayatMasuk(); // Ambil data saat halaman dibuka
+    _fetchData(); // Ambil data saat halaman dibuka
+  }
+
+  @override
+  void dispose() {
+    super.dispose();
+    // Tambahkan kode ini untuk membersihkan jika perlu
+  }
+
+  Future<void> _fetchData() async {
+    final prefs = await SharedPreferences.getInstance();
+    List<String>? siswaJsonList = prefs.getStringList('siswa_list');
+
+    if (siswaJsonList != null) {
+      siswaList = siswaJsonList.map((siswa) => json.decode(siswa)).toList();
+      // Ambil NIS dari siswa pertama sebagai default
+      selectedNis = siswaList.first['nis'];
+      fetchRiwayatMasuk(); // Ambil data riwayat masuk
+    } else {
+      print('Tidak ada data siswa yang tersimpan.');
+    }
   }
 
   Future<void> fetchRiwayatMasuk() async {
-    final String nis = '12345'; // Ganti dengan NIS yang sesuai
     final String url =
-        'https://presensi-smp1.esolusindo.com/Api/ApiGerbang/Gerbang/ambilAbsen';
+        'https://presensi-smp1.esolusindo.com/Api/ApiGerbang/Gerbang/ambilAbsen/$selectedNis';
 
     try {
-      final response = await http.post(
-        Uri.parse(url),
-        body: {'nis': nis},
-      );
+      final response = await http.get(Uri.parse(url));
 
       if (response.statusCode == 200) {
         final result = json.decode(response.body);
         if (result['status'] == 'success') {
-          setState(() {
-            riwayatData = result['data'];
-            isLoading = false;
-          });
+          // Periksa apakah widget masih mounted sebelum memanggil setState
+          if (mounted) {
+            setState(() {
+              riwayatData = result['data'];
+              isLoading = false;
+            });
+          }
         } else {
           showError(result['message']);
         }
@@ -53,9 +74,12 @@ class _RiwayatPageState extends State<RiwayatPage> {
   }
 
   void showError(String message) {
-    setState(() {
-      isLoading = false;
-    });
+    // Periksa apakah widget masih mounted sebelum memanggil setState
+    if (mounted) {
+      setState(() {
+        isLoading = false;
+      });
+    }
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(content: Text(message)),
     );
@@ -94,54 +118,76 @@ class _RiwayatPageState extends State<RiwayatPage> {
                 ),
               ),
             ),
-            SingleChildScrollView(
-              child: Padding(
-                padding: const EdgeInsets.all(16.0),
-                child: Column(
-                  children: <Widget>[
-                    Text(
-                      'Riwayat Presensi Siswa',
-                      style: TextStyle(
-                        fontSize: 26,
-                        fontWeight: FontWeight.bold,
+            Padding(
+              padding: const EdgeInsets.all(16.0),
+              child: Column(
+                children: <Widget>[
+                  Text(
+                    'Riwayat Presensi Siswa',
+                    style: TextStyle(
+                      fontSize: 26,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  const SizedBox(height: 20),
+                  // Dropdown untuk memilih siswa
+                  DropdownButton<String>(
+                    value: selectedNis,
+                    items: siswaList.map((siswa) {
+                      return DropdownMenuItem<String>(
+                        value: siswa['nis'],
+                        child: Text(siswa['nama']), // Menampilkan nama siswa
+                      );
+                    }).toList(),
+                    onChanged: (value) {
+                      setState(() {
+                        selectedNis = value!;
+                        isLoading =
+                            true; // Menampilkan loading saat mengambil data
+                        fetchRiwayatMasuk();
+                      });
+                    },
+                  ),
+                  const SizedBox(height: 20),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                    children: [
+                      _buildRiwayatCard(
+                        index: 0,
+                        icon: Icons.door_front_door,
+                        title: 'Riwayat\nMasuk',
+                        color: Colors.orangeAccent,
+                        onTap: () {
+                          setState(() {
+                            showRiwayatMasuk = true;
+                            selectedCardIndex = 0;
+                            fetchRiwayatMasuk();
+                          });
+                        },
                       ),
-                    ),
-                    const SizedBox(height: 20),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                      children: [
-                        _buildRiwayatCard(
-                          index: 0,
-                          icon: Icons.door_front_door,
-                          title: 'Riwayat\nMasuk',
-                          color: Colors.orangeAccent,
-                          onTap: () {
-                            setState(() {
-                              showRiwayatMasuk = true;
-                              selectedCardIndex = 0;
-                            });
-                          },
-                        ),
-                        _buildRiwayatCard(
-                          index: 1,
-                          icon: Icons.book,
-                          title: 'Riwayat\nMapel',
-                          color: Colors.purpleAccent,
-                          onTap: () {
-                            setState(() {
-                              showRiwayatMasuk = false;
-                              selectedCardIndex = 1;
-                            });
-                          },
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 20),
-                    isLoading
-                        ? CircularProgressIndicator()
+                      _buildRiwayatCard(
+                        index: 1,
+                        icon: Icons.book,
+                        title: 'Riwayat\nMapel',
+                        color: Colors.purpleAccent,
+                        onTap: () {
+                          setState(() {
+                            showRiwayatMasuk = false;
+                            selectedCardIndex = 1;
+                            fetchRiwayatMapel(); // Ganti ini dengan fungsi fetch untuk absen mapel
+                          });
+                        },
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 20),
+                  // Bagian yang dapat digulir
+                  Expanded(
+                    child: isLoading
+                        ? Center(child: CircularProgressIndicator())
                         : _buildRiwayatList(),
-                  ],
-                ),
+                  ),
+                ],
               ),
             ),
           ],
@@ -227,7 +273,10 @@ class _RiwayatPageState extends State<RiwayatPage> {
       itemBuilder: (context, index) {
         final item = riwayatData[index];
         return _buildListItem(
-          'Tanggal: ${item['tanggal']}',
+          item['tanggal'],
+          item['waktu'],
+          item['kelas'],
+          item['nama'],
           item['status'],
           index,
         );
@@ -235,7 +284,8 @@ class _RiwayatPageState extends State<RiwayatPage> {
     );
   }
 
-  Widget _buildListItem(String title, String status, int index) {
+  Widget _buildListItem(String tanggal, String waktu, String kelas, String nama,
+      String status, int index) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 8.0),
       child: Card(
@@ -248,7 +298,14 @@ class _RiwayatPageState extends State<RiwayatPage> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(title),
+              Text('Nama: $nama',
+                  style: TextStyle(fontWeight: FontWeight.bold)),
+              const SizedBox(height: 8),
+              Text('Kelas: $kelas'),
+              const SizedBox(height: 8),
+              Text('Tanggal: $tanggal'),
+              const SizedBox(height: 8),
+              Text('Waktu: $waktu'),
               const SizedBox(height: 8),
               Text('Status: $status'),
             ],
@@ -256,5 +313,11 @@ class _RiwayatPageState extends State<RiwayatPage> {
         ),
       ),
     );
+  }
+
+  // Fungsi untuk mengambil data absen mapel
+  Future<void> fetchRiwayatMapel() async {
+    // Implementasikan logika untuk mengambil data absen mapel
+    // Gunakan NIS dari selectedNis
   }
 }
