@@ -686,8 +686,6 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
               waktuSelesai: item['waktu_selesai'],
               hari: item['hari'],
               tanggal: item['tanggal'],
-              idjadwal_mapel: item['id_jadwal_mapel'],
-              id_jadwal: item['id_jadwal'],
             ),
           ),
         );
