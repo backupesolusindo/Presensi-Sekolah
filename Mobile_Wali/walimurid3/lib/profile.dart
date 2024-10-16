@@ -54,9 +54,19 @@ class _ProfilePageState extends State<ProfilePage> {
           siswaList = siswaJsonList.map((siswaJson) {
             return json.decode(siswaJson);
           }).toList();
-          selectedSiswa =
-              siswaList.first['nama']; // Set default pilihan siswa pertama
-          _updateSiswaDetail(siswaList.first); // Tampilkan detail siswa pertama
+
+          // Ambil siswa yang dipilih dari SharedPreferences
+          selectedSiswa = prefs.getString('selectedSiswa');
+          if (selectedSiswa != null) {
+            // Jika ada siswa yang dipilih, update detail siswa
+            final selected =
+                siswaList.firstWhere((siswa) => siswa['nama'] == selectedSiswa);
+            _updateSiswaDetail(selected); // Tampilkan detail siswa terpilih
+          } else {
+            // Jika tidak ada siswa yang dipilih, pilih siswa pertama
+            selectedSiswa = siswaList.first['nama'];
+            _updateSiswaDetail(siswaList.first); // Tampilkan detail siswa pertama
+          }
         });
       } else {
         print('Tidak ada data siswa yang tersimpan.');
@@ -128,8 +138,8 @@ class _ProfilePageState extends State<ProfilePage> {
                 Text(noHp), // Menampilkan no_hp
                 SizedBox(height: 32),
 
-                // Dropdown untuk memilih siswa
-                _buildDropdownSiswa(),
+                // Menyembunyikan dropdown untuk memilih siswa
+                // _buildDropdownSiswa(), // Hapus atau komen baris ini
 
                 SizedBox(height: 32),
                 _buildInfoCard(), // Panggil fungsi yang berisi semua informasi
@@ -154,6 +164,8 @@ class _ProfilePageState extends State<ProfilePage> {
   }
 
   // Dropdown untuk memilih siswa
+  // Hapus atau komen fungsi ini untuk menyembunyikan dropdown
+  /*
   Widget _buildDropdownSiswa() {
     return siswaList.isEmpty
         ? Text('Tidak ada data siswa tersedia')
@@ -172,11 +184,18 @@ class _ProfilePageState extends State<ProfilePage> {
                 selectedSiswa = value;
                 final selected =
                     siswaList.firstWhere((siswa) => siswa['nama'] == value);
-                _updateSiswaDetail(
-                    selected); // Update detail siswa yang dipilih
+                _updateSiswaDetail(selected); // Update detail siswa yang dipilih
+                _saveSelectedSiswa(selectedSiswa!); // Simpan siswa yang dipilih
               });
             },
           );
+  }
+  */
+
+  // Simpan siswa yang dipilih ke SharedPreferences
+  _saveSelectedSiswa(String siswa) async {
+    final prefs = await SharedPreferences.getInstance();
+    prefs.setString('selectedSiswa', siswa); // Simpan siswa yang dipilih
   }
 
   Widget _buildInfoCard() {
@@ -190,11 +209,9 @@ class _ProfilePageState extends State<ProfilePage> {
         padding: const EdgeInsets.all(16.0),
         child: Column(
           children: [
-            _buildInfoRow(
-                Icons.email, 'Nama', namaSiswa), // Menampilkan nama siswa
+            _buildInfoRow(Icons.email, 'Nama', namaSiswa), // Menampilkan nama siswa
             _buildInfoRow(Icons.domain, 'Nis', nis), // Menampilkan NIS
-            _buildInfoRow(
-                Icons.check_circle, 'Kelas', kelas), // Menampilkan kelas
+            _buildInfoRow(Icons.check_circle, 'Kelas', kelas), // Menampilkan kelas
           ],
         ),
       ),
