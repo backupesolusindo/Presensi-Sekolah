@@ -70,7 +70,7 @@ class _ProfilePageState extends State<ProfilePage> {
 
         setState(() {
           namaSiswa = fetchedNamaSiswa; // Set nama siswa dari API
-          kelas = fetchedKelas; // Set kelas dari API
+          kelas = fetchedKelas; // Set kelas dari API5
         });
       } else {
         setState(() {
