@@ -52,10 +52,10 @@ class _ProfilePageState extends State<ProfilePage> {
             return json.decode(siswaJson);
           }).toList();
 
-          selectedSiswa = prefs.getString('selectedSiswa') ??
-              siswaList.first['nama'];
-          _updateSiswaDetail(siswaList.firstWhere(
-              (siswa) => siswa['nama'] == selectedSiswa));
+          selectedSiswa =
+              prefs.getString('selectedSiswa') ?? siswaList.first['nama'];
+          _updateSiswaDetail(
+              siswaList.firstWhere((siswa) => siswa['nama'] == selectedSiswa));
         });
       }
     } catch (e) {
@@ -102,24 +102,26 @@ class _ProfilePageState extends State<ProfilePage> {
               height: 300,
               decoration: BoxDecoration(
                 image: DecorationImage(
-                  image: AssetImage('assets/biru.png'), // Ganti dengan gambar latar belakang
+                  image: AssetImage(
+                      'assets/biru.png'), // Ganti dengan gambar latar belakang
                   fit: BoxFit.cover,
                 ),
               ),
             ),
           ),
           Positioned(
-            top: 140, // Sesuaikan agar pas dengan potongan diagonal
+            top: 170, // Sesuaikan agar pas dengan potongan diagonal
             left: MediaQuery.of(context).size.width / 2 - 50, // Center logo
             child: CircleAvatar(
               radius: 50,
-              backgroundImage: AssetImage('assets/logopoltek.png'), // Ganti dengan logo yang diinginkan
+              backgroundImage: AssetImage(
+                  'assets/logopoltek.png'), // Ganti dengan logo yang diinginkan
             ),
           ),
           SingleChildScrollView(
             child: Column(
               children: [
-                const SizedBox(height: 220), // Menyesuaikan posisi setelah logo
+                const SizedBox(height: 290), // Menyesuaikan posisi setelah logo
                 Text(
                   namaWali,
                   style: const TextStyle(
@@ -135,7 +137,8 @@ class _ProfilePageState extends State<ProfilePage> {
                 ),
                 const SizedBox(height: 32), // Mengatur jarak sebelum card siswa
                 _buildInfoCard(),
-                const SizedBox(height: 20), // Menambah jarak di bawah card data siswa
+                const SizedBox(
+                    height: 20), // Menambah jarak di bawah card data siswa
                 ElevatedButton(
                   onPressed: () => _showLogoutConfirmation(context),
                   style: ElevatedButton.styleFrom(
@@ -151,7 +154,8 @@ class _ProfilePageState extends State<ProfilePage> {
                     style: TextStyle(fontSize: 16),
                   ),
                 ),
-                const SizedBox(height: 40), // Menambah jarak di bawah tombol logout
+                const SizedBox(
+                    height: 40), // Menambah jarak di bawah tombol logout
               ],
             ),
           ),

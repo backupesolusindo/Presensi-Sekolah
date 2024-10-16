@@ -72,7 +72,8 @@ class _HomePageState extends State<HomePage> {
         if (data['data'].isNotEmpty) {
           setState(() {
             siswaList = data['data']; // Simpan data siswa ke siswaList
-            selectedSiswa = siswaList.first['nama']; // Pilih siswa pertama sebagai default
+            selectedSiswa =
+                siswaList.first['nama']; // Pilih siswa pertama sebagai default
 
             // Simpan seluruh data siswa ke SharedPreferences
             final prefs = SharedPreferences.getInstance();
@@ -143,17 +144,14 @@ class _HomePageState extends State<HomePage> {
                   SizedBox(height: 16),
                   _buildDropdownSiswa(),
                   SizedBox(height: 16),
+                  // Membuat Row untuk Card Waktu dan Date
                   Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      Expanded(
-                        child: _buildInfoCard('$_currentTime\n$_currentDate',
-                            Icons.access_time, Colors.white),
-                      ),
-                      SizedBox(width: 8),
-                      Expanded(
-                        child: _buildInfoCard('Kampus POLIJE\nLokasi Anda',
-                            Icons.location_on, Colors.white),
-                      ),
+                      _buildInfoCard(
+                          '$_currentTime', Icons.access_time, Colors.white),
+                      _buildInfoCard(
+                          '$_currentDate', Icons.calendar_today, Colors.white),
                     ],
                   ),
                   SizedBox(height: 16),
@@ -165,12 +163,12 @@ class _HomePageState extends State<HomePage> {
                   _buildMenuPresensi(),
                   SizedBox(height: 16),
                   Text(
-                    'Presensi Anda:',
+                    'Fungsi Aplikasi :',
                     style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
                   ),
                   SizedBox(height: 8),
                   _buildPresenceStatusCard(
-                      'Anda Hari ini Belum Melakukan Presensi'),
+                      'Aplikasi ini bisa Ibu/Bapak gunakan untuk memantau absensi anak anda'),
                   SizedBox(height: 16),
                 ],
               ),
@@ -242,32 +240,41 @@ class _HomePageState extends State<HomePage> {
   }
 
   Widget _buildDropdownSiswa() {
-    return Row(
-      children: [
-        Icon(Icons.location_city, color: Colors.blueAccent),
-        SizedBox(width: 8),
-        Expanded(
-          child: siswaList.isEmpty
-              ? Text('Tidak ada siswa tersedia')
-              : DropdownButton<String>(
-                  value: selectedSiswa,
-                  hint: Text('Pilih Siswa'),
-                  isExpanded: true,
-                  items: siswaList.map((siswa) {
-                    return DropdownMenuItem<String>(
-                      value: siswa['nama'], // Pastikan key benar sesuai JSON
-                      child: Text(siswa['nama']),
-                    );
-                  }).toList(),
-                  onChanged: (value) {
-                    setState(() {
-                      selectedSiswa = value; // Mengubah nilai yang dipilih
-                      _saveSelectedSiswa(selectedSiswa!); // Simpan ke SharedPreferences
-                    });
-                  },
-                ),
+    return Card(
+      elevation: 5,
+      color: Colors.white,
+      child: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Row(
+          children: [
+            Icon(Icons.face, color: Colors.blueAccent),
+            SizedBox(width: 8),
+            Expanded(
+              child: siswaList.isEmpty
+                  ? Text('Loading...')
+                  : DropdownButton<String>(
+                      value: selectedSiswa,
+                      hint: Text('Pilih Siswa'),
+                      isExpanded: true,
+                      items: siswaList.map((siswa) {
+                        return DropdownMenuItem<String>(
+                          value:
+                              siswa['nama'], // Pastikan key benar sesuai JSON
+                          child: Text(siswa['nama']),
+                        );
+                      }).toList(),
+                      onChanged: (value) {
+                        setState(() {
+                          selectedSiswa = value; // Mengubah nilai yang dipilih
+                          _saveSelectedSiswa(
+                              selectedSiswa!); // Simpan ke SharedPreferences
+                        });
+                      },
+                    ),
+            ),
+          ],
         ),
-      ],
+      ),
     );
   }
 
