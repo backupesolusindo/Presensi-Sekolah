@@ -42,6 +42,7 @@ flutter:
     - assets/logo.png
     - assets/gambarmuka.png
     - assets/walibg.png
+    - assets/biru.png
 
   # Jika Anda memiliki aset lain, tambahkan di sini
   # - images/a_dot_ham.jpeg
