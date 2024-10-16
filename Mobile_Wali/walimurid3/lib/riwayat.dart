@@ -73,6 +73,34 @@ class _RiwayatPageState extends State<RiwayatPage> {
     }
   }
 
+  Future<void> fetchRiwayatMapel() async {
+    final String url =
+        'https://presensi-smp1.esolusindo.com/Api/ApiPresensi/ApiPresensi/getPresensiSiswa/$selectedNis';
+
+    try {
+      final response = await http.get(Uri.parse(url));
+
+      if (response.statusCode == 200) {
+        final List<dynamic> result = json.decode(response.body);
+        if (result.isNotEmpty) {
+          // Periksa apakah widget masih mounted sebelum memanggil setState
+          if (mounted) {
+            setState(() {
+              riwayatData = result; // Simpan data yang diambil
+              isLoading = false;
+            });
+          }
+        } else {
+          showError('Tidak ada data presensi untuk siswa ini.');
+        }
+      } else {
+        showError('Gagal mengambil data. Kode: ${response.statusCode}');
+      }
+    } catch (e) {
+      showError('Terjadi kesalahan: $e');
+    }
+  }
+
   void showError(String message) {
     // Periksa apakah widget masih mounted sebelum memanggil setState
     if (mounted) {
@@ -174,7 +202,7 @@ class _RiwayatPageState extends State<RiwayatPage> {
                           setState(() {
                             showRiwayatMasuk = false;
                             selectedCardIndex = 1;
-                            fetchRiwayatMapel(); // Ganti ini dengan fungsi fetch untuk absen mapel
+                            fetchRiwayatMapel(); // Ambil data riwayat mapel
                           });
                         },
                       ),
@@ -185,7 +213,9 @@ class _RiwayatPageState extends State<RiwayatPage> {
                   Expanded(
                     child: isLoading
                         ? Center(child: CircularProgressIndicator())
-                        : _buildRiwayatList(),
+                        : showRiwayatMasuk
+                            ? _buildRiwayatMasukList()
+                            : _buildRiwayatMapelList(),
                   ),
                 ],
               ),
@@ -266,26 +296,79 @@ class _RiwayatPageState extends State<RiwayatPage> {
     );
   }
 
-  Widget _buildRiwayatList() {
+// Tambahkan method ini untuk membangun list riwayat masuk
+  Widget _buildRiwayatMasukList() {
     return ListView.builder(
       shrinkWrap: true,
       itemCount: riwayatData.length,
       itemBuilder: (context, index) {
         final item = riwayatData[index];
-        return _buildListItem(
-          item['tanggal'],
-          item['waktu'],
-          item['kelas'],
-          item['nama'],
-          item['status'],
+        return _buildRiwayatMasukItem(
+          item['tanggal'] ?? 'Tanggal tidak tersedia',
+          item['waktu'] ?? 'Waktu tidak tersedia',
+          item['kelas'] ?? 'Nama Kelas tidak tersedia',
+          item['status'] ?? 'Status tidak tersedia',
           index,
         );
       },
     );
   }
 
-  Widget _buildListItem(String tanggal, String waktu, String kelas, String nama,
-      String status, int index) {
+// TANPAMISAHINTGLWAKTU
+  // Widget _buildRiwayatMapelList() {
+  //   return ListView.builder(
+  //     shrinkWrap: true,
+  //     itemCount: riwayatData.length,
+  //     itemBuilder: (context, index) {
+  //       final item = riwayatData[index];
+  //       return _buildRiwayatMapelItem(
+  //         item['tanggal'] ?? 'Tanggal tidak tersedia',
+  //         item['waktu'] ?? 'Waktu tidak tersedia',
+  //         item['id_jadwal'] ?? 'ID Jadwal tidak tersedia',
+  //         item['status'] ?? 'Status tidak tersedia',
+  //         index,
+  //       );
+  //     },
+  //   );
+  // }
+
+//MISAHINTGLWAKTU
+// Tambahkan method ini untuk membangun list riwayat mapel
+  Widget _buildRiwayatMapelList() {
+    return ListView.builder(
+      shrinkWrap: true,
+      itemCount: riwayatData.length,
+      itemBuilder: (context, index) {
+        final item = riwayatData[index];
+
+        // Memisahkan tanggal dan waktu dengan penanganan kesalahan
+        String tanggal = 'Tanggal tidak tersedia';
+        String waktu = 'Waktu tidak tersedia';
+
+        if (item['tanggal'] != null && item['tanggal'].isNotEmpty) {
+          List<String> parts = item['tanggal'].split(' ');
+          if (parts.length > 1) {
+            tanggal = parts[0]; // Ambil bagian tanggal
+            waktu = parts[1]; // Ambil bagian waktu
+          } else {
+            tanggal = parts[0]; // Jika tidak ada waktu, tetap ambil tanggal
+          }
+        }
+
+        return _buildRiwayatMapelItem(
+          tanggal,
+          waktu,
+          item['id_jadwal'] ?? 'ID Jadwal tidak tersedia',
+          item['status'] ?? 'Status tidak tersedia',
+          index,
+        );
+      },
+    );
+  }
+
+// Item untuk riwayat masuk
+  Widget _buildRiwayatMasukItem(
+      String tanggal, String waktu, String kelas, String status, int index) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 8.0),
       child: Card(
@@ -298,10 +381,8 @@ class _RiwayatPageState extends State<RiwayatPage> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text('Nama: $nama',
+              Text('Nama Kelas: $kelas',
                   style: TextStyle(fontWeight: FontWeight.bold)),
-              const SizedBox(height: 8),
-              Text('Kelas: $kelas'),
               const SizedBox(height: 8),
               Text('Tanggal: $tanggal'),
               const SizedBox(height: 8),
@@ -315,9 +396,64 @@ class _RiwayatPageState extends State<RiwayatPage> {
     );
   }
 
-  // Fungsi untuk mengambil data absen mapel
-  Future<void> fetchRiwayatMapel() async {
-    // Implementasikan logika untuk mengambil data absen mapel
-    // Gunakan NIS dari selectedNis
+// TANPAMISAHINTGLWAKTU
+  // Widget _buildRiwayatMapelItem(
+  //     String tanggal, String waktu, String idJadwal, String status, int index) {
+  //   return Padding(
+  //     padding: const EdgeInsets.symmetric(vertical: 8.0),
+  //     child: Card(
+  //       elevation: 8,
+  //       shape: RoundedRectangleBorder(
+  //         borderRadius: BorderRadius.circular(15),
+  //       ),
+  //       child: Container(
+  //         padding: const EdgeInsets.all(16.0),
+  //         child: Column(
+  //           crossAxisAlignment: CrossAxisAlignment.start,
+  //           children: [
+  //             Text('ID Jadwal: $idJadwal',
+  //                 style: TextStyle(fontWeight: FontWeight.bold)),
+  //             const SizedBox(height: 8),
+  //             Text('Tanggal: $tanggal'),
+  //             const SizedBox(height: 8),
+  //             Text('Waktu: $waktu'),
+  //             const SizedBox(height: 8),
+  //             Text('Status: $status'),
+  //           ],
+  //         ),
+  //       ),
+  //     ),
+  //   );
+  // }
+
+//MISAHINTGLWAKTU
+  Widget _buildRiwayatMapelItem(
+      String tanggal, String waktu, String idJadwal, String status, int index) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 8.0),
+      child: Card(
+        elevation: 8,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(15),
+        ),
+        child: Container(
+          padding: const EdgeInsets.all(16.0),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text('ID Jadwal: $idJadwal',
+                  style: TextStyle(fontWeight: FontWeight.bold)),
+              const SizedBox(height: 8),
+              Text('Tanggal: $tanggal'),
+              const SizedBox(height: 8),
+              Text(
+                  'Waktu: $waktu'), // Gunakan waktu yang diambil dari bagian belakang
+              const SizedBox(height: 8),
+              Text('Status: $status'),
+            ],
+          ),
+        ),
+      ),
+    );
   }
 }
