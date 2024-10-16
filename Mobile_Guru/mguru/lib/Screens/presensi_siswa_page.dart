@@ -54,8 +54,6 @@ class PresensiSiswaPage extends StatefulWidget {
   final String waktuSelesai;
   final String hari;
   final String tanggal;
-  final int idjadwal_mapel;
-  final int id_jadwal;
 
   const PresensiSiswaPage({
     Key? key,
@@ -66,8 +64,6 @@ class PresensiSiswaPage extends StatefulWidget {
     required this.waktuSelesai,
     required this.hari,
     required this.tanggal,
-    required this.idjadwal_mapel,
-    required this.id_jadwal,
   }) : super(key: key);
 
   @override
@@ -125,24 +121,61 @@ class _PresensiSiswaPageState extends State<PresensiSiswaPage> {
   }
 
   void _showErrorDialog(String message) {
-    showDialog(
-      context: context,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          title: const Text('Error', style: TextStyle(color: Colors.red)),
-          content: Text(message),
-          actions: [
-            TextButton(
-              onPressed: () {
-                Navigator.of(context).pop();
-              },
-              child: const Text('OK'),
-            ),
-          ],
-        );
-      },
-    );
-  }
+  showDialog(
+    context: context,
+    builder: (BuildContext context) {
+      return Dialog(
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(16.0), // Rounded corners
+        ),
+        child: Padding(
+          padding: const EdgeInsets.all(20.0),
+          child: Column(
+            mainAxisSize: MainAxisSize.min, // Ensure the dialog is small
+            children: [
+              const Icon(
+                Icons.error,
+                color: Colors.red,
+                size: 60, // Icon size
+                semanticLabel: 'Error Icon', // Accessibility
+              ),
+              const SizedBox(height: 20), // Space between icon and text
+              Text(
+                'Error',
+                style: TextStyle(
+                  fontSize: 24, // Title font size
+                  fontWeight: FontWeight.bold,
+                  color: Colors.red,
+                ),
+              ),
+              const SizedBox(height: 10), // Space between title and message
+              Text(
+                message,
+                textAlign: TextAlign.center, // Center the text
+                style: const TextStyle(fontSize: 16),
+              ),
+              const SizedBox(height: 20), // Space before the button
+              ElevatedButton(
+                onPressed: () {
+                  Navigator.of(context).pop(); // Close the dialog
+                },
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.red, // Button color
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(10.0), // Rounded button
+                  ),
+                ),
+                child: const Text('OK', style: TextStyle(color: Colors.white)),
+              ),
+            ],
+          ),
+        ),
+      );
+    },
+  );
+}
+
+
 
   @override
   Widget build(BuildContext context) {
@@ -417,7 +450,7 @@ class _PresensiSiswaPageState extends State<PresensiSiswaPage> {
     for (int i = 0; i < _students.length; i++) {
       attendanceData.add({
         'id_siswa': _students[i].nis,
-        'id_jadwal': widget.id_jadwal.toString(),
+        'id_jadwal': widget.idKelas.toString(),
         'status': _hadirList[i] ? 1 : 0,
         'id_kelas': widget.idKelas.toString(),
       });
@@ -429,7 +462,7 @@ class _PresensiSiswaPageState extends State<PresensiSiswaPage> {
     Map<String, dynamic> presensiData = {
       'presensi': {
         'guru': {
-          'id_jadwal_mapel': widget.idjadwal_mapel.toString(),
+          'id_jadwal_mapel': widget.idKelas.toString(),
           'id_guru': NIP,
           'status': _isTeacherPresent ? 1 : 0,
         },
@@ -460,11 +493,11 @@ class _PresensiSiswaPageState extends State<PresensiSiswaPage> {
         _showSuccessDialog('Presensi Berhasil!'); // Pass success message
       } else {
         print('Failed to submit attendance: ${response.body}');
-        _showSuccessDialog('Presensi Gagal'); // Pass failure message
+        _showErrorDialog('Presensi Gagal'); // Pass failure message
       }
     } catch (e) {
       print('Error submitting attendance: $e');
-      _showSuccessDialog(
+      _showErrorDialog(
           'Terjadi kesalahan saat Presensi: $e'); // Pass error message
     }
   }
