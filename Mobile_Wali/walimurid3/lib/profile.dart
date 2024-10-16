@@ -1,12 +1,10 @@
-
 import 'package:flutter/material.dart';
 import 'home.dart';
 import 'riwayat.dart';
-import 'bottombar.dart'; // Import bottom bar
-import 'login.dart'; // Import halaman login
-import 'package:shared_preferences/shared_preferences.dart'; // Import shared_preferences
-import 'dart:convert'; // Untuk decoding JSON
-import 'package:http/http.dart' as http; // Untuk request HTTP
+import 'bottombar.dart';
+import 'login.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'dart:convert';
 
 class ProfilePage extends StatefulWidget {
   @override
@@ -14,20 +12,19 @@ class ProfilePage extends StatefulWidget {
 }
 
 class _ProfilePageState extends State<ProfilePage> {
-  int _currentIndex = 2; // Set index 2 untuk halaman profil
-  String namaWali = "Loading..."; // Default teks sementara
-  String noHp = "Loading..."; // Variabel untuk no_hp
-  String nis = ""; // Variabel untuk menyimpan NIS
-  String kelas = "Loading..."; // Variabel untuk menyimpan kelas
-  String namaSiswa = "Loading..."; // Variabel untuk menyimpan nama siswa
-
-  List<dynamic> siswaList = []; // Menyimpan list siswa dari SharedPreferences
-  String? selectedSiswa; // Menyimpan siswa yang dipilih
+  int _currentIndex = 2;
+  String namaWali = "Loading...";
+  String noHp = "Loading...";
+  String nis = "";
+  String kelas = "Loading...";
+  String namaSiswa = "Loading...";
+  List<dynamic> siswaList = [];
+  String? selectedSiswa;
 
   @override
   void initState() {
     super.initState();
-    _fetchData(); // Panggil fungsi untuk mengambil data saat halaman dimuat
+    _fetchData();
   }
 
   Future<void> _fetchData() async {
@@ -44,11 +41,10 @@ class _ProfilePageState extends State<ProfilePage> {
 
       if (savedNoHp != null) {
         setState(() {
-          noHp = savedNoHp; // Set no_hp jika sudah disimpan
+          noHp = savedNoHp;
         });
       }
 
-      // Ambil data siswa yang disimpan di SharedPreferences
       List<String>? siswaJsonList = prefs.getStringList('siswa_list');
       if (siswaJsonList != null) {
         setState(() {
@@ -56,21 +52,11 @@ class _ProfilePageState extends State<ProfilePage> {
             return json.decode(siswaJson);
           }).toList();
 
-          // Ambil siswa yang dipilih dari SharedPreferences
-          selectedSiswa = prefs.getString('selectedSiswa');
-          if (selectedSiswa != null) {
-            // Jika ada siswa yang dipilih, update detail siswa
-            final selected =
-                siswaList.firstWhere((siswa) => siswa['nama'] == selectedSiswa);
-            _updateSiswaDetail(selected); // Tampilkan detail siswa terpilih
-          } else {
-            // Jika tidak ada siswa yang dipilih, pilih siswa pertama
-            selectedSiswa = siswaList.first['nama'];
-            _updateSiswaDetail(siswaList.first); // Tampilkan detail siswa pertama
-          }
+          selectedSiswa = prefs.getString('selectedSiswa') ??
+              siswaList.first['nama'];
+          _updateSiswaDetail(siswaList.firstWhere(
+              (siswa) => siswa['nama'] == selectedSiswa));
         });
-      } else {
-        print('Tidak ada data siswa yang tersimpan.');
       }
     } catch (e) {
       setState(() {
@@ -79,7 +65,6 @@ class _ProfilePageState extends State<ProfilePage> {
     }
   }
 
-  // Update detail siswa saat dropdown berubah
   void _updateSiswaDetail(Map<String, dynamic> siswa) {
     setState(() {
       namaSiswa = siswa['nama'];
@@ -106,7 +91,7 @@ class _ProfilePageState extends State<ProfilePage> {
     }
   }
 
-@override
+  @override
   Widget build(BuildContext context) {
     return Scaffold(
       body: Stack(
@@ -115,43 +100,58 @@ class _ProfilePageState extends State<ProfilePage> {
             clipper: CustomDiagonalClipper(),
             child: Container(
               height: 300,
-              color: Colors.lightBlue,
+              decoration: BoxDecoration(
+                image: DecorationImage(
+                  image: AssetImage('assets/biru.png'), // Ganti dengan gambar latar belakang
+                  fit: BoxFit.cover,
+                ),
+              ),
+            ),
+          ),
+          Positioned(
+            top: 140, // Sesuaikan agar pas dengan potongan diagonal
+            left: MediaQuery.of(context).size.width / 2 - 50, // Center logo
+            child: CircleAvatar(
+              radius: 50,
+              backgroundImage: AssetImage('assets/logopoltek.png'), // Ganti dengan logo yang diinginkan
             ),
           ),
           SingleChildScrollView(
             child: Column(
               children: [
-                SizedBox(height: 100),
-                CircleAvatar(
-                  radius: 50,
-                  backgroundImage: AssetImage('assets/logopoltek.png'),
-                ),
-                SizedBox(height: 16),
+                const SizedBox(height: 220), // Menyesuaikan posisi setelah logo
                 Text(
                   namaWali,
-                  style: TextStyle(
+                  style: const TextStyle(
                     fontSize: 24,
                     fontWeight: FontWeight.bold,
-                    color: Colors.black,
+                    color: Colors.black87,
                   ),
                 ),
-                SizedBox(height: 8),
-                Text(noHp), // Menampilkan no_hp
-                SizedBox(height: 32),
-
-                // Menyembunyikan dropdown untuk memilih siswa
-                // _buildDropdownSiswa(), // Hapus atau komen baris ini
-
-                SizedBox(height: 32),
-                _buildInfoCard(), // Panggil fungsi yang berisi semua informasi
-                SizedBox(height: 32),
+                const SizedBox(height: 8),
+                Text(
+                  noHp,
+                  style: TextStyle(color: Colors.grey[700]),
+                ),
+                const SizedBox(height: 32), // Mengatur jarak sebelum card siswa
+                _buildInfoCard(),
+                const SizedBox(height: 20), // Menambah jarak di bawah card data siswa
                 ElevatedButton(
                   onPressed: () => _showLogoutConfirmation(context),
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Colors.redAccent,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 32, vertical: 12),
                   ),
-                  child: Text('Logout'),
+                  child: const Text(
+                    'Logout',
+                    style: TextStyle(fontSize: 16),
+                  ),
                 ),
+                const SizedBox(height: 40), // Menambah jarak di bawah tombol logout
               ],
             ),
           ),
@@ -164,55 +164,21 @@ class _ProfilePageState extends State<ProfilePage> {
     );
   }
 
-  // Dropdown untuk memilih siswa
-  // Hapus atau komen fungsi ini untuk menyembunyikan dropdown
-  /*
-  Widget _buildDropdownSiswa() {
-    return siswaList.isEmpty
-        ? Text('Tidak ada data siswa tersedia')
-        : DropdownButton<String>(
-            value: selectedSiswa,
-            hint: Text('Pilih Siswa'),
-            isExpanded: true,
-            items: siswaList.map((siswa) {
-              return DropdownMenuItem<String>(
-                value: siswa['nama'], // Pilih berdasarkan nama siswa
-                child: Text(siswa['nama']),
-              );
-            }).toList(),
-            onChanged: (value) {
-              setState(() {
-                selectedSiswa = value;
-                final selected =
-                    siswaList.firstWhere((siswa) => siswa['nama'] == value);
-                _updateSiswaDetail(selected); // Update detail siswa yang dipilih
-                _saveSelectedSiswa(selectedSiswa!); // Simpan siswa yang dipilih
-              });
-            },
-          );
-  }
-  */
-
-  // Simpan siswa yang dipilih ke SharedPreferences
-  _saveSelectedSiswa(String siswa) async {
-    final prefs = await SharedPreferences.getInstance();
-    prefs.setString('selectedSiswa', siswa); // Simpan siswa yang dipilih
-  }
-
   Widget _buildInfoCard() {
     return Card(
-      margin: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(12),
       ),
-      elevation: 4,
+      elevation: 6,
+      shadowColor: Colors.black26,
       child: Padding(
-        padding: const EdgeInsets.all(16.0),
+        padding: const EdgeInsets.all(20.0),
         child: Column(
           children: [
-            _buildInfoRow(Icons.email, 'Nama', namaSiswa), // Menampilkan nama siswa
-            _buildInfoRow(Icons.domain, 'Nis', nis), // Menampilkan NIS
-            _buildInfoRow(Icons.check_circle, 'Kelas', kelas), // Menampilkan kelas
+            _buildInfoRow(Icons.person, 'Nama', namaSiswa),
+            _buildInfoRow(Icons.credit_card, 'NIS', nis),
+            _buildInfoRow(Icons.class_, 'Kelas', kelas),
           ],
         ),
       ),
@@ -222,29 +188,32 @@ class _ProfilePageState extends State<ProfilePage> {
   Widget _buildInfoRow(IconData icon, String title, String subtitle) {
     return ListTile(
       leading: Icon(icon, color: Colors.blueAccent),
-      title: Text(title),
+      title: Text(
+        title,
+        style: const TextStyle(fontWeight: FontWeight.bold),
+      ),
       subtitle: Text(subtitle),
     );
   }
 
-void _showLogoutConfirmation(BuildContext context) {
+  void _showLogoutConfirmation(BuildContext context) {
     showDialog(
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
-          title: Text('Konfirmasi Logout'),
-          content: Text('Apakah Anda yakin ingin logout?'),
+          title: const Text('Konfirmasi Logout'),
+          content: const Text('Apakah Anda yakin ingin logout?'),
           actions: <Widget>[
             TextButton(
-              child: Text('Batal'),
+              child: const Text('Batal'),
               onPressed: () {
                 Navigator.of(context).pop();
               },
             ),
             TextButton(
-              child: Text('Logout'),
+              child: const Text('Logout'),
               onPressed: () async {
-                SharedPreferences prefs = await SharedPreferences.getInstance();
+                final prefs = await SharedPreferences.getInstance();
                 await prefs.clear();
                 Navigator.pushReplacement(
                   context,
@@ -263,10 +232,11 @@ class CustomDiagonalClipper extends CustomClipper<Path> {
   @override
   Path getClip(Size size) {
     var path = Path();
-    path.lineTo(size.width, 0.0);
-    path.lineTo(0.0, size.height);
-    path.lineTo(0.0, 0.0);
-    path.close();
+    path.lineTo(size.width * 0.7, 0); // Membuat titik di dekat atas kanan
+    path.lineTo(size.width, size.height * 0.4); // Membentuk diagonal
+    path.lineTo(size.width, size.height); // Bagian kanan bawah
+    path.lineTo(0, size.height * 0.6); // Membentuk sisi diagonal lain
+    path.close(); // Menutup path
     return path;
   }
 
