@@ -11,13 +11,16 @@ class RiwayatPage extends StatefulWidget {
 }
 
 class _RiwayatPageState extends State<RiwayatPage> {
-  String selectedNis = ''; // Untuk menyimpan NIS yang dipilih
+  String? selectedSiswa; // Untuk menyimpan NIS yang dipilih
   int _currentIndex = 1;
   bool showRiwayatMasuk = true;
   int? selectedCardIndex;
   List<dynamic> riwayatData = [];
   List<dynamic> siswaList = [];
   bool isLoading = true;
+  String nis = "";
+  String kelas = "";
+  String namaSiswa = "";
 
   @override
   void initState() {
@@ -34,20 +37,42 @@ class _RiwayatPageState extends State<RiwayatPage> {
   Future<void> _fetchData() async {
     final prefs = await SharedPreferences.getInstance();
     List<String>? siswaJsonList = prefs.getStringList('siswa_list');
-
     if (siswaJsonList != null) {
-      siswaList = siswaJsonList.map((siswa) => json.decode(siswa)).toList();
-      // Ambil NIS dari siswa pertama sebagai default
-      selectedNis = siswaList.first['nis'];
-      fetchRiwayatMasuk(); // Ambil data riwayat masuk
+      setState(() {
+        siswaList = siswaJsonList.map((siswaJson) {
+          return json.decode(siswaJson);
+        }).toList();
+
+        // Ambil siswa yang dipilih dari SharedPreferences
+        selectedSiswa = prefs.getString('selectedSiswa');
+        if (selectedSiswa != null) {
+          // Jika ada siswa yang dipilih, update detail siswa
+          final selected =
+              siswaList.firstWhere((siswa) => siswa['nama'] == selectedSiswa);
+          _updateSiswaDetail(selected); // Tampilkan detail siswa terpilih
+        } else {
+          // Jika tidak ada siswa yang dipilih, pilih siswa pertama
+          selectedSiswa = siswaList.first['nama'];
+          _updateSiswaDetail(siswaList.first); // Tampilkan detail siswa pertama
+        }
+      });
     } else {
       print('Tidak ada data siswa yang tersimpan.');
     }
   }
 
+  // Update detail siswa saat dropdown berubah
+  void _updateSiswaDetail(Map<String, dynamic> siswa) {
+    setState(() {
+      namaSiswa = siswa['nama'];
+      nis = siswa['nis'];
+      kelas = siswa['nama_kelas'];
+    });
+  }
+
   Future<void> fetchRiwayatMasuk() async {
     final String url =
-        'https://presensi-smp1.esolusindo.com/Api/ApiGerbang/Gerbang/ambilAbsen/$selectedNis';
+        'https://presensi-smp1.esolusindo.com/Api/ApiGerbang/Gerbang/ambilAbsen/$nis';
 
     try {
       final response = await http.get(Uri.parse(url));
@@ -75,7 +100,7 @@ class _RiwayatPageState extends State<RiwayatPage> {
 
   Future<void> fetchRiwayatMapel() async {
     final String url =
-        'https://presensi-smp1.esolusindo.com/Api/ApiPresensi/ApiPresensi/getPresensiSiswa/$selectedNis';
+        'https://presensi-smp1.esolusindo.com/Api/ApiPresensi/ApiPresensi/getPresensiSiswa/$nis';
 
     try {
       final response = await http.get(Uri.parse(url));
@@ -135,93 +160,74 @@ class _RiwayatPageState extends State<RiwayatPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.white,
-      body: SafeArea(
-        child: Stack(
-          children: [
-            Container(
-              decoration: BoxDecoration(
-                image: DecorationImage(
-                  image: AssetImage('assets/walibg.png'),
-                  fit: BoxFit.cover,
+      body: Stack(
+        children: [
+          Stack(
+            children: [
+              Container(
+                decoration: BoxDecoration(
+                  image: DecorationImage(
+                    image: AssetImage('assets/walibg.png'),
+                    fit: BoxFit.cover,
+                  ),
                 ),
               ),
-            ),
-            Padding(
-              padding: const EdgeInsets.all(16.0),
-              child: Column(
-                children: <Widget>[
-                  Text(
-                    'Riwayat Presensi Siswa',
-                    style: TextStyle(
-                      fontSize: 26,
-                      fontWeight: FontWeight.bold,
+              Padding(
+                padding: const EdgeInsets.all(16.0),
+                child: Column(
+                  children: <Widget>[
+                    // Menambahkan _buildProfileCard di sini
+                    _buildProfileCard(),
+
+                    const SizedBox(height: 20),
+
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                      children: [
+                        _buildRiwayatCard(
+                          index: 0,
+                          icon: Icons.door_front_door,
+                          title: 'Riwayat\nMasuk',
+                          color: Colors.orangeAccent,
+                          onTap: () {
+                            setState(() {
+                              showRiwayatMasuk = true;
+                              selectedCardIndex = 0;
+                              fetchRiwayatMasuk();
+                            });
+                          },
+                        ),
+                        _buildRiwayatCard(
+                          index: 1,
+                          icon: Icons.book,
+                          title: 'Riwayat\nMapel',
+                          color: Colors.purpleAccent,
+                          onTap: () {
+                            setState(() {
+                              showRiwayatMasuk = false;
+                              selectedCardIndex = 1;
+                              fetchRiwayatMapel(); // Ambil data riwayat mapel
+                            });
+                          },
+                        ),
+                      ],
                     ),
-                  ),
-                  const SizedBox(height: 20),
-                  // Dropdown untuk memilih siswa
-                  DropdownButton<String>(
-                    value: selectedNis,
-                    items: siswaList.map((siswa) {
-                      return DropdownMenuItem<String>(
-                        value: siswa['nis'],
-                        child: Text(siswa['nama']), // Menampilkan nama siswa
-                      );
-                    }).toList(),
-                    onChanged: (value) {
-                      setState(() {
-                        selectedNis = value!;
-                        isLoading =
-                            true; // Menampilkan loading saat mengambil data
-                        fetchRiwayatMasuk();
-                      });
-                    },
-                  ),
-                  const SizedBox(height: 20),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                    children: [
-                      _buildRiwayatCard(
-                        index: 0,
-                        icon: Icons.door_front_door,
-                        title: 'Riwayat\nMasuk',
-                        color: Colors.orangeAccent,
-                        onTap: () {
-                          setState(() {
-                            showRiwayatMasuk = true;
-                            selectedCardIndex = 0;
-                            fetchRiwayatMasuk();
-                          });
-                        },
-                      ),
-                      _buildRiwayatCard(
-                        index: 1,
-                        icon: Icons.book,
-                        title: 'Riwayat\nMapel',
-                        color: Colors.purpleAccent,
-                        onTap: () {
-                          setState(() {
-                            showRiwayatMasuk = false;
-                            selectedCardIndex = 1;
-                            fetchRiwayatMapel(); // Ambil data riwayat mapel
-                          });
-                        },
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 20),
-                  // Bagian yang dapat digulir
-                  Expanded(
-                    child: isLoading
-                        ? Center(child: CircularProgressIndicator())
-                        : showRiwayatMasuk
-                            ? _buildRiwayatMasukList()
-                            : _buildRiwayatMapelList(),
-                  ),
-                ],
+                    const SizedBox(height: 20),
+                    // Bagian yang dapat digulir
+                    Expanded(
+                      child: isLoading
+                          ? Center(
+                              child: Text("Pilih riwayat yang ingin dilihat"))
+                          : showRiwayatMasuk
+                              ? _buildRiwayatMasukList()
+                              : _buildRiwayatMapelList(),
+                    ),
+                  ],
+                ),
               ),
-            ),
-          ],
-        ),
+            ],
+          ),
+        ],
       ),
       bottomNavigationBar: BottomNavigationBar(
         currentIndex: _currentIndex,
@@ -232,6 +238,62 @@ class _RiwayatPageState extends State<RiwayatPage> {
           BottomNavigationBarItem(icon: Icon(Icons.person), label: 'Profile'),
         ],
       ),
+    );
+  }
+
+  Widget _buildProfileCard() {
+    return Column(
+      children: [
+        SizedBox(height: 40),
+        Card(
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(15.0),
+          ),
+          elevation: 5,
+          color: Colors.white,
+          child: Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: Row(
+              children: [
+                CircleAvatar(
+                  backgroundImage: AssetImage('assets/logopoltek.png'),
+                ),
+                SizedBox(width: 16),
+                Flexible(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Riwayat Presensi',
+                        style: TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.black,
+                        ),
+                      ),
+                      Text(
+                        namaSiswa,
+                        style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.black,
+                        ),
+                      ),
+                      Text(
+                        'NIS : $nis',
+                        style: TextStyle(
+                          fontSize: 14,
+                          color: Colors.grey[600],
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ],
     );
   }
 
