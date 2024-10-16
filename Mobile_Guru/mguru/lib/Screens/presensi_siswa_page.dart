@@ -54,6 +54,8 @@ class PresensiSiswaPage extends StatefulWidget {
   final String waktuSelesai;
   final String hari;
   final String tanggal;
+  final String idMapel; // Add id_mapel
+  final String idJadwal; // Add id_jadwal
 
   const PresensiSiswaPage({
     Key? key,
@@ -64,6 +66,8 @@ class PresensiSiswaPage extends StatefulWidget {
     required this.waktuSelesai,
     required this.hari,
     required this.tanggal,
+    required this.idMapel, // Include id_mapel in constructor
+    required this.idJadwal, // Include id_jadwal in constructor
   }) : super(key: key);
 
   @override
@@ -432,75 +436,78 @@ class _PresensiSiswaPageState extends State<PresensiSiswaPage> {
   }
 
   Future<void> _submitAttendance() async {
-    SharedPreferences prefs = await SharedPreferences.getInstance();
+  // Get SharedPreferences instance
+  SharedPreferences prefs = await SharedPreferences.getInstance();
 
-    // Get NIP from SharedPreferences
-    String? NIP = prefs.getString("NIP");
-    print("Attempting to retrieve NIP from SharedPreferences...");
+  // Get NIP from SharedPreferences
+  String? NIP = prefs.getString("NIP");
+  print("Attempting to retrieve NIP from SharedPreferences...");
 
-    if (NIP == null) {
-      print("NIP not found in SharedPreferences");
-      return; // Handle the case as needed
-    }
-
-    print("Retrieved NIP: $NIP");
-    List<Map<String, dynamic>> attendanceData = [];
-
-    // Prepare attendance data
-    for (int i = 0; i < _students.length; i++) {
-      attendanceData.add({
-        'id_siswa': _students[i].nis,
-        'id_jadwal': widget.idKelas.toString(),
-        'status': _hadirList[i] ? 1 : 0,
-        'id_kelas': widget.idKelas.toString(),
-      });
-    }
-
-    // Log attendance data
-    print("Prepared attendance data: $attendanceData");
-
-    Map<String, dynamic> presensiData = {
-      'presensi': {
-        'guru': {
-          'id_jadwal_mapel': widget.idKelas.toString(),
-          'id_guru': NIP,
-          'status': _isTeacherPresent ? 1 : 0,
-        },
-        'siswa': attendanceData,
-      },
-    };
-
-    // Log the presensiData being sent
-    print("Presensi Data to be sent: ${jsonEncode(presensiData)}");
-
-    var url = Uri.parse(
-        Core().ApiUrl + "ApiPresensi/ApiPresensi/storePresensiGdanS/");
-    print("API URL: $url");
-
-    try {
-      final response = await http.post(
-        url,
-        headers: {'Content-Type': 'application/json'},
-        body: jsonEncode(presensiData),
-      );
-
-      // Log the response status and body
-      print('Response status: ${response.statusCode}');
-      print('Response body: ${response.body}');
-
-      if (response.statusCode == 200) {
-        print('Attendance submitted successfully!');
-        _showSuccessDialog('Presensi Berhasil!'); // Pass success message
-      } else {
-        print('Failed to submit attendance: ${response.body}');
-        _showErrorDialog('Presensi Gagal'); // Pass failure message
-      }
-    } catch (e) {
-      print('Error submitting attendance: $e');
-      _showErrorDialog(
-          'Terjadi kesalahan saat Presensi: $e'); // Pass error message
-    }
+  if (NIP == null) {
+    print("NIP not found in SharedPreferences");
+    _showErrorDialog('NIP tidak ditemukan.'); // Notify the user
+    return; // Exit the method early if NIP is not found
   }
+
+  print("Retrieved NIP: $NIP");
+  List<Map<String, dynamic>> attendanceData = [];
+
+  // Prepare attendance data
+  for (int i = 0; i < _students.length; i++) {
+    attendanceData.add({
+      'id_siswa': _students[i].nis,
+      'id_jadwal': widget.idJadwal.toString(),
+      'status': _hadirList[i] ? 1 : 0,
+      'id_kelas': widget.idKelas.toString(),
+    });
+  }
+
+  // Log prepared attendance data
+  print("Prepared attendance data: $attendanceData");
+
+  // Create presensi data structure
+  Map<String, dynamic> presensiData = {
+    'presensi': {
+      'guru': {
+        'id_jadwal_mapel': widget.idJadwal.toString(),
+        'id_guru': NIP,
+        'status_guru': _isTeacherPresent ? 1 : 0,
+      },
+      'siswa': attendanceData,
+    },
+  };
+
+  // Log the presensiData being sent
+  print("Presensi Data to be sent: ${jsonEncode(presensiData)}");
+
+  // Construct API URL
+  var url = Uri.parse(Core().ApiUrl + "ApiPresensi/ApiPresensi/storePresensiGdanS/");
+  print("API URL: $url");
+
+  try {
+    // Send the POST request
+    final response = await http.post(
+      url,
+      headers: {'Content-Type': 'application/json'},
+      body: jsonEncode(presensiData),
+    );
+
+    // Log the response status and body
+    print('Response status: ${response.statusCode}');
+    print('Response body: ${response.body}');
+
+    if (response.statusCode == 200) {
+      print('Attendance submitted successfully!');
+      _showSuccessDialog('Presensi Berhasil!'); // Notify success
+    } else {
+      print('Failed to submit attendance: ${response.body}');
+      _showErrorDialog('Presensi Gagal: ${response.body}'); // Notify failure
+    }
+  } catch (e) {
+    print('Error submitting attendance: $e');
+    _showErrorDialog('Terjadi kesalahan saat Presensi: $e'); // Notify error
+  }
+}
 
   void _showSuccessDialog(String message) {
     showDialog(

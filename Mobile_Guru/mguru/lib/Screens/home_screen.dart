@@ -235,41 +235,41 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
     }
   }
 
-  Future<List<Map<String, dynamic>>> fetchJadwalMapel() async {
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    String? uuid = prefs.getString("ID");
+  Future<void> fetchJadwalMapel() async {
+  String uuid = await SharedPreferences.getInstance().then((prefs) => prefs.getString('NIP') ?? '');
 
-    if (uuid == null) {
-      print("Error: UUID is null.");
-      return [];
-    }
-
-    var url = Uri.parse(Core().ApiUrl +
-        "ApiJadwalMapel/JadwalMapel/getJadwalMapel_byUUID/$uuid");
-    try {
-      var response = await http.get(url);
-
-      if (response.statusCode == 200) {
-        var responseData = json.decode(response.body);
-        if (responseData['data'] != null && responseData['status'] == true) {
-          // Convert the data into list of maps
-          ListJadwalMapel =
-              List<Map<String, dynamic>>.from(responseData['data']);
-          setState(() {}); // Update UI after getting data
-          return ListJadwalMapel;
+  final url = 'https://presensi-smp1.esolusindo.com/Api/ApiJadwalMapel/JadwalMapel/getJadwalMapel_byUUID/$uuid';
+  
+  try {
+    final response = await http.get(Uri.parse(url));
+    if (response.statusCode == 200) {
+      // Parse the response body
+      final Map<String, dynamic> jsonResponse = json.decode(response.body);
+      if (jsonResponse['status'] == true) {
+        final List<dynamic> data = jsonResponse['data'] ?? [];
+        
+        // Check if data is not empty before proceeding
+        if (data.isNotEmpty) {
+          // Convert to a list of maps
+          ListJadwalMapel = List<Map<String, dynamic>>.from(data);
+          print("Debug: Number of schedules received: ${ListJadwalMapel.length}");
         } else {
-          print("Error: ${responseData['message']}");
-          return [];
+          print("Debug: No schedules found.");
         }
       } else {
-        print("Failed to fetch data: ${response.statusCode}");
-        throw Exception("Failed to load jadwal mapel");
+        // Handle when status is false
+        print("Debug: API Error: ${jsonResponse['message']['message']}");
       }
-    } catch (e) {
-      print("Error fetching data: $e");
-      return [];
+    } else {
+      print("Debug: HTTP Response status code: ${response.statusCode}");
     }
+  } catch (e) {
+    print("Error fetching data: $e");
   }
+}
+
+
+
 
   @override
   Widget build(BuildContext context) {
@@ -588,236 +588,275 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
   }
 
   SliverToBoxAdapter _buildJadwalMapelHariIni(double screenHeight) {
-    Size size = MediaQuery.of(context).size;
+  Size size = MediaQuery.of(context).size;
 
-    return SliverToBoxAdapter(
-      child: AnimatedOpacity(
-        opacity: ssFooter ? 1 : 0,
+  return SliverToBoxAdapter(
+    child: AnimatedOpacity(
+      opacity: ssFooter ? 1 : 0,
+      duration: const Duration(milliseconds: 500),
+      child: AnimatedContainer(
+        margin: ssFooter ? EdgeInsets.only(top: 0) : EdgeInsets.only(top: 30),
         duration: const Duration(milliseconds: 500),
-        child: AnimatedContainer(
-          margin: ssFooter ? EdgeInsets.only(top: 0) : EdgeInsets.only(top: 30),
-          duration: const Duration(milliseconds: 500),
-          curve: Curves.fastEaseInToSlowEaseOut,
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: <Widget>[
-              const SizedBox(height: 10),
-              Padding(
-                padding: const EdgeInsets.only(top: 8, left: 20),
-                child: const Text(
-                  'Jadwal Mapel Hari Ini :',
-                  style: TextStyle(
-                    fontSize: 15.0,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-              ),
-              if (ListJadwalMapel.isEmpty)
-                Container(
-                  padding: const EdgeInsets.all(15.0),
-                  margin:
-                      const EdgeInsets.symmetric(vertical: 5, horizontal: 20.0),
-                  width: size.width,
-                  decoration: BoxDecoration(
-                    color: Colors.blue,
-                    borderRadius: BorderRadius.circular(10.0),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.blue.withOpacity(0.5),
-                        blurRadius: 3,
-                        offset: const Offset(2, 2),
-                      ),
-                    ],
-                  ),
-                  child: Row(
-                    children: [
-                      const Icon(
-                        Icons.error_outline,
-                        color: Colors.white70,
-                        size: 24,
-                      ),
-                      const SizedBox(width: 8),
-                      Expanded(
-                        child: const Text(
-                          "Tidak ada jadwal mapel untuk hari ini.",
-                          style: TextStyle(
-                            color: Colors.white70,
-                            fontWeight: FontWeight.w600,
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                )
-              else
-                Container(
-                  width: double.infinity,
-                  height: size.height * 0.3,
-                  child: ListView.builder(
-                    itemCount: ListJadwalMapel.length,
-                    itemBuilder: (context, index) {
-                      return getCardJadwalMapel(ListJadwalMapel[index]);
-                    },
-                  ),
-                ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget getCardJadwalMapel(Map<String, dynamic> item) {
-    return GestureDetector(
-      onTap: () {
-        // Ensure id_kelas is safely parsed as an integer
-        int idKelas = item['kelas'] != null
-            ? int.tryParse(item['kelas'].toString()) ?? 0
-            : 0; // Parse kelas to idKelas
-
-        Navigator.push(
-          context,
-          MaterialPageRoute(
-            builder: (context) => PresensiSiswaPage(
-              namaMapel: item['nama_mapel'],
-              namaKelas: item['nama_kelas'],
-              idKelas: idKelas, // Pass the idKelas as an integer
-              waktuMulai: item['waktu_mulai'],
-              waktuSelesai: item['waktu_selesai'],
-              hari: item['hari'],
-              tanggal: item['tanggal'],
-            ),
-          ),
-        );
-      },
-      child: Container(
-        margin: const EdgeInsets.symmetric(vertical: 10.0, horizontal: 20.0),
-        padding: const EdgeInsets.all(20.0),
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(15.0),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withOpacity(0.1),
-              blurRadius: 8.0,
-              offset: const Offset(0, 4),
-            ),
-          ],
-        ),
+        curve: Curves.fastEaseInToSlowEaseOut,
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: <Widget>[
-            // Header: Mata pelajaran dan ikon buku
-            Row(
-              children: [
-                const Icon(
-                  Icons.book_rounded,
-                  color: Colors.blueAccent,
-                  size: 28,
+            const SizedBox(height: 10),
+            Padding(
+              padding: const EdgeInsets.only(top: 8, left: 20),
+              child: const Text(
+                'Jadwal Mapel Hari Ini :',
+                style: TextStyle(
+                  fontSize: 15.0,
+                  fontWeight: FontWeight.w600,
                 ),
-                const SizedBox(width: 10),
-                Expanded(
-                  child: Text(
-                    item['nama_mapel'] ??
-                        'Tidak ada data', // Nama mata pelajaran
-                    style: const TextStyle(
-                      fontSize: 20.0,
-                      fontWeight: FontWeight.w700,
-                      color: Colors.black87,
+              ),
+            ),
+            if (ListJadwalMapel.isEmpty)
+              Container(
+                padding: const EdgeInsets.all(15.0),
+                margin:
+                    const EdgeInsets.symmetric(vertical: 5, horizontal: 20.0),
+                width: size.width,
+                decoration: BoxDecoration(
+                  color: Colors.blue,
+                  borderRadius: BorderRadius.circular(10.0),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.blue.withOpacity(0.5),
+                      blurRadius: 3,
+                      offset: const Offset(2, 2),
                     ),
-                    overflow: TextOverflow.ellipsis,
-                  ),
+                  ],
                 ),
-              ],
-            ),
-            const SizedBox(height: 12), // Jarak antar elemen
-
-            // Lokasi (Kelas)
-            Row(
-              children: [
-                const Icon(
-                  Icons.class_rounded,
-                  color: Colors.purpleAccent,
-                  size: 20,
+                child: Row(
+                  children: [
+                    const Icon(
+                      Icons.error_outline,
+                      color: Colors.white70,
+                      size: 24,
+                    ),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: const Text(
+                        "Tidak ada jadwal mapel untuk hari ini.",
+                        style: TextStyle(
+                          color: Colors.white70,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ),
+                  ],
                 ),
-                const SizedBox(width: 6),
-                Text(
-                  item['nama_kelas'] ?? 'Tidak ada data', // Nama kelas
-                  style: const TextStyle(
-                    fontSize: 16.0,
-                    color: Colors.grey,
-                  ),
+              )
+            else
+              Container(
+                width: double.infinity,
+                height: size.height * 0.3,
+                child: ListView.builder(
+                  itemCount: ListJadwalMapel.length,
+                  itemBuilder: (context, index) {
+                    return getCardJadwalMapel(ListJadwalMapel[index]);
+                  },
                 ),
-              ],
-            ),
-            const SizedBox(height: 10), // Jarak antar elemen
-
-            // Waktu pelajaran
-            Row(
-              children: [
-                const Icon(
-                  Icons.access_time_filled_rounded,
-                  color: Colors.orangeAccent,
-                  size: 20,
-                ),
-                const SizedBox(width: 6),
-                Text(
-                  "${item['waktu_mulai'] ?? '-'} - ${item['waktu_selesai'] ?? '-'}", // Waktu mulai dan selesai
-                  style: const TextStyle(
-                    fontSize: 16.0,
-                    color: Colors.grey,
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 10), // Jarak antar elemen
-
-            // Hari pelajaran
-            Row(
-              children: [
-                const Icon(
-                  Icons.calendar_today_rounded,
-                  color: Colors.greenAccent,
-                  size: 20,
-                ),
-                const SizedBox(width: 6),
-                Text(
-                  "Hari: ${item['hari'] ?? '-'}", // Hari
-                  style: const TextStyle(
-                    fontSize: 16.0,
-                    color: Colors.grey,
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 10), // Jarak antar elemen
-
-            // Tanggal
-            Row(
-              children: [
-                const Icon(
-                  Icons.date_range_rounded,
-                  color: Colors.redAccent,
-                  size: 20,
-                ),
-                const SizedBox(width: 6),
-                Text(
-                  item['tanggal'] != null && item['tanggal'].isNotEmpty
-                      ? item['tanggal'] // Tanggal pelajaran
-                      : 'Tanggal belum ditentukan',
-                  style: const TextStyle(
-                    fontSize: 16.0,
-                    color: Colors.grey,
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 10), // Jarak antar elemen
+              ),
           ],
         ),
       ),
-    );
-  }
+    ),
+  );
+}
+
+Widget getCardJadwalMapel(Map<String, dynamic> item) {
+  return GestureDetector(
+    onTap: () {
+      // Parse id_kelas safely, ensuring that it is an integer
+      int idKelas = item['kelas'] != null
+          ? int.tryParse(item['kelas'].toString()) ?? 0
+          : 0; // Parse kelas to idKelas
+
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => PresensiSiswaPage(
+            namaMapel: item['nama_mapel'] ?? 'Tidak ada data', // nama_mapel
+            namaKelas: item['nama_kelas'] ?? 'Tidak ada data', // nama_kelas
+            idKelas: idKelas, // Pass the idKelas as an integer
+            idMapel: item['id_mapel'] ?? 'Tidak ada data', // id_mapel
+            idJadwal: item['id_jadwal'] ?? 'Tidak ada data', // id_jadwal
+            waktuMulai: item['waktu_mulai'] ?? '-', // waktu_mulai
+            waktuSelesai: item['waktu_selesai'] ?? '-', // waktu_selesai
+            hari: item['hari'] ?? '-', // hari
+            tanggal: item['tanggal'] ?? 'Tanggal belum ditentukan', // tanggal
+          ),
+        ),
+      );
+    },
+    child: Container(
+      margin: const EdgeInsets.symmetric(vertical: 10.0, horizontal: 20.0),
+      padding: const EdgeInsets.all(20.0),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(15.0),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.1),
+            blurRadius: 8.0,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: <Widget>[
+          // Header: Mata pelajaran dan ikon buku
+          Row(
+            children: [
+              const Icon(
+                Icons.book_rounded,
+                color: Colors.blueAccent,
+                size: 28,
+              ),
+              const SizedBox(width: 10),
+              Expanded(
+                child: Text(
+                  item['nama_mapel'] ?? 'Tidak ada data', // nama_mapel
+                  style: const TextStyle(
+                    fontSize: 20.0,
+                    fontWeight: FontWeight.w700,
+                    color: Colors.black87,
+                  ),
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 12), // Jarak antar elemen
+
+          // Lokasi (Kelas)
+          Row(
+            children: [
+              const Icon(
+                Icons.class_rounded,
+                color: Colors.purpleAccent,
+                size: 20,
+              ),
+              const SizedBox(width: 6),
+              Text(
+                item['nama_kelas'] ?? 'Tidak ada data', // nama_kelas
+                style: const TextStyle(
+                  fontSize: 16.0,
+                  color: Colors.grey,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 10), // Jarak antar elemen
+
+          // Waktu pelajaran
+          Row(
+            children: [
+              const Icon(
+                Icons.access_time_filled_rounded,
+                color: Colors.orangeAccent,
+                size: 20,
+              ),
+              const SizedBox(width: 6),
+              Text(
+                "${item['waktu_mulai'] ?? '-'} - ${item['waktu_selesai'] ?? '-'}", // waktu_mulai and waktu_selesai
+                style: const TextStyle(
+                  fontSize: 16.0,
+                  color: Colors.grey,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 10), // Jarak antar elemen
+
+          // Hari pelajaran
+          Row(
+            children: [
+              const Icon(
+                Icons.calendar_today_rounded,
+                color: Colors.greenAccent,
+                size: 20,
+              ),
+              const SizedBox(width: 6),
+              Text(
+                "Hari: ${item['hari'] ?? '-'}", // hari
+                style: const TextStyle(
+                  fontSize: 16.0,
+                  color: Colors.grey,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 10), // Jarak antar elemen
+
+          // Tanggal
+          Row(
+            children: [
+              const Icon(
+                Icons.date_range_rounded,
+                color: Colors.redAccent,
+                size: 20,
+              ),
+              const SizedBox(width: 6),
+              Text(
+                item['tanggal'] ?? 'Tanggal belum ditentukan', // tanggal
+                style: const TextStyle(
+                  fontSize: 16.0,
+                  color: Colors.grey,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 10), // Jarak antar elemen
+
+          // Nama Pegawai
+          Row(
+            children: [
+              const Icon(
+                Icons.person_rounded,
+                color: Colors.blueGrey,
+                size: 20,
+              ),
+              const SizedBox(width: 6),
+              Text(
+                "Pengajar: ${item['nama_pegawai'] ?? 'Tidak ada data'}", // nama_pegawai
+                style: const TextStyle(
+                  fontSize: 16.0,
+                  color: Colors.grey,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 10), // Jarak antar elemen
+
+          // ID Pegawai
+          Row(
+            children: [
+              const Icon(
+                Icons.badge_rounded,
+                color: Colors.teal,
+                size: 20,
+              ),
+              const SizedBox(width: 6),
+              Text(
+                "ID Pegawai: ${item['id_pegawai'] ?? '-'}", // id_pegawai
+                style: const TextStyle(
+                  fontSize: 16.0,
+                  color: Colors.grey,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 10), // Jarak antar elemen
+        ],
+      ),
+    ),
+  );
+}
 
   Widget getCardKegiatan(item) {
     return Container(
