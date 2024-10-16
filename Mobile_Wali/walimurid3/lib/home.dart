@@ -163,7 +163,7 @@ class _HomePageState extends State<HomePage> {
 
                   // Menu Presensi
                   Text(
-                    'Menu Presensi:',
+                    'Menu :',
                     style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
                   ),
                   SizedBox(height: 8),
@@ -181,15 +181,6 @@ class _HomePageState extends State<HomePage> {
                       'Anda Hari ini Belum Melakukan Presensi'),
 
                   SizedBox(height: 16),
-
-                  // Jadwal Mapel Hari Ini
-                  Text(
-                    'Jadwal Mapel Hari Ini:',
-                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-                  ),
-                  SizedBox(height: 8),
-                  _buildPresenceStatusCard(
-                      'Tidak ada jadwal mapel untuk hari ini.'),
                 ],
               ),
             ),
@@ -204,53 +195,58 @@ class _HomePageState extends State<HomePage> {
   }
 
   Widget _buildProfileCard() {
-    return Card(
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(15.0),
-      ),
-      elevation: 5,
-      color: Colors.white,
-      child: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Row(
-          children: [
-            CircleAvatar(
-              backgroundImage: AssetImage('assets/logopoltek.png'),
+    return Column(
+      children: [
+        SizedBox(height: 40), // Menambahkan jarak vertikal sebelum card
+        Card(
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(15.0),
+          ),
+          elevation: 5,
+          color: Colors.white,
+          child: Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: Row(
+              children: [
+                CircleAvatar(
+                  backgroundImage: AssetImage('assets/logopoltek.png'),
+                ),
+                SizedBox(width: 16),
+                Flexible(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Selamat Datang :',
+                        style: TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.black,
+                        ),
+                      ),
+                      Text(
+                        namaWali,
+                        style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.black,
+                        ),
+                      ),
+                      Text(
+                        'No HP : $noHp',
+                        style: TextStyle(
+                          fontSize: 14,
+                          color: Colors.grey[600],
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
             ),
-            SizedBox(width: 16),
-            Flexible(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    'Good Day!',
-                    style: TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.black,
-                    ),
-                  ),
-                  Text(
-                    namaWali,
-                    style: TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.black,
-                    ),
-                  ),
-                  Text(
-                    noHp,
-                    style: TextStyle(
-                      fontSize: 14,
-                      color: Colors.grey[600],
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ],
+          ),
         ),
-      ),
+      ],
     );
   }
 
@@ -301,35 +297,54 @@ class _HomePageState extends State<HomePage> {
   }
 
   Widget _buildMenuPresensi() {
-    return Card(
-      elevation: 5,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(15),
-      ),
-      child: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: SingleChildScrollView(
-          scrollDirection: Axis.horizontal,
-          child: Row(
-            children: [
-              _buildMenuIcon(Icons.menu, 'Semua Menu', () {}),
-              SizedBox(width: 20),
-              _buildMenuIcon(Icons.login, 'Presensi Masuk', () {}),
-              SizedBox(width: 20),
-              _buildMenuIcon(Icons.coffee, 'Istirahat Keluar', () {}),
-              SizedBox(width: 20),
-              _buildMenuIcon(Icons.logout, 'Presensi Pulang', () {}),
-              SizedBox(width: 20),
-              _buildMenuIcon(Icons.face, 'Daftarkan Wajah Anak', () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (context) => RegistrationScreen()),
-                );
-              }),
-            ],
+    return Stack(
+      children: [
+        Card(
+          elevation: 5,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(15),
+          ),
+          child: Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: SingleChildScrollView(
+              scrollDirection: Axis.horizontal,
+              child: Row(
+                children: [
+                  _buildMenuIcon(Icons.document_scanner, 'Daftarkan Wajah Anak',
+                      () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                          builder: (context) => RegistrationScreen()),
+                    );
+                  }),
+                  SizedBox(width: 20),
+                  _buildMenuIcon(Icons.lock_open, 'Edit Password', () {}),
+                  SizedBox(width: 20),
+                  _buildMenuIcon(Icons.face, 'Nama anak 1', () {}),
+                  SizedBox(width: 20),
+                  _buildMenuIcon(Icons.face, 'Nama anak 2', () {}),
+                  SizedBox(width: 20),
+                  _buildMenuIcon(Icons.face, 'Nama anak 3', () {}),
+                  SizedBox(width: 20),
+                ],
+              ),
+            ),
           ),
         ),
-      ),
+        // Ikon < di sisi kiri
+        Positioned(
+          left: 7,
+          top: 50, // Sesuaikan posisi vertikal
+          child: Icon(Icons.arrow_back_ios, color: Colors.grey),
+        ),
+        // Ikon > di sisi kanan
+        Positioned(
+          right: 0,
+          top: 50, // Sesuaikan posisi vertikal
+          child: Icon(Icons.arrow_forward_ios, color: Colors.grey),
+        ),
+      ],
     );
   }
 
@@ -344,7 +359,18 @@ class _HomePageState extends State<HomePage> {
             child: Icon(icon, color: Colors.white),
           ),
           SizedBox(height: 8),
-          Text(label),
+          Container(
+            width: 80, // Atur lebar agar teks tidak terlalu panjang
+            child: Text(
+              label,
+              textAlign: TextAlign.center, // Agar teks berada di tengah
+              style: TextStyle(
+                fontSize: 14, // Atur ukuran teks
+                fontWeight: FontWeight.bold, // Agar teks lebih menonjol
+                color: Colors.black,
+              ),
+            ),
+          ),
         ],
       ),
     );
