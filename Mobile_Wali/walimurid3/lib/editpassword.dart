@@ -29,8 +29,8 @@ class _EditPasswordPageState extends State<EditPasswordPage> {
       String? noHp = prefs.getString('no_hp'); // Ambil nomor HP dari Shared Preferences
 
       final requestBody = {
-        'newPassword': _newPasswordController.text,
-        'noHp': noHp, // Sertakan nomor HP
+        'password_baru': _newPasswordController.text,
+        'no_hp': noHp, // Sertakan nomor HP
       };
 
       // Debugging: Cetak request body
