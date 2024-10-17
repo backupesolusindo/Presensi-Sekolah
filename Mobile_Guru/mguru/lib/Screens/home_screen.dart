@@ -814,43 +814,43 @@ Widget getCardJadwalMapel(Map<String, dynamic> item) {
           const SizedBox(height: 10), // Jarak antar elemen
 
           // Nama Pegawai
-          Row(
-            children: [
-              const Icon(
-                Icons.person_rounded,
-                color: Colors.blueGrey,
-                size: 20,
-              ),
-              const SizedBox(width: 6),
-              Text(
-                "Pengajar: ${item['nama_pegawai'] ?? 'Tidak ada data'}", // nama_pegawai
-                style: const TextStyle(
-                  fontSize: 16.0,
-                  color: Colors.grey,
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 10), // Jarak antar elemen
+          // Row(
+          //   children: [
+          //     const Icon(
+          //       Icons.person_rounded,
+          //       color: Colors.blueGrey,
+          //       size: 20,
+          //     ),
+          //     const SizedBox(width: 6),
+          //     Text(
+          //       "Pengajar: ${item['nama_pegawai'] ?? 'Tidak ada data'}", // nama_pegawai
+          //       style: const TextStyle(
+          //         fontSize: 16.0,
+          //         color: Colors.grey,
+          //       ),
+          //     ),
+          //   ],
+          // ),
+          // const SizedBox(height: 10), // Jarak antar elemen
 
           // ID Pegawai
-          Row(
-            children: [
-              const Icon(
-                Icons.badge_rounded,
-                color: Colors.teal,
-                size: 20,
-              ),
-              const SizedBox(width: 6),
-              Text(
-                "ID Pegawai: ${item['id_pegawai'] ?? '-'}", // id_pegawai
-                style: const TextStyle(
-                  fontSize: 16.0,
-                  color: Colors.grey,
-                ),
-              ),
-            ],
-          ),
+          // Row(
+          //   children: [
+          //     const Icon(
+          //       Icons.badge_rounded,
+          //       color: Colors.teal,
+          //       size: 20,
+          //     ),
+          //     const SizedBox(width: 6),
+          //     Text(
+          //       "ID Pegawai: ${item['id_pegawai'] ?? '-'}", // id_pegawai
+          //       style: const TextStyle(
+          //         fontSize: 16.0,
+          //         color: Colors.grey,
+          //       ),
+          //     ),
+          //   ],
+          // ),
           const SizedBox(height: 10), // Jarak antar elemen
         ],
       ),
