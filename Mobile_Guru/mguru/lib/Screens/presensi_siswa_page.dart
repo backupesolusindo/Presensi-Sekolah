@@ -374,163 +374,166 @@ class _PresensiSiswaPageState extends State<PresensiSiswaPage> {
     );
   }
 
-Widget _buildStudentCard(int index) {
-  return Container(
-    decoration: BoxDecoration(
-      color: Colors.white,
-      borderRadius: BorderRadius.circular(8), // Rounded corners
-      boxShadow: [
-        BoxShadow(
-          color: Colors.grey.shade300, // Soft grey shadow with transparency
-          spreadRadius: 2, // Controls how much the shadow spreads
-          blurRadius: 8, // Higher value for smooth shadow
-          offset: Offset(0, 4), // Offset for vertical shadow
-        ),
-      ],
-    ),
-    margin: const EdgeInsets.all(8), // Similar margin as in Card
-    child: InkWell(
-      onTap: () {
-        setState(() {
-          _hadirList[index] = !_hadirList[index];
-        });
-      },
-      child: Padding(
-        padding: const EdgeInsets.symmetric(vertical: 10.0, horizontal: 10.0),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            CircleAvatar(
-              radius: 20,
-              backgroundColor: Colors.blue[100],
-              child: Icon(
-                Icons.person,
-                size: 20,
-                color: _hadirList[index] ? Colors.blue[700] : Colors.grey,
-              ),
-            ),
-            const SizedBox(height: 8),
-            Text(
-              _students[index].name,
-              style: _textStyle(13),
-              textAlign: TextAlign.center,
-              maxLines: 1, // Limit the text to one line
-              overflow: TextOverflow.ellipsis, // Add ellipsis for overflow
-            ),
-            const SizedBox(height: 12), // Increased space to lower the checkbox
-            GestureDetector(
-              onTap: () {
-                setState(() {
-                  _hadirList[index] = !_hadirList[index];
-                });
-              },
-              child: AnimatedContainer(
-                duration: const Duration(milliseconds: 300), // Animation duration
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  color: _hadirList[index]
-                      ? Colors.green
-                      : Colors.transparent, // Background color based on checked state
-                  border: Border.all(
-                      color: Colors.green, width: 2), // Border color
+  Widget _buildStudentCard(int index) {
+    return Container(
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(8), // Rounded corners
+        boxShadow: [
+          BoxShadow(
+            color: Colors.grey.shade300, // Soft grey shadow with transparency
+            spreadRadius: 2, // Controls how much the shadow spreads
+            blurRadius: 8, // Higher value for smooth shadow
+            offset: Offset(0, 4), // Offset for vertical shadow
+          ),
+        ],
+      ),
+      margin: const EdgeInsets.all(8), // Similar margin as in Card
+      child: InkWell(
+        onTap: () {
+          setState(() {
+            _hadirList[index] = !_hadirList[index];
+          });
+        },
+        child: Padding(
+          padding: const EdgeInsets.symmetric(vertical: 10.0, horizontal: 10.0),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              CircleAvatar(
+                radius: 20,
+                backgroundColor: Colors.blue[100],
+                child: Icon(
+                  Icons.person,
+                  size: 20,
+                  color: _hadirList[index] ? Colors.blue[700] : Colors.grey,
                 ),
-                width: 20, // Fixed width for circular checkbox
-                height: 20, // Fixed height for circular checkbox
-                alignment: Alignment.center, // Center the icon
-                child: _hadirList[index]
-                    ? Icon(
-                        Icons.check,
-                        color: Colors.white, // Check icon color
-                        size: 18, // Adjust the icon size for better fit
-                      )
-                    : null, // No icon when unchecked
               ),
-            ),
-          ],
+              const SizedBox(height: 8),
+              Text(
+                _students[index].name,
+                style: _textStyle(13),
+                textAlign: TextAlign.center,
+                maxLines: 1, // Limit the text to one line
+                overflow: TextOverflow.ellipsis, // Add ellipsis for overflow
+              ),
+              const SizedBox(
+                  height: 12), // Increased space to lower the checkbox
+              GestureDetector(
+                onTap: () {
+                  setState(() {
+                    _hadirList[index] = !_hadirList[index];
+                  });
+                },
+                child: AnimatedContainer(
+                  duration:
+                      const Duration(milliseconds: 300), // Animation duration
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    color: _hadirList[index]
+                        ? Colors.green
+                        : Colors
+                            .transparent, // Background color based on checked state
+                    border: Border.all(
+                        color: Colors.green, width: 2), // Border color
+                  ),
+                  width: 20, // Fixed width for circular checkbox
+                  height: 20, // Fixed height for circular checkbox
+                  alignment: Alignment.center, // Center the icon
+                  child: _hadirList[index]
+                      ? Icon(
+                          Icons.check,
+                          color: Colors.white, // Check icon color
+                          size: 18, // Adjust the icon size for better fit
+                        )
+                      : null, // No icon when unchecked
+                ),
+              ),
+            ],
+          ),
         ),
       ),
-    ),
-  );
-}
+    );
+  }
 
   Future<void> _submitAttendance() async {
-  SharedPreferences prefs = await SharedPreferences.getInstance();
+    SharedPreferences prefs = await SharedPreferences.getInstance();
 
-  // Get NIP from SharedPreferences
-  String? NIP = prefs.getString("NIP");
-  print("Attempting to retrieve NIP from SharedPreferences...");
+    // Get NIP from SharedPreferences
+    String? NIP = prefs.getString("NIP");
+    print("Attempting to retrieve NIP from SharedPreferences...");
 
-  if (NIP == null) {
-    print("NIP not found in SharedPreferences");
-    return; // Handle the case as needed
-  }
-
-  print("Retrieved NIP: $NIP");
-  List<Map<String, dynamic>> attendanceData = [];
-
-  // Prepare attendance data
-  for (int i = 0; i < _students.length; i++) {
-    attendanceData.add({
-      'id_siswa': _students[i].nis,
-      'id_jadwal': widget.idJadwal.toString(),
-      'status': _hadirList[i] ? 1 : 0,
-      'id_kelas': widget.idKelas.toString(),
-    });
-  }
-
-  // Get current date in desired format (e.g., yyyy-MM-dd)
-  String formattedDate = DateFormat('yyyy-MM-dd').format(DateTime.now());
-
-  // Log attendance data
-  print("Prepared attendance data: $attendanceData");
-
-  // Update the status of the teacher based on isGuruHadir
-  int guruStatus = isGuruHadir == 1 ? 1 : 0; // Assuming 1 for present and 0 for absent
-
-  Map<String, dynamic> presensiData = {
-    'presensi': {
-      'guru': {
-        'id_jadwal_mapel': widget.idJadwal.toString(),
-        'id_guru': NIP,
-        'status': guruStatus, // Use the updated status for the teacher
-        'tanggal': formattedDate, // Use current date here
-      },
-      'siswa': attendanceData,
-    },
-  };
-
-  // Log the presensiData being sent
-  print("Presensi Data to be sent: ${jsonEncode(presensiData)}");
-
-  var url = Uri.parse(
-      Core().ApiUrl + "ApiPresensi/ApiPresensi/storePresensiGdanS/");
-  print("API URL: $url");
-
-  try {
-    final response = await http.post(
-      url,
-      headers: {'Content-Type': 'application/json'},
-      body: jsonEncode(presensiData),
-    );
-
-    // Log the response status and body
-    print('Response status: ${response.statusCode}');
-    print('Response body: ${response.body}');
-
-    if (response.statusCode == 200) {
-      print('Attendance submitted successfully!');
-      _showSuccessDialog('Presensi Berhasil!'); // Pass success message
-    } else {
-      print('Failed to submit attendance: ${response.body}');
-      _showErrorDialog('Presensi Gagal'); // Pass failure message
+    if (NIP == null) {
+      print("NIP not found in SharedPreferences");
+      return; // Handle the case as needed
     }
-  } catch (e) {
-    print('Error submitting attendance: $e');
-    _showErrorDialog(
-        'Terjadi kesalahan saat Presensi: $e'); // Pass error message
-  }
-}
 
+    print("Retrieved NIP: $NIP");
+    List<Map<String, dynamic>> attendanceData = [];
+
+    // Prepare attendance data
+    for (int i = 0; i < _students.length; i++) {
+      attendanceData.add({
+        'id_siswa': _students[i].nis,
+        'id_jadwal': widget.idJadwal.toString(),
+        'status': _hadirList[i] ? 1 : 0,
+        'id_kelas': widget.idKelas.toString(),
+      });
+    }
+
+    // Get current date in desired format (e.g., yyyy-MM-dd)
+    String formattedDate = DateFormat('yyyy-MM-dd').format(DateTime.now());
+
+    // Log attendance data
+    print("Prepared attendance data: $attendanceData");
+
+    // Update the status of the teacher based on isGuruHadir
+    int guruStatus =
+        isGuruHadir == 1 ? 1 : 0; // Assuming 1 for present and 0 for absent
+
+    Map<String, dynamic> presensiData = {
+      'presensi': {
+        'guru': {
+          'id_jadwal_mapel': widget.idJadwal.toString(),
+          'id_guru': NIP,
+          'status': guruStatus, // Use the updated status for the teacher
+          'tanggal': formattedDate, // Use current date here
+        },
+        'siswa': attendanceData,
+      },
+    };
+
+    // Log the presensiData being sent
+    print("Presensi Data to be sent: ${jsonEncode(presensiData)}");
+
+    var url = Uri.parse(
+        Core().ApiUrl + "ApiPresensi/ApiPresensi/storePresensiGdanS/");
+    print("API URL: $url");
+
+    try {
+      final response = await http.post(
+        url,
+        headers: {'Content-Type': 'application/json'},
+        body: jsonEncode(presensiData),
+      );
+
+      // Log the response status and body
+      print('Response status: ${response.statusCode}');
+      print('Response body: ${response.body}');
+
+      if (response.statusCode == 200) {
+        print('Attendance submitted successfully!');
+        _showSuccessDialog('Presensi Berhasil!'); // Pass success message
+      } else {
+        print('Failed to submit attendance: ${response.body}');
+        _showErrorDialog('Presensi Gagal'); // Pass failure message
+      }
+    } catch (e) {
+      print('Error submitting attendance: $e');
+      _showErrorDialog(
+          'Terjadi kesalahan saat Presensi: $e'); // Pass error message
+    }
+  }
 
   void _showSuccessDialog(String message) {
     showDialog(
@@ -588,120 +591,127 @@ Widget _buildStudentCard(int index) {
     );
   }
 
-Widget _buildInfoCard() {
-  return Container(
-    decoration: BoxDecoration(
-      color: Colors.white,
-      borderRadius: BorderRadius.circular(8), // Rounded corners
-      boxShadow: [
-        BoxShadow(
-          color: Colors.grey.shade300, // Soft grey shadow with transparency
-          spreadRadius: 2, // Controls how much the shadow spreads
-          blurRadius: 8, // Higher value for smooth shadow
-          offset: Offset(0, 4), // Offset for vertical shadow, adjust as needed
-        ),
-      ],
-    ),
-    child: Padding(
-      padding: const EdgeInsets.all(8.0),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          _buildRow(
-            icon: Icons.book_rounded,
-            color: Colors.blueAccent,
-            text: widget.namaMapel,
-            fontSize: 18,
-            isBold: true,
-            backgroundColor: Colors.blue[50],
-            padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 12),
-            textColor: Colors.blueAccent,
-          ),
-          const SizedBox(height: 8),
-          _buildRow(
-            icon: Icons.class_,
-            color: Colors.purpleAccent,
-            text: 'Kelas: ${widget.namaKelas}',
-          ),
-          const SizedBox(height: 8),
-          _buildRow(
-            icon: Icons.access_time,
-            color: Colors.orangeAccent,
-            text: 'Waktu: ${widget.waktuMulai} - ${widget.waktuSelesai}',
-          ),
-          const SizedBox(height: 8),
-          _buildRow(
-            icon: Icons.calendar_today_outlined,
-            color: Colors.greenAccent,
-            text: 'Hari: ${widget.hari}',
-          ),
-          const SizedBox(height: 8),
-          _buildRow(
-            icon: Icons.calendar_today,
-            color: Colors.redAccent,
-            text: 'Tanggal: ${widget.tanggal.isNotEmpty ? widget.tanggal : 'Belum ditentukan'}',
-          ),
-          const SizedBox(height: 10), // Space above the checkbox row
-          // Custom circular checkbox for teacher's attendance with icon and text
-         Row(
-  mainAxisAlignment: MainAxisAlignment.spaceBetween, // Aligns items to the edges
-  children: [
-    GestureDetector(
-      onTap: () {
-        setState(() {
-          // Toggle the value of isGuruHadir
-          isGuruHadir = isGuruHadir == 1 ? 0 : 1; // Switch between 0 and 1
-        });
-      },
-      child: Row(
-        children: [
-          Icon(Icons.person, color: Colors.green), // Icon for teacher
-          const SizedBox(width: 8), // Space between icon and text
-          Text(
-            'Presensi Guru:',
-            style: TextStyle(fontSize: 16, fontWeight: FontWeight.w400), // Text style
+  Widget _buildInfoCard() {
+    return Container(
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(8), // Rounded corners
+        boxShadow: [
+          BoxShadow(
+            color: Colors.grey.shade300, // Soft grey shadow with transparency
+            spreadRadius: 2, // Controls how much the shadow spreads
+            blurRadius: 8, // Higher value for smooth shadow
+            offset:
+                Offset(0, 4), // Offset for vertical shadow, adjust as needed
           ),
         ],
       ),
-    ),
-    GestureDetector(
-      onTap: () {
-        setState(() {
-          // Toggle the value of isGuruHadir
-          isGuruHadir = isGuruHadir == 1 ? 0 : 1; // Switch between 0 and 1
-        });
-      },
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 300), // Animation duration
-        decoration: BoxDecoration(
-          shape: BoxShape.circle,
-          color: isGuruHadir == 1 ? Colors.green : Colors.transparent, // Background color
-          border: Border.all(color: Colors.green, width: 2), // Border color
+      child: Padding(
+        padding: const EdgeInsets.all(8.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            _buildRow(
+              icon: Icons.book_rounded,
+              color: Colors.blueAccent,
+              text: widget.namaMapel,
+              fontSize: 18,
+              isBold: true,
+              backgroundColor: Colors.blue[50],
+              padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 12),
+              textColor: Colors.blueAccent,
+            ),
+            const SizedBox(height: 8),
+            _buildRow(
+              icon: Icons.class_,
+              color: Colors.purpleAccent,
+              text: 'Kelas: ${widget.namaKelas}',
+            ),
+            const SizedBox(height: 8),
+            _buildRow(
+              icon: Icons.access_time,
+              color: Colors.orangeAccent,
+              text: 'Waktu: ${widget.waktuMulai} - ${widget.waktuSelesai}',
+            ),
+            const SizedBox(height: 8),
+            _buildRow(
+              icon: Icons.calendar_today_outlined,
+              color: Colors.greenAccent,
+              text: 'Hari: ${widget.hari}',
+            ),
+            const SizedBox(height: 8),
+            _buildRow(
+              icon: Icons.calendar_today,
+              color: Colors.redAccent,
+              text:
+                  'Tanggal: ${widget.tanggal.isNotEmpty ? widget.tanggal : 'Belum ditentukan'}',
+            ),
+            const SizedBox(height: 10), // Space above the checkbox row
+            // Custom circular checkbox for teacher's attendance with icon and text
+            Row(
+              mainAxisAlignment:
+                  MainAxisAlignment.spaceBetween, // Aligns items to the edges
+              children: [
+                GestureDetector(
+                  onTap: () {
+                    setState(() {
+                      // Toggle the value of isGuruHadir
+                      isGuruHadir =
+                          isGuruHadir == 1 ? 0 : 1; // Switch between 0 and 1
+                    });
+                  },
+                  child: Row(
+                    children: [
+                      Icon(Icons.person,
+                          color: Colors.green), // Icon for teacher
+                      const SizedBox(width: 8), // Space between icon and text
+                      Text(
+                        'Presensi Guru:',
+                        style: TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.w400), // Text style
+                      ),
+                    ],
+                  ),
+                ),
+                GestureDetector(
+                  onTap: () {
+                    setState(() {
+                      // Toggle the value of isGuruHadir
+                      isGuruHadir =
+                          isGuruHadir == 1 ? 0 : 1; // Switch between 0 and 1
+                    });
+                  },
+                  child: AnimatedContainer(
+                    duration:
+                        const Duration(milliseconds: 300), // Animation duration
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      color: isGuruHadir == 1
+                          ? Colors.green
+                          : Colors.transparent, // Background color
+                      border: Border.all(
+                          color: Colors.green, width: 2), // Border color
+                    ),
+                    width: 24, // Slightly larger for easier interaction
+                    height: 24, // Slightly larger for easier interaction
+                    alignment: Alignment.center, // Center the icon
+                    child: isGuruHadir == 1
+                        ? Icon(
+                            Icons.check,
+                            color: Colors.white, // Check icon color
+                            size: 16, // Adjust the icon size for better fit
+                          )
+                        : null, // No icon when unchecked
+                  ),
+                ),
+              ],
+            ),
+          ],
         ),
-        width: 24, // Slightly larger for easier interaction
-        height: 24, // Slightly larger for easier interaction
-        alignment: Alignment.center, // Center the icon
-        child: isGuruHadir == 1
-            ? Icon(
-                Icons.check,
-                color: Colors.white, // Check icon color
-                size: 16, // Adjust the icon size for better fit
-              )
-            : null, // No icon when unchecked
       ),
-    ),
-  ],
-),
-
-
-        ],
-      ),
-    ),
-  );
-}
-
-
-
+    );
+  }
 
   Widget _buildRow({
     required IconData icon,
@@ -744,26 +754,46 @@ Widget _buildInfoCard() {
   Widget _buildBottomNavigationBar() {
     return BottomNavigationBar(
       currentIndex: _selectedIndex,
-      selectedItemColor: Colors.blue,
       onTap: (int index) {
         setState(() {
           _selectedIndex = index;
         });
       },
-      items: const [
-        BottomNavigationBarItem(
-          icon: Icon(Icons.assignment),
-          label: 'Presensi',
-        ),
-      //  BottomNavigationBarItem(
-        //  icon: Icon(Icons.history),
-        //  label: 'Riwayat',
-      //  ),
-        BottomNavigationBarItem(
-          icon: Icon(Icons.person),
-          label: 'Data Murid',
-        ),
-      ],
+      type: BottomNavigationBarType.fixed,
+      backgroundColor: Colors.white,
+      showSelectedLabels: false,
+      showUnselectedLabels: false,
+      selectedItemColor: Colors.blueAccent[700],
+      unselectedItemColor: Colors.grey[400],
+      elevation: 30.0,
+      items: [Icons.assignment, Icons.person]
+          .asMap()
+          .map((key, value) => MapEntry(
+                key,
+                BottomNavigationBarItem(
+                  label: "",
+                  icon: Container(
+                    padding: const EdgeInsets.symmetric(
+                      vertical: 6.0,
+                      horizontal: 16.0,
+                    ),
+                    decoration: BoxDecoration(
+                      color: _selectedIndex == key
+                          ? Colors.blueAccent
+                          : Colors.transparent,
+                      borderRadius: BorderRadius.circular(20.0),
+                    ),
+                    child: Icon(
+                      value,
+                      color: _selectedIndex == key
+                          ? Colors.white
+                          : Colors.grey[400],
+                    ),
+                  ),
+                ),
+              ))
+          .values
+          .toList(),
     );
   }
 

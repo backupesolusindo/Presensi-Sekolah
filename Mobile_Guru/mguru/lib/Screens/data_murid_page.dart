@@ -38,6 +38,7 @@ class DataMuridPage extends StatefulWidget {
 
 class _DataMuridPageState extends State<DataMuridPage> {
   List<Student> _students = [];
+  List<Student> _filteredStudents = [];
   bool _isLoading = true;
 
   @override
@@ -57,6 +58,7 @@ class _DataMuridPageState extends State<DataMuridPage> {
         setState(() {
           _students =
               jsonResponse.map((json) => Student.fromJson(json)).toList();
+          _filteredStudents = _students; // Initialize filtered list
           _isLoading = false;
         });
       } else {
@@ -65,6 +67,17 @@ class _DataMuridPageState extends State<DataMuridPage> {
     } catch (e) {
       _showErrorDialog('Failed to load students. Error: $e');
     }
+  }
+
+  void _filterStudents(String query) {
+    final filteredList = _students.where((student) {
+      return student.name.toLowerCase().contains(query.toLowerCase()) ||
+          student.nis.contains(query);
+    }).toList();
+
+    setState(() {
+      _filteredStudents = filteredList;
+    });
   }
 
   void _showErrorDialog(String message) {
@@ -173,6 +186,48 @@ class _DataMuridPageState extends State<DataMuridPage> {
     );
   }
 
+  Widget _buildStudentTile(Student student) {
+    return Container(
+      margin: EdgeInsets.symmetric(horizontal: 8, vertical: 8),
+      padding: EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(8), // Rounded corners
+        boxShadow: [
+          BoxShadow(
+            color: Colors.grey.shade300,
+            spreadRadius: 2,
+            blurRadius: 8,
+            offset: Offset(0, 4),
+          ),
+        ],
+      ),
+      child: ListTile(
+        title: Text(
+          student.name,
+          style: TextStyle(
+            fontSize: 16,
+            color: Colors.black,
+          ),
+        ),
+        subtitle: Text(
+          'NIS: ${student.nis}', // Show NIS as subtitle
+          style: TextStyle(
+            fontSize: 16,
+            color: Colors.grey[600],
+          ),
+        ),
+        leading: CircleAvatar(
+          backgroundColor: Colors.blue[100],
+          child: Icon(Icons.person, color: Colors.blue),
+        ),
+        onTap: () {
+          _showStudentDetails(student); // Show student details
+        },
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -182,12 +237,14 @@ class _DataMuridPageState extends State<DataMuridPage> {
           _isLoading
               ? Center(child: CircularProgressIndicator())
               : SingleChildScrollView(
-                  // Wrap everything in a SingleChildScrollView
+                  padding: const EdgeInsets.only(
+                      top: 20), // Space for the search field
                   child: Column(
                     children: [
-                      SizedBox(height: 20), // Space at the top
-                      // Card at the top with the title "Data Murid"
+                      // Container with title "Data Murid"
                       Container(
+                        margin: const EdgeInsets.symmetric(
+                            horizontal: 16, vertical: 8),
                         decoration: BoxDecoration(
                           color: Colors.white,
                           borderRadius:
@@ -199,87 +256,65 @@ class _DataMuridPageState extends State<DataMuridPage> {
                               spreadRadius:
                                   2, // Controls how much the shadow spreads
                               blurRadius: 8, // Higher value for smooth shadow
-                              offset:
-                                  Offset(0, 4), // Offset for vertical shadow
+                              offset: Offset(0,
+                                  4), // Offset for vertical shadow, adjust as needed
                             ),
                           ],
                         ),
-                        child: Padding(
-                          padding: const EdgeInsets.all(
-                              16.0), // Padding inside the card
-                          child: Text(
-                            'Data Murid',
-                            style: TextStyle(
-                              fontSize:
-                                  16, // Increased font size for better visibility
-                              color: Colors.black, // Text color
-                            ),
-                            textAlign:
-                                TextAlign.center, // Center align the text
+                        padding: const EdgeInsets.all(16.0),
+                        child: Text(
+                          'Data Murid',
+                          style: TextStyle(
+                            fontSize: 16, // Increased font size for prominence
+                            fontWeight: FontWeight.bold, // Bold title
                           ),
                         ),
                       ),
-                      SizedBox(
-                          height: 10), // Space between title and student list
-
+                      // Search Field
+                      Padding(
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 16, vertical: 8),
+                        child: TextField(
+                          onChanged: _filterStudents,
+                          decoration: InputDecoration(
+                            hintText: 'Search by Name or NIS',
+                            hintStyle: TextStyle(
+                                color: Colors
+                                    .blueGrey), // Optional: Change hint text color
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(8),
+                              borderSide:
+                                  BorderSide(color: Colors.blue, width: 1),
+                            ),
+                            focusedBorder: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(8),
+                              borderSide: BorderSide(
+                                  color: Colors.blueAccent,
+                                  width: 2), // Focused border color
+                            ),
+                            enabledBorder: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(8),
+                              borderSide: BorderSide(
+                                  color: Colors.blue,
+                                  width: 1), // Default border color
+                            ),
+                            prefixIcon: const Icon(Icons.search,
+                                color: Colors.blue), // Search icon color
+                          ),
+                        ),
+                      ),
                       // ListView to display student details
-                      ListView.builder(
-                        itemCount: _students.length,
-                        shrinkWrap:
-                            true, // Allow ListView to take only required space
-                        physics:
-                            NeverScrollableScrollPhysics(), // Disable ListView scrolling
-                        itemBuilder: (context, index) {
-                          return Container(
-                            margin: EdgeInsets.symmetric(
-                                horizontal: 8,
-                                vertical:
-                                    8), // Adds space outside the container
-                            padding: EdgeInsets.all(
-                                12), // Adds space inside the container
-                            decoration: BoxDecoration(
-                              color: Colors.white,
-                              borderRadius:
-                                  BorderRadius.circular(8), // Rounded corners
-                              boxShadow: [
-                                BoxShadow(
-                                  color: Colors.grey
-                                      .shade300, // Soft grey shadow with transparency
-                                  spreadRadius:
-                                      2, // Controls how much the shadow spreads
-                                  blurRadius:
-                                      8, // Higher value for smooth shadow
-                                  offset: Offset(
-                                      0, 4), // Offset for vertical shadow
-                                ),
-                              ],
-                            ),
-                            child: ListTile(
-                              title: Text(
-                                _students[index].name,
-                                style: TextStyle(
-                                  fontSize: 16,
-                                  color: Colors.black,
-                                ),
-                              ),
-                              subtitle: Text(
-                                'NIS: ${_students[index].nis}', // Show NIS as subtitle
-                                style: TextStyle(
-                                  fontSize: 16,
-                                  color: Colors.grey[600],
-                                ),
-                              ),
-                              leading: CircleAvatar(
-                                backgroundColor: Colors.blue[100],
-                                child: Icon(Icons.person, color: Colors.blue),
-                              ),
-                              onTap: () {
-                                _showStudentDetails(
-                                    _students[index]); // Show student details
-                              },
-                            ),
-                          );
-                        },
+                      Padding(
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 16), // Padding for list view
+                        child: ListView.builder(
+                          itemCount: _filteredStudents.length,
+                          shrinkWrap: true,
+                          physics: NeverScrollableScrollPhysics(),
+                          itemBuilder: (context, index) {
+                            return _buildStudentTile(_filteredStudents[index]);
+                          },
+                        ),
                       ),
                     ],
                   ),

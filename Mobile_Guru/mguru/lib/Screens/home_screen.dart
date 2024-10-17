@@ -236,40 +236,38 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
   }
 
   Future<void> fetchJadwalMapel() async {
-    String uuid = await SharedPreferences.getInstance()
-        .then((prefs) => prefs.getString('NIP') ?? '');
+  String uuid = await SharedPreferences.getInstance()
+      .then((prefs) => prefs.getString('NIP') ?? '');
 
-    final url =
-        'https://presensi-smp1.esolusindo.com/Api/ApiJadwalMapel/JadwalMapel/getJadwalMapel_byUUID/$uuid';
+  var url = Uri.parse(
+    Core().ApiUrl + "ApiJadwalMapel/JadwalMapel/getJadwalMapel_byUUID/$uuid");
 
-    try {
-      final response = await http.get(Uri.parse(url));
-      if (response.statusCode == 200) {
-        // Parse the response body
-        final Map<String, dynamic> jsonResponse = json.decode(response.body);
-        if (jsonResponse['status'] == true) {
-          final List<dynamic> data = jsonResponse['data'] ?? [];
+  try {
+    final response = await http.get(url);
+    if (response.statusCode == 200) {
+      final Map<String, dynamic> jsonResponse = json.decode(response.body);
+      if (jsonResponse['status'] == true) {
+        final List<dynamic> data = jsonResponse['data'] ?? [];
 
-          // Check if data is not empty before proceeding
-          if (data.isNotEmpty) {
-            // Convert to a list of maps
-            ListJadwalMapel = List<Map<String, dynamic>>.from(data);
-            print(
-                "Debug: Number of schedules received: ${ListJadwalMapel.length}");
-          } else {
-            print("Debug: No schedules found.");
-          }
+        if (data.isNotEmpty) {
+          ListJadwalMapel = List<Map<String, dynamic>>.from(data);
+          print(
+              "Debug: Number of schedules received: ${ListJadwalMapel.length}");
         } else {
-          // Handle when status is false
-          print("Debug: API Error: ${jsonResponse['message']['message']}");
+          print("Debug: No schedules found.");
         }
       } else {
-        print("Debug: HTTP Response status code: ${response.statusCode}");
+        print("Debug: API Error: ${jsonResponse['message']['message']}");
       }
-    } catch (e) {
-      print("Error fetching data: $e");
+    } else {
+      print("Debug: HTTP Response status code: ${response.statusCode}");
     }
+  } catch (e) {
+    print("Error fetching data: $e");
   }
+}
+
+
 
   @override
   Widget build(BuildContext context) {
@@ -1029,67 +1027,66 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: <Widget>[
                 Container(
-                  padding: EdgeInsets.symmetric(horizontal: 18, vertical: 12),
-                  decoration: BoxDecoration(
-                    color: Colors.white70,
-                    borderRadius: BorderRadius.circular(12.0),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.white70,
-                        blurRadius: 4,
-                        offset: Offset(2, 4), // Shadow position
-                      ),
-                    ],
-                  ),
-                  child: Row(
-                    children: <Widget>[
-                      Container(
-                        height: 59,
-                        width: 59,
-                        decoration: BoxDecoration(
-                          borderRadius: BorderRadius.circular(70),
-                          image: DecorationImage(
-                            image: AssetImage(
-                                'assets/images/smp1logo.png'), // Optional: adjust how the image fits the box
-                          ),
-                        ),
-                      ),
-                      SizedBox(
-                        width: 15,
-                      ),
-                      Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: <Widget>[
-                          Text(
-                            "Good Day!",
-                            style: TextStyle(
-                                fontSize: 14,
-                                fontWeight: FontWeight.w500,
-                                color: CText),
-                          ),
-                          Container(
-                            child: Text(
-                              Nama,
-                              style: TextStyle(
-                                fontSize: 16,
-                                fontWeight: FontWeight.w600,
-                                color: Colors
-                                    .black, // Ganti dengan CText sesuai kebutuhan
-                              ),
-                            ),
-                          ),
-                          Text(
-                            (NIP == "") ? "-" : NIP,
-                            style: TextStyle(
-                                fontSize: 14,
-                                fontWeight: FontWeight.w400,
-                                color: CText),
-                          )
-                        ],
-                      ),
-                    ],
-                  ),
-                ),
+  padding: EdgeInsets.symmetric(horizontal: 18, vertical: 12),
+  decoration: BoxDecoration(
+    color: Colors.white70,
+    borderRadius: BorderRadius.circular(12.0),
+    boxShadow: [
+      BoxShadow(
+        color: Colors.white70,
+        blurRadius: 4,
+        offset: Offset(2, 4), // Shadow position
+      ),
+    ],
+  ),
+  child: Row(
+    children: <Widget>[
+      Container(
+        height: 59,
+        width: 59,
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(70),
+          image: DecorationImage(
+            image: AssetImage('assets/images/smp1logo.png'),
+          ),
+        ),
+      ),
+      SizedBox(width: 15),
+      Expanded(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: <Widget>[
+            Text(
+              "Good Day!",
+              style: TextStyle(
+                fontSize: 14,
+                fontWeight: FontWeight.w500,
+                color: CText,
+              ),
+            ),
+            Text(
+              Nama,
+              style: TextStyle(
+                fontSize: 15,
+                fontWeight: FontWeight.w600,
+                color: Colors.black,
+              ),
+              overflow: TextOverflow.visible, // Ensures text wraps
+            ),
+            Text(
+              (NIP == "") ? "-" : NIP,
+              style: TextStyle(
+                fontSize: 14,
+                fontWeight: FontWeight.w400,
+                color: CText,
+              ),
+            ),
+          ],
+        ),
+      ),
+    ],
+  ),
+),
                 SizedBox(
                   height: 10,
                 ),
