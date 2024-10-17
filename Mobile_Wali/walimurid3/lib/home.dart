@@ -6,7 +6,6 @@ import 'package:intl/date_symbol_data_local.dart';
 import 'package:intl/intl.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'editpassword.dart';
-import 'profile.dart';
 import 'recognition/RegistrationScreen.dart';
 import 'bottombar.dart';
 import 'riwayat.dart';
@@ -303,95 +302,67 @@ class _HomePageState extends State<HomePage> {
   }
 
   Widget _buildMenuPresensi() {
-    return Stack(
-      children: [
-        Card(
-          elevation: 5,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(15),
-          ),
-          child: Padding(
-            padding: const EdgeInsets.all(16.0),
-            child: SingleChildScrollView(
-              scrollDirection: Axis.horizontal,
-              child: Row(
-                children: [
-                  _buildMenuIcon(Icons.document_scanner, 'Daftarkan Wajah Anak',
-                      () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                          builder: (context) => RegistrationScreen()),
-                    );
-                  }),
-                  SizedBox(width: 20),
-                  _buildMenuIcon(Icons.lock_open, 'Edit Password', () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(builder: (context) => EditPasswordPage()),
-                    );
-                  }), // Icon untuk edit password
-                  SizedBox(width: 20),
-                  // Dinamis berdasarkan siswaList
-                  siswaList.isEmpty
-                      ? Text('Tidak ada siswa tersedia',
-                          style: TextStyle(color: Colors.red))
-                      : Row(
-                          children: siswaList.map((siswa) {
-                            return Row(
-                              children: [
-                                _buildMenuIcon(Icons.face, siswa['nama'], () {
-                                  // Aksi ketika icon anak di tap
-                                  print('Klik pada ${siswa['nama']}');
-                                }),
-                                SizedBox(width: 20),
-                              ],
-                            );
-                          }).toList(),
-                        ),
-                ],
-              ),
+    return Card(
+      elevation: 5,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(15),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 12.0),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+          children: [
+            _buildMenuColumn(
+              Icons.document_scanner,
+              'Daftarkan\nWajah Anak',
+              () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => RegistrationScreen()),
+                );
+              },
             ),
-          ),
+            VerticalDivider(thickness: 1, color: Colors.grey[300]),
+            _buildMenuColumn(
+              Icons.lock_open,
+              'Edit\nPassword',
+              () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => EditPasswordPage()),
+                );
+              },
+            ),
+          ],
         ),
-        Positioned(
-          left: 7,
-          top: 50,
-          child: Icon(Icons.arrow_back_ios, color: Colors.grey),
-        ),
-        Positioned(
-          right: 0,
-          top: 50,
-          child: Icon(Icons.arrow_forward_ios, color: Colors.grey),
-        ),
-      ],
+      ),
     );
   }
 
-  Widget _buildMenuIcon(IconData icon, String label, Function onTap) {
-    return GestureDetector(
-      onTap: () => onTap(),
-      child: Column(
-        children: [
-          CircleAvatar(
-            radius: 30,
-            backgroundColor: Colors.blueAccent,
-            child: Icon(icon, color: Colors.white),
-          ),
-          SizedBox(height: 8),
-          Container(
-            width: 80,
-            child: Text(
+  Widget _buildMenuColumn(IconData icon, String label, Function onTap) {
+    return Expanded(
+      child: InkWell(
+        onTap: () => onTap(),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            CircleAvatar(
+              radius: 20,
+              backgroundColor: Colors.blueAccent,
+              child: Icon(icon, color: Colors.white, size: 18),
+            ),
+            SizedBox(height: 8),
+            Text(
               label,
               textAlign: TextAlign.center,
               style: TextStyle(
-                fontSize: 14,
+                fontSize: 12,
                 fontWeight: FontWeight.bold,
                 color: Colors.black,
               ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }

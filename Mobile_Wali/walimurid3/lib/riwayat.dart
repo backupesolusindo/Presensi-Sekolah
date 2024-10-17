@@ -186,63 +186,82 @@ class _RiwayatPageState extends State<RiwayatPage> {
               ),
             ),
           ),
-          Padding(
-            padding: const EdgeInsets.all(16.0),
-            child: SingleChildScrollView(
-              // Menambahkan SingleChildScrollView di sini
-              child: Column(
-                children: <Widget>[
-                  const SizedBox(height: 20),
-
-                  // Menambahkan button untuk memilih tanggal
-                  ElevatedButton(
-                    onPressed: () => _selectDate(context),
-                    child: Text(selectedDate == null
-                        ? 'Pilih Tanggal'
-                        : 'Tanggal Dipilih: ${selectedDate!.toLocal()}'
-                            .split(' ')[0]),
-                  ),
-
-                  const SizedBox(height: 20),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                    children: [
-                      _buildRiwayatCard(
-                        index: 0,
-                        icon: Icons.door_front_door,
-                        title: 'Riwayat\nMasuk',
-                        color: Colors.orangeAccent,
-                        onTap: () {
-                          setState(() {
-                            showRiwayatMasuk = true;
-                            selectedCardIndex = 0;
-                            fetchRiwayatMasuk();
-                          });
-                        },
+          SafeArea(
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 16.0),
+              child: SingleChildScrollView(
+                child: Column(
+                  children: <Widget>[
+                    Card(
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
+                      elevation: 4,
+                      child: Padding(
+                        padding: const EdgeInsets.all(8.0),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                          children: [
+                            Expanded(child: _buildRiwayatButton(
+                              index: 0,
+                              icon: Icons.door_front_door,
+                              title: 'Riwayat Masuk',
+                              color: Colors.orangeAccent,
+                              onTap: () {
+                                setState(() {
+                                  showRiwayatMasuk = true;
+                                  selectedCardIndex = 0;
+                                  fetchRiwayatMasuk();
+                                });
+                              },
+                            )),
+                            SizedBox(width: 8),
+                            Expanded(child: _buildRiwayatButton(
+                              index: 1,
+                              icon: Icons.book,
+                              title: 'Riwayat Mapel',
+                              color: Colors.purpleAccent,
+                              onTap: () {
+                                setState(() {
+                                  showRiwayatMasuk = false;
+                                  selectedCardIndex = 1;
+                                  fetchRiwayatMapel();
+                                });
+                              },
+                            )),
+                          ],
+                        ),
                       ),
-                      _buildRiwayatCard(
-                        index: 1,
-                        icon: Icons.book,
-                        title: 'Riwayat\nMapel',
-                        color: Colors.purpleAccent,
-                        onTap: () {
-                          setState(() {
-                            showRiwayatMasuk = false;
-                            selectedCardIndex = 1;
-                            fetchRiwayatMapel();
-                          });
-                        },
+                    ),
+                    SizedBox(height: 12),
+                    Card(
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
+                      elevation: 4,
+                      child: InkWell(
+                        onTap: () => _selectDate(context),
+                        child: Padding(
+                          padding: const EdgeInsets.all(12.0),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Icon(Icons.calendar_today, color: Colors.blue, size: 20),
+                              SizedBox(width: 8),
+                              Text(
+                                'Pilih Tanggal',
+                                style: TextStyle(color: Colors.blue, fontSize: 14, fontWeight: FontWeight.bold),
+                              ),
+                            ],
+                          ),
+                        ),
                       ),
-                    ],
-                  ),
-                  const SizedBox(height: 20),
-                  // Widget untuk menampilkan riwayat masuk atau mapel
-                  isLoading
-                      ? Center(child: Text("Pilih riwayat yang ingin dilihat"))
-                      : showRiwayatMasuk
-                          ? _buildRiwayatMasukList()
-                          : _buildRiwayatMapelList(),
-                ],
+                    ),
+                    const SizedBox(height: 20),
+                    // Widget untuk menampilkan riwayat masuk atau mapel
+                    isLoading
+                        ? Center(child: Text("Pilih riwayat yang ingin dilihat"))
+                        : showRiwayatMasuk
+                            ? _buildRiwayatMasukList()
+                            : _buildRiwayatMapelList(),
+                  ],
+                ),
               ),
             ),
           ),
@@ -260,7 +279,7 @@ class _RiwayatPageState extends State<RiwayatPage> {
     );
   }
 
-  Widget _buildRiwayatCard({
+  Widget _buildRiwayatButton({
     required int index,
     required IconData icon,
     required String title,
@@ -269,33 +288,30 @@ class _RiwayatPageState extends State<RiwayatPage> {
   }) {
     return GestureDetector(
       onTap: onTap,
-      child: Card(
-        color: selectedCardIndex == index ? color : Colors.white,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
-        elevation: 4,
-        child: Container(
-          padding: const EdgeInsets.all(16.0),
-          width: 150,
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Icon(icon,
-                  size: 40,
-                  color:
-                      selectedCardIndex == index ? Colors.white : Colors.black),
-              const SizedBox(height: 10),
-              Text(
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
+        decoration: BoxDecoration(
+          color: selectedCardIndex == index ? color : Colors.white,
+          borderRadius: BorderRadius.circular(10),
+          border: Border.all(color: color),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(icon, size: 20, color: selectedCardIndex == index ? Colors.white : color),
+            SizedBox(width: 4),
+            Flexible(
+              child: Text(
                 title,
-                textAlign: TextAlign.center,
                 style: TextStyle(
-                  color:
-                      selectedCardIndex == index ? Colors.white : Colors.black,
-                  fontSize: 16,
+                  color: selectedCardIndex == index ? Colors.white : color,
+                  fontSize: 12,
                   fontWeight: FontWeight.bold,
                 ),
+                overflow: TextOverflow.ellipsis,
               ),
-            ],
-          ),
+            ),
+          ],
         ),
       ),
     );
@@ -303,14 +319,14 @@ class _RiwayatPageState extends State<RiwayatPage> {
 
   Widget _buildRiwayatMasukList() {
     return ListView.builder(
-      shrinkWrap: true, // Mengatur untuk membungkus tinggi
-      physics:
-          NeverScrollableScrollPhysics(), // Menonaktifkan scroll pada ListView ini
+      shrinkWrap: true,
+      physics: NeverScrollableScrollPhysics(),
       itemCount: riwayatData.length,
       itemBuilder: (context, index) {
         final item = riwayatData[index];
         return Card(
           margin: EdgeInsets.symmetric(vertical: 5),
+          color: Colors.green[100], // Menambahkan warna latar belakang hijau muda
           child: ListTile(
             title: Text(item['tanggal'] ?? ''),
             subtitle: Text(item['status'] ?? ''),
@@ -322,17 +338,30 @@ class _RiwayatPageState extends State<RiwayatPage> {
 
   Widget _buildRiwayatMapelList() {
     return ListView.builder(
-      shrinkWrap: true, // Mengatur untuk membungkus tinggi
-      physics:
-          NeverScrollableScrollPhysics(), // Menonaktifkan scroll pada ListView ini
+      shrinkWrap: true,
+      physics: NeverScrollableScrollPhysics(),
       itemCount: riwayatData.length,
       itemBuilder: (context, index) {
-        final item = riwayatData[index];
+        var riwayat = riwayatData[index];
+        bool isHadir = riwayat['status'] == '1';
         return Card(
-          margin: EdgeInsets.symmetric(vertical: 5),
+          margin: EdgeInsets.symmetric(vertical: 8, horizontal: 4),
+          color: isHadir ? Colors.green[100] : Colors.red[100],
           child: ListTile(
-            title: Text(item['mapel'] ?? ''),
-            subtitle: Text(item['tanggal'] ?? ''),
+            title: Text('ID Jadwal: ${riwayat['id_jadwal'] ?? 'Tidak ada id jadwal'}'),
+            subtitle: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text('Tanggal: ${riwayat['tanggal'] ?? 'Tidak ada tanggal'}'),
+                Text(
+                  isHadir ? 'Hadir' : 'Tidak Hadir',
+                  style: TextStyle(
+                    color: isHadir ? Colors.green[700] : Colors.red[700],
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ],
+            ),
           ),
         );
       },

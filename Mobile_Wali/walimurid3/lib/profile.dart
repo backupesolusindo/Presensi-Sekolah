@@ -97,65 +97,31 @@ class _ProfilePageState extends State<ProfilePage> {
       body: Stack(
         children: [
           ClipPath(
-            clipper: CustomDiagonalClipper(),
+            clipper: CustomSemiCircleClipper(),
             child: Container(
-              height: 300,
+              height: MediaQuery.of(context).size.height * 0.3, // Sesuaikan tinggi sesuai kebutuhan
               decoration: BoxDecoration(
                 image: DecorationImage(
-                  image: AssetImage(
-                      'assets/biru.png'), // Ganti dengan gambar latar belakang
+                  image: AssetImage('assets/biru.png'),
                   fit: BoxFit.cover,
                 ),
               ),
             ),
           ),
-          Positioned(
-            top: 170, // Sesuaikan agar pas dengan potongan diagonal
-            left: MediaQuery.of(context).size.width / 2 - 50, // Center logo
-            child: CircleAvatar(
-              radius: 50,
-              backgroundImage: AssetImage(
-                  'assets/logopoltek.png'), // Ganti dengan logo yang diinginkan
-            ),
-          ),
           SingleChildScrollView(
             child: Column(
               children: [
-                const SizedBox(height: 290), // Menyesuaikan posisi setelah logo
-                Text(
-                  namaWali,
-                  style: const TextStyle(
-                    fontSize: 24,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.black87,
-                  ),
-                ),
-                const SizedBox(height: 8),
-                Text(
-                  noHp,
-                  style: TextStyle(color: Colors.grey[700]),
-                ),
-                const SizedBox(height: 32), // Mengatur jarak sebelum card siswa
-                _buildInfoCard(),
-                const SizedBox(
-                    height: 20), // Menambah jarak di bawah card data siswa
-                ElevatedButton(
-                  onPressed: () => _showLogoutConfirmation(context),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.redAccent,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    padding: const EdgeInsets.symmetric(
-                        horizontal: 32, vertical: 12),
-                  ),
-                  child: const Text(
-                    'Logout',
-                    style: TextStyle(fontSize: 16),
-                  ),
-                ),
-                const SizedBox(
-                    height: 40), // Menambah jarak di bawah tombol logout
+                const SizedBox(height: 100),
+                _buildProfileCard(),
+                const SizedBox(height: 32),
+                _buildNamaCard(),
+                const SizedBox(height: 16),
+                _buildNisCard(),
+                const SizedBox(height: 16),
+                _buildKelasCard(),
+                const SizedBox(height: 20),
+                _buildLogoutButton(),
+                const SizedBox(height: 20),
               ],
             ),
           ),
@@ -168,21 +134,107 @@ class _ProfilePageState extends State<ProfilePage> {
     );
   }
 
-  Widget _buildInfoCard() {
+  Widget _buildProfileCard() {
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final cardWidth = constraints.maxWidth * 0.8; // 80% dari lebar layar
+        return Center(
+          child: SizedBox(
+            width: cardWidth,
+            child: Card(
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12),
+              ),
+              elevation: 6,
+              child: Padding(
+                padding: const EdgeInsets.all(20.0),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    CircleAvatar(
+                      radius: 50,
+                      backgroundImage: AssetImage('assets/logopoltek.png'),
+                    ),
+                    const SizedBox(height: 16),
+                    Text(
+                      namaWali,
+                      style: const TextStyle(
+                        fontSize: 24,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.black87,
+                      ),
+                      textAlign: TextAlign.center,
+                    ),
+                    const SizedBox(height: 8),
+                    Text(
+                      noHp,
+                      style: TextStyle(
+                        color: Colors.grey[700],
+                        fontSize: 16,
+                      ),
+                      textAlign: TextAlign.center,
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _buildNamaCard() {
     return Card(
-      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 0),
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(12),
       ),
       elevation: 6,
       shadowColor: Colors.black26,
       child: Padding(
-        padding: const EdgeInsets.all(20.0),
+        padding: const EdgeInsets.all(0.0),
         child: Column(
           children: [
-            _buildInfoRow(Icons.person, 'Nama', namaSiswa),
-            _buildInfoRow(Icons.credit_card, 'NIS', nis),
-            _buildInfoRow(Icons.class_, 'Kelas', kelas),
+            _buildInfoRow(Icons.person, namaSiswa, 'Nama Siswa'),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildNisCard() {
+    return Card(
+      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 0),
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(12),
+      ),
+      elevation: 6,
+      shadowColor: Colors.black26,
+      child: Padding(
+        padding: const EdgeInsets.all(0.0),
+        child: Column(
+          children: [
+            _buildInfoRow(Icons.credit_card, nis, 'NIS Siswa'),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildKelasCard() {
+    return Card(
+      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 0),
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(12),
+      ),
+      elevation: 6,
+      shadowColor: Colors.black26,
+      child: Padding(
+        padding: const EdgeInsets.all(0.0),
+        child: Column(
+          children: [
+            _buildInfoRow(Icons.class_, kelas, 'Kelas saat ini'),
           ],
         ),
       ),
@@ -230,17 +282,60 @@ class _ProfilePageState extends State<ProfilePage> {
       },
     );
   }
+
+  Widget _buildLogoutButton() {
+    return Card(
+      margin: const EdgeInsets.symmetric(horizontal: 16),
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(12),
+      ),
+      elevation: 6,
+      shadowColor: Colors.black26,
+      color: Colors.red, // Mengubah warna latar belakang kartu menjadi merah
+      child: InkWell(
+        onTap: () {
+          // Logika logout
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(builder: (context) => LoginPage()),
+          );
+        },
+        child: Padding(
+          padding: const EdgeInsets.symmetric(vertical: 16),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(Icons.logout, color: Colors.white), // Mengubah warna ikon menjadi putih
+              SizedBox(width: 8),
+              Text(
+                'Logout',
+                style: TextStyle(
+                  color: Colors.white, // Mengubah warna teks menjadi putih
+                  fontWeight: FontWeight.bold,
+                  fontSize: 16,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
 }
 
-class CustomDiagonalClipper extends CustomClipper<Path> {
+class CustomSemiCircleClipper extends CustomClipper<Path> {
   @override
   Path getClip(Size size) {
     var path = Path();
-    path.lineTo(size.width * 0.7, 0); // Membuat titik di dekat atas kanan
-    path.lineTo(size.width, size.height * 0.4); // Membentuk diagonal
-    path.lineTo(size.width, size.height); // Bagian kanan bawah
-    path.lineTo(0, size.height * 0.6); // Membentuk sisi diagonal lain
-    path.close(); // Menutup path
+    path.lineTo(0, size.height * 0.85); // Menggeser titik awal kurva ke bawah
+    path.quadraticBezierTo(
+      size.width / 2,
+      size.height * 1.1, // Menggeser titik kontrol ke bawah
+      size.width,
+      size.height * 0.85, // Menggeser titik akhir kurva ke bawah
+    );
+    path.lineTo(size.width, 0);
+    path.close();
     return path;
   }
 
