@@ -5,6 +5,8 @@ import 'riwayat_siswa_page.dart';
 import 'data_murid_page.dart';
 import 'package:mobile_presensi_kdtg/core.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:intl/intl.dart';
+
 
 class Student {
   final String name;
@@ -54,6 +56,8 @@ class PresensiSiswaPage extends StatefulWidget {
   final String waktuSelesai;
   final String hari;
   final String tanggal;
+  final String idMapel; // Add id_mapel
+  final String idJadwal; // Add id_jadwal
 
   const PresensiSiswaPage({
     Key? key,
@@ -64,6 +68,8 @@ class PresensiSiswaPage extends StatefulWidget {
     required this.waktuSelesai,
     required this.hari,
     required this.tanggal,
+    required this.idMapel, // Include id_mapel in constructor
+    required this.idJadwal, // Include id_jadwal in constructor
   }) : super(key: key);
 
   @override
@@ -432,75 +438,81 @@ class _PresensiSiswaPageState extends State<PresensiSiswaPage> {
   }
 
   Future<void> _submitAttendance() async {
-    SharedPreferences prefs = await SharedPreferences.getInstance();
+  SharedPreferences prefs = await SharedPreferences.getInstance();
 
-    // Get NIP from SharedPreferences
-    String? NIP = prefs.getString("NIP");
-    print("Attempting to retrieve NIP from SharedPreferences...");
+  // Get NIP from SharedPreferences
+  String? NIP = prefs.getString("NIP");
+  print("Attempting to retrieve NIP from SharedPreferences...");
 
-    if (NIP == null) {
-      print("NIP not found in SharedPreferences");
-      return; // Handle the case as needed
-    }
-
-    print("Retrieved NIP: $NIP");
-    List<Map<String, dynamic>> attendanceData = [];
-
-    // Prepare attendance data
-    for (int i = 0; i < _students.length; i++) {
-      attendanceData.add({
-        'id_siswa': _students[i].nis,
-        'id_jadwal': widget.idKelas.toString(),
-        'status': _hadirList[i] ? 1 : 0,
-        'id_kelas': widget.idKelas.toString(),
-      });
-    }
-
-    // Log attendance data
-    print("Prepared attendance data: $attendanceData");
-
-    Map<String, dynamic> presensiData = {
-      'presensi': {
-        'guru': {
-          'id_jadwal_mapel': widget.idKelas.toString(),
-          'id_guru': NIP,
-          'status': _isTeacherPresent ? 1 : 0,
-        },
-        'siswa': attendanceData,
-      },
-    };
-
-    // Log the presensiData being sent
-    print("Presensi Data to be sent: ${jsonEncode(presensiData)}");
-
-    var url = Uri.parse(
-        Core().ApiUrl + "ApiPresensi/ApiPresensi/storePresensiGdanS/");
-    print("API URL: $url");
-
-    try {
-      final response = await http.post(
-        url,
-        headers: {'Content-Type': 'application/json'},
-        body: jsonEncode(presensiData),
-      );
-
-      // Log the response status and body
-      print('Response status: ${response.statusCode}');
-      print('Response body: ${response.body}');
-
-      if (response.statusCode == 200) {
-        print('Attendance submitted successfully!');
-        _showSuccessDialog('Presensi Berhasil!'); // Pass success message
-      } else {
-        print('Failed to submit attendance: ${response.body}');
-        _showErrorDialog('Presensi Gagal'); // Pass failure message
-      }
-    } catch (e) {
-      print('Error submitting attendance: $e');
-      _showErrorDialog(
-          'Terjadi kesalahan saat Presensi: $e'); // Pass error message
-    }
+  if (NIP == null) {
+    print("NIP not found in SharedPreferences");
+    return; // Handle the case as needed
   }
+
+  print("Retrieved NIP: $NIP");
+  List<Map<String, dynamic>> attendanceData = [];
+
+  // Prepare attendance data
+  for (int i = 0; i < _students.length; i++) {
+    attendanceData.add({
+      'id_siswa': _students[i].nis,
+      'id_jadwal': widget.idJadwal.toString(),
+      'status': _hadirList[i] ? 1 : 0,
+      'id_kelas': widget.idKelas.toString(),
+    });
+  }
+
+  // Get current date in desired format (e.g., yyyy-MM-dd)
+  String formattedDate = DateFormat('yyyy-MM-dd').format(DateTime.now());
+
+  // Log attendance data
+  print("Prepared attendance data: $attendanceData");
+
+  Map<String, dynamic> presensiData = {
+    'presensi': {
+      'guru': {
+        'id_jadwal_mapel': widget.idJadwal.toString(),
+        'id_guru': NIP,
+        'status': 1,
+        'tanggal': formattedDate,  // Use current date here
+        'hari': widget.hari,       // Add hari field here
+      },
+      'siswa': attendanceData,
+    },
+  };
+
+  // Log the presensiData being sent
+  print("Presensi Data to be sent: ${jsonEncode(presensiData)}");
+
+  var url = Uri.parse(
+      Core().ApiUrl + "ApiPresensi/ApiPresensi/storePresensiGdanS/");
+  print("API URL: $url");
+
+  try {
+    final response = await http.post(
+      url,
+      headers: {'Content-Type': 'application/json'},
+      body: jsonEncode(presensiData),
+    );
+
+    // Log the response status and body
+    print('Response status: ${response.statusCode}');
+    print('Response body: ${response.body}');
+
+    if (response.statusCode == 200) {
+      print('Attendance submitted successfully!');
+      _showSuccessDialog('Presensi Berhasil!'); // Pass success message
+    } else {
+      print('Failed to submit attendance: ${response.body}');
+      _showErrorDialog('Presensi Gagal'); // Pass failure message
+    }
+  } catch (e) {
+    print('Error submitting attendance: $e');
+    _showErrorDialog('Terjadi kesalahan saat Presensi: $e'); // Pass error message
+  }
+}
+
+
 
   void _showSuccessDialog(String message) {
     showDialog(
@@ -564,109 +576,50 @@ class _PresensiSiswaPageState extends State<PresensiSiswaPage> {
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
       color: Colors.white,
       child: Padding(
-        padding: const EdgeInsets.all(8.0), // Reduced padding for the card
+        padding: const EdgeInsets.all(8.0),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Mata Pelajaran (Header)
             _buildRow(
               icon: Icons.book_rounded,
               color: Colors.blueAccent,
-              text: widget.namaMapel, // Mata pelajaran
-              fontSize: 18, // Slightly reduced font size for header
-              isBold: true, // Bold text
-              backgroundColor: Colors.blue[50], // Light background for contrast
+              text: widget.namaMapel,
+              fontSize: 18,
+              isBold: true,
+              backgroundColor: Colors.blue[50],
               padding: const EdgeInsets.symmetric(
-                  vertical: 8, horizontal: 12), // Adjusted padding for spacing
-              textColor:
-                  Colors.blueAccent, // Change text color to match the theme
+                  vertical: 8, horizontal: 12),
+              textColor: Colors.blueAccent,
             ),
-
-            const SizedBox(height: 8), // Reduced vertical space after header
-
-            // Kelas
+            const SizedBox(height: 8),
             _buildRow(
               icon: Icons.class_,
               color: Colors.purpleAccent,
-              text: 'Kelas: ${widget.namaKelas}', // Nama kelas
+              text: 'Kelas: ${widget.namaKelas}',
             ),
-
-            const SizedBox(height: 8), // Reduced vertical space between rows
-
-            // Waktu
+            const SizedBox(height: 8),
             _buildRow(
               icon: Icons.access_time,
               color: Colors.orangeAccent,
-              text:
-                  'Waktu: ${widget.waktuMulai} - ${widget.waktuSelesai}', // Waktu mulai dan selesai
+              text: 'Waktu: ${widget.waktuMulai} - ${widget.waktuSelesai}',
             ),
-
-            const SizedBox(height: 8), // Reduced vertical space between rows
-
-            // Hari
+            const SizedBox(height: 8),
             _buildRow(
               icon: Icons.calendar_today_outlined,
               color: Colors.greenAccent,
-              text: 'Hari: ${widget.hari}', // Hari pelajaran
+              text: 'Hari: ${widget.hari}',
             ),
-
-            const SizedBox(height: 8), // Reduced vertical space between rows
-
-            // Tanggal
+            const SizedBox(height: 8),
             _buildRow(
               icon: Icons.calendar_today,
               color: Colors.redAccent,
-              text:
-                  'Tanggal: ${widget.tanggal.isNotEmpty ? widget.tanggal : 'Belum ditentukan'}', // Tanggal pelajaran
-            ),
-
-            const SizedBox(height: 8), // Reduced vertical space between rows
-
-// Checkbox for Teacher's Presence
-            GestureDetector(
-              onTap: () {
-                setState(() {
-                  _isTeacherPresent =
-                      !_isTeacherPresent; // Toggle presence status
-                });
-              },
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Row(
-                    children: [
-                      const Icon(Icons.person,
-                          color: Colors.blue), // Icon next to the text
-                      const SizedBox(width: 8), // Space between icon and text
-                      const Text('Presensi Guru',
-                          style: TextStyle(fontSize: 16)),
-                    ],
-                  ),
-                  Container(
-                    width: 30, // Width of the circle
-                    height: 30, // Height of the circle
-                    decoration: BoxDecoration(
-                      shape: BoxShape.circle,
-                      color: _isTeacherPresent
-                          ? Colors.green
-                          : Colors.grey[300], // Change color based on status
-                    ),
-                    child: Center(
-                      child: _isTeacherPresent
-                          ? const Icon(Icons.check,
-                              color: Colors.white) // Checkmark icon
-                          : const SizedBox
-                              .shrink(), // Empty space if not present
-                    ),
-                  ),
-                ],
-              ),
+              text: 'Tanggal: ${widget.tanggal.isNotEmpty ? widget.tanggal : 'Belum ditentukan'}',
             ),
           ],
         ),
       ),
     );
-  }
+}
 
   Widget _buildRow({
     required IconData icon,
