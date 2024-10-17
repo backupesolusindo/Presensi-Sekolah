@@ -5,6 +5,7 @@ import 'package:http/http.dart' as http; // Import http
 import 'package:intl/date_symbol_data_local.dart';
 import 'package:intl/intl.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'profile.dart';
 import 'recognition/RegistrationScreen.dart';
 import 'bottombar.dart';
 import 'riwayat.dart';
@@ -323,14 +324,30 @@ class _HomePageState extends State<HomePage> {
                     );
                   }),
                   SizedBox(width: 20),
-                  _buildMenuIcon(Icons.lock_open, 'Edit Password', () {}),
+                  _buildMenuIcon(Icons.lock_open, 'Edit Password', () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (context) => ProfilePage()),
+                    );
+                  }), // Icon untuk edit password
                   SizedBox(width: 20),
-                  _buildMenuIcon(Icons.face, 'Nama anak 1', () {}),
-                  SizedBox(width: 20),
-                  _buildMenuIcon(Icons.face, 'Nama anak 2', () {}),
-                  SizedBox(width: 20),
-                  _buildMenuIcon(Icons.face, 'Nama anak 3', () {}),
-                  SizedBox(width: 20),
+                  // Dinamis berdasarkan siswaList
+                  siswaList.isEmpty
+                      ? Text('Tidak ada siswa tersedia',
+                          style: TextStyle(color: Colors.red))
+                      : Row(
+                          children: siswaList.map((siswa) {
+                            return Row(
+                              children: [
+                                _buildMenuIcon(Icons.face, siswa['nama'], () {
+                                  // Aksi ketika icon anak di tap
+                                  print('Klik pada ${siswa['nama']}');
+                                }),
+                                SizedBox(width: 20),
+                              ],
+                            );
+                          }).toList(),
+                        ),
                 ],
               ),
             ),

@@ -502,15 +502,17 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
 
                       // Menampilkan tombol Capture Again hanya jika _image != null
                       if (!showPreview && _image != null)
-                        ElevatedButton(
+                        ElevatedButton.icon(
                           onPressed: () {
                             setState(() {
                               showPreview = true; // Kembali ke preview kamera
                               _image = null; // Reset gambar
                             });
                           },
-                          child: const Text("Ambil Ulang"),
+                          icon: Icon(Icons.camera_alt), // Tambahkan ikon kamera
+                          label: Text("Ambil Ulang"), // Teks pada tombol
                         ),
+
                       const SizedBox(
                           height: 20), // Jarak tambahan di bawah tombol
                     ],
