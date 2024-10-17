@@ -11,7 +11,7 @@ class RiwayatPage extends StatefulWidget {
 }
 
 class _RiwayatPageState extends State<RiwayatPage> {
-  String? selectedSiswa; // Untuk menyimpan NIS yang dipilih
+  String? selectedSiswa;
   int _currentIndex = 1;
   bool showRiwayatMasuk = true;
   int? selectedCardIndex;
@@ -21,17 +21,12 @@ class _RiwayatPageState extends State<RiwayatPage> {
   String nis = "";
   String kelas = "";
   String namaSiswa = "";
+  DateTime? selectedDate; // Variabel untuk menyimpan tanggal yang dipilih
 
   @override
   void initState() {
     super.initState();
-    _fetchData(); // Ambil data saat halaman dibuka
-  }
-
-  @override
-  void dispose() {
-    super.dispose();
-    // Tambahkan kode ini untuk membersihkan jika perlu
+    _fetchData();
   }
 
   Future<void> _fetchData() async {
@@ -43,17 +38,14 @@ class _RiwayatPageState extends State<RiwayatPage> {
           return json.decode(siswaJson);
         }).toList();
 
-        // Ambil siswa yang dipilih dari SharedPreferences
         selectedSiswa = prefs.getString('selectedSiswa');
         if (selectedSiswa != null) {
-          // Jika ada siswa yang dipilih, update detail siswa
           final selected =
               siswaList.firstWhere((siswa) => siswa['nama'] == selectedSiswa);
-          _updateSiswaDetail(selected); // Tampilkan detail siswa terpilih
+          _updateSiswaDetail(selected);
         } else {
-          // Jika tidak ada siswa yang dipilih, pilih siswa pertama
           selectedSiswa = siswaList.first['nama'];
-          _updateSiswaDetail(siswaList.first); // Tampilkan detail siswa pertama
+          _updateSiswaDetail(siswaList.first);
         }
       });
     } else {
@@ -61,7 +53,6 @@ class _RiwayatPageState extends State<RiwayatPage> {
     }
   }
 
-  // Update detail siswa saat dropdown berubah
   void _updateSiswaDetail(Map<String, dynamic> siswa) {
     setState(() {
       namaSiswa = siswa['nama'];
@@ -80,7 +71,6 @@ class _RiwayatPageState extends State<RiwayatPage> {
       if (response.statusCode == 200) {
         final result = json.decode(response.body);
         if (result['status'] == 'success') {
-          // Periksa apakah widget masih mounted sebelum memanggil setState
           if (mounted) {
             setState(() {
               riwayatData = result['data'];
@@ -108,10 +98,9 @@ class _RiwayatPageState extends State<RiwayatPage> {
       if (response.statusCode == 200) {
         final List<dynamic> result = json.decode(response.body);
         if (result.isNotEmpty) {
-          // Periksa apakah widget masih mounted sebelum memanggil setState
           if (mounted) {
             setState(() {
-              riwayatData = result; // Simpan data yang diambil
+              riwayatData = result;
               isLoading = false;
             });
           }
@@ -127,7 +116,6 @@ class _RiwayatPageState extends State<RiwayatPage> {
   }
 
   void showError(String message) {
-    // Periksa apakah widget masih mounted sebelum memanggil setState
     if (mounted) {
       setState(() {
         isLoading = false;
@@ -156,76 +144,107 @@ class _RiwayatPageState extends State<RiwayatPage> {
     }
   }
 
+  // Fungsi untuk memilih tanggal
+  Future<void> _selectDate(BuildContext context) async {
+    final DateTime? picked = await showDatePicker(
+      context: context,
+      initialDate: selectedDate ?? DateTime.now(),
+      firstDate: DateTime(2000),
+      lastDate: DateTime(2101),
+    );
+    if (picked != null && picked != selectedDate) {
+      setState(() {
+        selectedDate = picked;
+        _filterRiwayatByDate(); // Filter riwayat setelah memilih tanggal
+      });
+    }
+  }
+
+  // Fungsi untuk memfilter riwayat berdasarkan tanggal
+  void _filterRiwayatByDate() {
+    if (selectedDate != null) {
+      final selectedDateString =
+          "${selectedDate!.year}-${selectedDate!.month.toString().padLeft(2, '0')}-${selectedDate!.day.toString().padLeft(2, '0')}";
+      riwayatData = riwayatData.where((item) {
+        // Pastikan item['tanggal'] sesuai format YYYY-MM-DD
+        return item['tanggal'].toString().startsWith(selectedDateString);
+      }).toList();
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.white,
       body: Stack(
         children: [
-          Stack(
-            children: [
-              Container(
-                decoration: BoxDecoration(
-                  image: DecorationImage(
-                    image: AssetImage('assets/walibg.png'),
-                    fit: BoxFit.cover,
+          Container(
+            decoration: BoxDecoration(
+              image: DecorationImage(
+                image: AssetImage('assets/walibg.png'),
+                fit: BoxFit.cover,
+              ),
+            ),
+          ),
+          Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: SingleChildScrollView(
+              // Menambahkan SingleChildScrollView di sini
+              child: Column(
+                children: <Widget>[
+                  const SizedBox(height: 20),
+
+                  // Menambahkan button untuk memilih tanggal
+                  ElevatedButton(
+                    onPressed: () => _selectDate(context),
+                    child: Text(selectedDate == null
+                        ? 'Pilih Tanggal'
+                        : 'Tanggal Dipilih: ${selectedDate!.toLocal()}'
+                            .split(' ')[0]),
                   ),
-                ),
-              ),
-              Padding(
-                padding: const EdgeInsets.all(16.0),
-                child: Column(
-                  children: <Widget>[
-                    // Menambahkan _buildProfileCard di sini
-                    _buildProfileCard(),
 
-                    const SizedBox(height: 20),
-
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                      children: [
-                        _buildRiwayatCard(
-                          index: 0,
-                          icon: Icons.door_front_door,
-                          title: 'Riwayat\nMasuk',
-                          color: Colors.orangeAccent,
-                          onTap: () {
-                            setState(() {
-                              showRiwayatMasuk = true;
-                              selectedCardIndex = 0;
-                              fetchRiwayatMasuk();
-                            });
-                          },
-                        ),
-                        _buildRiwayatCard(
-                          index: 1,
-                          icon: Icons.book,
-                          title: 'Riwayat\nMapel',
-                          color: Colors.purpleAccent,
-                          onTap: () {
-                            setState(() {
-                              showRiwayatMasuk = false;
-                              selectedCardIndex = 1;
-                              fetchRiwayatMapel(); // Ambil data riwayat mapel
-                            });
-                          },
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 20),
-                    // Bagian yang dapat digulir
-                    Expanded(
-                      child: isLoading
-                          ? Center(
-                              child: Text("Pilih riwayat yang ingin dilihat"))
-                          : showRiwayatMasuk
-                              ? _buildRiwayatMasukList()
-                              : _buildRiwayatMapelList(),
-                    ),
-                  ],
-                ),
+                  const SizedBox(height: 20),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                    children: [
+                      _buildRiwayatCard(
+                        index: 0,
+                        icon: Icons.door_front_door,
+                        title: 'Riwayat\nMasuk',
+                        color: Colors.orangeAccent,
+                        onTap: () {
+                          setState(() {
+                            showRiwayatMasuk = true;
+                            selectedCardIndex = 0;
+                            fetchRiwayatMasuk();
+                          });
+                        },
+                      ),
+                      _buildRiwayatCard(
+                        index: 1,
+                        icon: Icons.book,
+                        title: 'Riwayat\nMapel',
+                        color: Colors.purpleAccent,
+                        onTap: () {
+                          setState(() {
+                            showRiwayatMasuk = false;
+                            selectedCardIndex = 1;
+                            fetchRiwayatMapel();
+                          });
+                        },
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 20),
+                  // Widget untuk menampilkan riwayat masuk atau mapel
+                  isLoading
+                      ? Center(child: Text("Pilih riwayat yang ingin dilihat"))
+                      : showRiwayatMasuk
+                          ? _buildRiwayatMasukList()
+                          : _buildRiwayatMapelList(),
+                ],
               ),
-            ],
+            ),
           ),
         ],
       ),
@@ -241,62 +260,6 @@ class _RiwayatPageState extends State<RiwayatPage> {
     );
   }
 
-  Widget _buildProfileCard() {
-    return Column(
-      children: [
-        SizedBox(height: 40),
-        Card(
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(15.0),
-          ),
-          elevation: 5,
-          color: Colors.white,
-          child: Padding(
-            padding: const EdgeInsets.all(16.0),
-            child: Row(
-              children: [
-                CircleAvatar(
-                  backgroundImage: AssetImage('assets/logopoltek.png'),
-                ),
-                SizedBox(width: 16),
-                Flexible(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        'Riwayat Presensi',
-                        style: TextStyle(
-                          fontSize: 18,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.black,
-                        ),
-                      ),
-                      Text(
-                        namaSiswa,
-                        style: TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.black,
-                        ),
-                      ),
-                      Text(
-                        'NIS : $nis',
-                        style: TextStyle(
-                          fontSize: 14,
-                          color: Colors.grey[600],
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ),
-      ],
-    );
-  }
-
   Widget _buildRiwayatCard({
     required int index,
     required IconData icon,
@@ -304,218 +267,75 @@ class _RiwayatPageState extends State<RiwayatPage> {
     required Color color,
     required VoidCallback onTap,
   }) {
-    double scale = selectedCardIndex == index ? 1.1 : 1.0;
-
     return GestureDetector(
       onTap: onTap,
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 300),
-        curve: Curves.easeInOut,
-        transformAlignment: Alignment.center,
-        transform: Matrix4.identity()..scale(scale),
-        child: InkWell(
-          onTap: onTap,
-          borderRadius: BorderRadius.circular(22),
-          child: Card(
-            elevation: 8,
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(22),
-            ),
-            child: Container(
-              width: 120,
-              padding: const EdgeInsets.all(16.0),
-              decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  colors: [
-                    color.withOpacity(0.8),
-                    color.withOpacity(0.5),
-                  ],
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
+      child: Card(
+        color: selectedCardIndex == index ? color : Colors.white,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
+        elevation: 4,
+        child: Container(
+          padding: const EdgeInsets.all(16.0),
+          width: 150,
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(icon,
+                  size: 40,
+                  color:
+                      selectedCardIndex == index ? Colors.white : Colors.black),
+              const SizedBox(height: 10),
+              Text(
+                title,
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  color:
+                      selectedCardIndex == index ? Colors.white : Colors.black,
+                  fontSize: 16,
+                  fontWeight: FontWeight.bold,
                 ),
-                borderRadius: BorderRadius.circular(22),
               ),
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Icon(icon, size: 40, color: Colors.white),
-                  const SizedBox(height: 8),
-                  Text(
-                    title,
-                    textAlign: TextAlign.center,
-                    style: const TextStyle(
-                      color: Colors.white,
-                      fontWeight: FontWeight.bold,
-                      fontSize: 16,
-                    ),
-                  ),
-                ],
-              ),
-            ),
+            ],
           ),
         ),
       ),
     );
   }
 
-// Tambahkan method ini untuk membangun list riwayat masuk
   Widget _buildRiwayatMasukList() {
     return ListView.builder(
-      shrinkWrap: true,
+      shrinkWrap: true, // Mengatur untuk membungkus tinggi
+      physics:
+          NeverScrollableScrollPhysics(), // Menonaktifkan scroll pada ListView ini
       itemCount: riwayatData.length,
       itemBuilder: (context, index) {
         final item = riwayatData[index];
-        return _buildRiwayatMasukItem(
-          item['tanggal'] ?? 'Tanggal tidak tersedia',
-          item['waktu'] ?? 'Waktu tidak tersedia',
-          item['kelas'] ?? 'Nama Kelas tidak tersedia',
-          item['status'] ?? 'Status tidak tersedia',
-          index,
+        return Card(
+          margin: EdgeInsets.symmetric(vertical: 5),
+          child: ListTile(
+            title: Text(item['tanggal'] ?? ''),
+            subtitle: Text(item['status'] ?? ''),
+          ),
         );
       },
     );
   }
 
-// TANPAMISAHINTGLWAKTU
-  // Widget _buildRiwayatMapelList() {
-  //   return ListView.builder(
-  //     shrinkWrap: true,
-  //     itemCount: riwayatData.length,
-  //     itemBuilder: (context, index) {
-  //       final item = riwayatData[index];
-  //       return _buildRiwayatMapelItem(
-  //         item['tanggal'] ?? 'Tanggal tidak tersedia',
-  //         item['waktu'] ?? 'Waktu tidak tersedia',
-  //         item['id_jadwal'] ?? 'ID Jadwal tidak tersedia',
-  //         item['status'] ?? 'Status tidak tersedia',
-  //         index,
-  //       );
-  //     },
-  //   );
-  // }
-
-//MISAHINTGLWAKTU
-// Tambahkan method ini untuk membangun list riwayat mapel
   Widget _buildRiwayatMapelList() {
     return ListView.builder(
-      shrinkWrap: true,
+      shrinkWrap: true, // Mengatur untuk membungkus tinggi
+      physics:
+          NeverScrollableScrollPhysics(), // Menonaktifkan scroll pada ListView ini
       itemCount: riwayatData.length,
       itemBuilder: (context, index) {
         final item = riwayatData[index];
-
-        // Memisahkan tanggal dan waktu dengan penanganan kesalahan
-        String tanggal = 'Tanggal tidak tersedia';
-        String waktu = 'Waktu tidak tersedia';
-
-        if (item['tanggal'] != null && item['tanggal'].isNotEmpty) {
-          List<String> parts = item['tanggal'].split(' ');
-          if (parts.length > 1) {
-            tanggal = parts[0]; // Ambil bagian tanggal
-            waktu = parts[1]; // Ambil bagian waktu
-          } else {
-            tanggal = parts[0]; // Jika tidak ada waktu, tetap ambil tanggal
-          }
-        }
-
-        return _buildRiwayatMapelItem(
-          tanggal,
-          waktu,
-          item['id_jadwal'] ?? 'ID Jadwal tidak tersedia',
-          item['status'] ?? 'Status tidak tersedia',
-          index,
+        return Card(
+          margin: EdgeInsets.symmetric(vertical: 5),
+          child: ListTile(
+            title: Text(item['mapel'] ?? ''),
+            subtitle: Text(item['tanggal'] ?? ''),
+          ),
         );
       },
-    );
-  }
-
-// Item untuk riwayat masuk
-  Widget _buildRiwayatMasukItem(
-      String tanggal, String waktu, String kelas, String status, int index) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 8.0),
-      child: Card(
-        elevation: 8,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(15),
-        ),
-        child: Container(
-          padding: const EdgeInsets.all(16.0),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text('Nama Kelas: $kelas',
-                  style: TextStyle(fontWeight: FontWeight.bold)),
-              const SizedBox(height: 8),
-              Text('Tanggal: $tanggal'),
-              const SizedBox(height: 8),
-              Text('Waktu: $waktu'),
-              const SizedBox(height: 8),
-              Text('Status: $status'),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-
-// TANPAMISAHINTGLWAKTU
-  // Widget _buildRiwayatMapelItem(
-  //     String tanggal, String waktu, String idJadwal, String status, int index) {
-  //   return Padding(
-  //     padding: const EdgeInsets.symmetric(vertical: 8.0),
-  //     child: Card(
-  //       elevation: 8,
-  //       shape: RoundedRectangleBorder(
-  //         borderRadius: BorderRadius.circular(15),
-  //       ),
-  //       child: Container(
-  //         padding: const EdgeInsets.all(16.0),
-  //         child: Column(
-  //           crossAxisAlignment: CrossAxisAlignment.start,
-  //           children: [
-  //             Text('ID Jadwal: $idJadwal',
-  //                 style: TextStyle(fontWeight: FontWeight.bold)),
-  //             const SizedBox(height: 8),
-  //             Text('Tanggal: $tanggal'),
-  //             const SizedBox(height: 8),
-  //             Text('Waktu: $waktu'),
-  //             const SizedBox(height: 8),
-  //             Text('Status: $status'),
-  //           ],
-  //         ),
-  //       ),
-  //     ),
-  //   );
-  // }
-
-//MISAHINTGLWAKTU
-  Widget _buildRiwayatMapelItem(
-      String tanggal, String waktu, String idJadwal, String status, int index) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 8.0),
-      child: Card(
-        elevation: 8,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(15),
-        ),
-        child: Container(
-          padding: const EdgeInsets.all(16.0),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text('ID Jadwal: $idJadwal',
-                  style: TextStyle(fontWeight: FontWeight.bold)),
-              const SizedBox(height: 8),
-              Text('Tanggal: $tanggal'),
-              const SizedBox(height: 8),
-              Text(
-                  'Waktu: $waktu'), // Gunakan waktu yang diambil dari bagian belakang
-              const SizedBox(height: 8),
-              Text('Status: $status'),
-            ],
-          ),
-        ),
-      ),
     );
   }
 }
