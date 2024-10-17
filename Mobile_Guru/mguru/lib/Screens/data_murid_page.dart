@@ -178,67 +178,57 @@ class _DataMuridPageState extends State<DataMuridPage> {
     return Scaffold(
       body: Stack(
         children: [
-          // Background image with a gradient overlay
-          // Container(
-          //   decoration: BoxDecoration(
-          //     image: DecorationImage(
-          //       image: AssetImage(
-          //           'assets/images/WaliRename.png'), // Ensure path is correct
-          //       fit: BoxFit.cover,
-          //     ),
-          //   ),
-          // ),
-          // Overlay for background transparency
-          // Container(
-          //   color: Colors.black.withOpacity(0.3), // Increased transparency for better readability
-          // ),
           // Loading indicator or student list
           _isLoading
               ? Center(child: CircularProgressIndicator())
-              : Column(
-                  // Changed from ListView to Column
-                  children: [
-                    // Card at the top with the title "Data Murid"
-                    SizedBox(height: 20),
-                    Container(
-                      decoration: BoxDecoration(
-                        color: Colors.white,
-                        borderRadius:
-                            BorderRadius.circular(8), // Rounded corners
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.grey
-                                .shade300, // Soft grey shadow with transparency
-                            spreadRadius:
-                                2, // Controls how much the shadow spreads
-                            blurRadius: 8, // Higher value for smooth shadow
-                            offset: Offset(0, 4), // Offset for vertical shadow
+              : SingleChildScrollView(
+                  // Wrap everything in a SingleChildScrollView
+                  child: Column(
+                    children: [
+                      SizedBox(height: 20), // Space at the top
+                      // Card at the top with the title "Data Murid"
+                      Container(
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          borderRadius:
+                              BorderRadius.circular(8), // Rounded corners
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.grey
+                                  .shade300, // Soft grey shadow with transparency
+                              spreadRadius:
+                                  2, // Controls how much the shadow spreads
+                              blurRadius: 8, // Higher value for smooth shadow
+                              offset:
+                                  Offset(0, 4), // Offset for vertical shadow
+                            ),
+                          ],
+                        ),
+                        child: Padding(
+                          padding: const EdgeInsets.all(
+                              16.0), // Padding inside the card
+                          child: Text(
+                            'Data Murid',
+                            style: TextStyle(
+                              fontSize:
+                                  16, // Increased font size for better visibility
+                              color: Colors.black, // Text color
+                            ),
+                            textAlign:
+                                TextAlign.center, // Center align the text
                           ),
-                        ],
-                      ),
-                      child: Padding(
-                        padding: const EdgeInsets.all(
-                            16.0), // Padding inside the card
-                        child: Text(
-                          'Data Murid',
-                          style: TextStyle(
-                            fontSize:
-                                20, // Increased font size for better visibility
-                            color: Colors.black, // Text color
-                          ),
-                          textAlign: TextAlign.center, // Center align the text
                         ),
                       ),
-                    ),
-                     // SizedBox to create space between the title and the student list
-  SizedBox(height: 10), // Adjust height as needed
+                      SizedBox(
+                          height: 10), // Space between title and student list
 
-
-                    // ListView to display student details
-                    Expanded(
-                      // Make ListView take the remaining space
-                      child: ListView.builder(
+                      // ListView to display student details
+                      ListView.builder(
                         itemCount: _students.length,
+                        shrinkWrap:
+                            true, // Allow ListView to take only required space
+                        physics:
+                            NeverScrollableScrollPhysics(), // Disable ListView scrolling
                         itemBuilder: (context, index) {
                           return Container(
                             margin: EdgeInsets.symmetric(
@@ -291,8 +281,8 @@ class _DataMuridPageState extends State<DataMuridPage> {
                           );
                         },
                       ),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
         ],
       ),
