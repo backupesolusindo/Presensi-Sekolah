@@ -5,6 +5,7 @@ import 'package:http/http.dart' as http; // Import http
 import 'package:intl/date_symbol_data_local.dart';
 import 'package:intl/intl.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'editpassword.dart';
 import 'profile.dart';
 import 'recognition/RegistrationScreen.dart';
 import 'bottombar.dart';
@@ -327,7 +328,7 @@ class _HomePageState extends State<HomePage> {
                   _buildMenuIcon(Icons.lock_open, 'Edit Password', () {
                     Navigator.push(
                       context,
-                      MaterialPageRoute(builder: (context) => ProfilePage()),
+                      MaterialPageRoute(builder: (context) => EditPasswordPage()),
                     );
                   }), // Icon untuk edit password
                   SizedBox(width: 20),
