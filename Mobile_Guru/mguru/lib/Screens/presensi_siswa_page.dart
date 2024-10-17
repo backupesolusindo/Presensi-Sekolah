@@ -7,7 +7,6 @@ import 'package:mobile_presensi_kdtg/core.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:intl/intl.dart';
 
-
 class Student {
   final String name;
   final String nis;
@@ -82,7 +81,7 @@ class _PresensiSiswaPageState extends State<PresensiSiswaPage> {
   List<Student> _students = [];
   bool _isLoading = true;
   String? NIP; // Declare NIP here
-  bool _isTeacherPresent = false; // Declare teacher presence status
+  int isGuruHadir = 0;
 
   @override
   void initState() {
@@ -127,61 +126,61 @@ class _PresensiSiswaPageState extends State<PresensiSiswaPage> {
   }
 
   void _showErrorDialog(String message) {
-  showDialog(
-    context: context,
-    builder: (BuildContext context) {
-      return Dialog(
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(16.0), // Rounded corners
-        ),
-        child: Padding(
-          padding: const EdgeInsets.all(20.0),
-          child: Column(
-            mainAxisSize: MainAxisSize.min, // Ensure the dialog is small
-            children: [
-              const Icon(
-                Icons.error,
-                color: Colors.red,
-                size: 60, // Icon size
-                semanticLabel: 'Error Icon', // Accessibility
-              ),
-              const SizedBox(height: 20), // Space between icon and text
-              Text(
-                'Error',
-                style: TextStyle(
-                  fontSize: 24, // Title font size
-                  fontWeight: FontWeight.bold,
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return Dialog(
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16.0), // Rounded corners
+          ),
+          child: Padding(
+            padding: const EdgeInsets.all(20.0),
+            child: Column(
+              mainAxisSize: MainAxisSize.min, // Ensure the dialog is small
+              children: [
+                const Icon(
+                  Icons.error,
                   color: Colors.red,
+                  size: 60, // Icon size
+                  semanticLabel: 'Error Icon', // Accessibility
                 ),
-              ),
-              const SizedBox(height: 10), // Space between title and message
-              Text(
-                message,
-                textAlign: TextAlign.center, // Center the text
-                style: const TextStyle(fontSize: 16),
-              ),
-              const SizedBox(height: 20), // Space before the button
-              ElevatedButton(
-                onPressed: () {
-                  Navigator.of(context).pop(); // Close the dialog
-                },
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.red, // Button color
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(10.0), // Rounded button
+                const SizedBox(height: 20), // Space between icon and text
+                Text(
+                  'Error',
+                  style: TextStyle(
+                    fontSize: 24, // Title font size
+                    fontWeight: FontWeight.bold,
+                    color: Colors.red,
                   ),
                 ),
-                child: const Text('OK', style: TextStyle(color: Colors.white)),
-              ),
-            ],
+                const SizedBox(height: 10), // Space between title and message
+                Text(
+                  message,
+                  textAlign: TextAlign.center, // Center the text
+                  style: const TextStyle(fontSize: 16),
+                ),
+                const SizedBox(height: 20), // Space before the button
+                ElevatedButton(
+                  onPressed: () {
+                    Navigator.of(context).pop(); // Close the dialog
+                  },
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.red, // Button color
+                    shape: RoundedRectangleBorder(
+                      borderRadius:
+                          BorderRadius.circular(10.0), // Rounded button
+                    ),
+                  ),
+                  child:
+                      const Text('OK', style: TextStyle(color: Colors.white)),
+                ),
+              ],
+            ),
           ),
-        ),
-      );
-    },
-  );
-}
-
-
+        );
+      },
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -200,20 +199,20 @@ class _PresensiSiswaPageState extends State<PresensiSiswaPage> {
       body: Stack(
         children: [
           // Background Image
-          Container(
-            decoration: BoxDecoration(
-              image: DecorationImage(
-                image: AssetImage('assets/images/WaliRename.png'),
-                fit: BoxFit.cover,
-              ),
-            ),
-          ),
+          // Container(
+          //   decoration: BoxDecoration(
+          //     image: DecorationImage(
+          //       image: AssetImage('assets/images/WaliRename.png'),
+          //       fit: BoxFit.cover,
+          //     ),
+          //   ),
+          // ),
           // Overlay with opacity
-          Container(
-            decoration: BoxDecoration(
-              color: Colors.black.withOpacity(0.3),
-            ),
-          ),
+          // Container(
+          //   decoration: BoxDecoration(
+          //     color: Colors.black.withOpacity(0.3),
+          //   ),
+          // ),
           // Main content
           _isLoading
               ? Center(
@@ -233,7 +232,7 @@ class _PresensiSiswaPageState extends State<PresensiSiswaPage> {
   Widget _buildOtherPage() {
     switch (_selectedIndex) {
       case 1:
-        return RiwayatSiswaPage();
+      //  return RiwayatSiswaPage();
       case 2:
         return DataMuridPage(idKelas: widget.idKelas);
       default:
@@ -242,30 +241,40 @@ class _PresensiSiswaPageState extends State<PresensiSiswaPage> {
   }
 
   Widget _buildPresensiPage() {
-    return Padding(
-      padding: const EdgeInsets.all(16.0),
-      child: Column(
-        children: [
-          _buildInfoCard(),
-          const SizedBox(height: 4),
-          _buildSelectAllAndSubmitCard(), // Replace with combined card
-          const SizedBox(height: 4),
-          _buildStudentGrid(),
-        ],
-      ),
-    );
+    return Column(children: [
+      _buildSelectAllAndSubmitCard(),
+      Expanded(
+          child: SingleChildScrollView(
+        child: Column(
+          children: [
+            _buildInfoCard(),
+            const SizedBox(height: 4),
+            _buildStudentGrid()
+          ],
+        ),
+      ))
+    ]);
   }
 
   Widget _buildSelectAllAndSubmitCard() {
     bool allSelected =
         _hadirList.every((element) => element); // Check if all are selected
 
-    return Card(
-      elevation: 4, // Reduced elevation for a subtle effect
-      shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(8)), // Slightly less rounded
-      color: Colors.white,
-      shadowColor: Colors.black.withOpacity(0.1), // Softer shadow
+    return Container(
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(8), // Rounded corners
+        boxShadow: [
+          BoxShadow(
+            color: Colors.grey.shade300, // Soft grey shadow with transparency
+            spreadRadius: 2, // Controls how much the shadow spreads
+            blurRadius: 8, // Higher value for smooth shadow
+            offset:
+                Offset(0, 4), // Offset for vertical shadow, adjust as needed
+          ),
+        ],
+      ),
+      margin: EdgeInsets.symmetric(horizontal: 8, vertical: 16),
       child: Padding(
         padding: const EdgeInsets.symmetric(
             horizontal: 12.0, vertical: 8.0), // Reduced padding
@@ -351,91 +360,98 @@ class _PresensiSiswaPageState extends State<PresensiSiswaPage> {
       return Center(child: CircularProgressIndicator());
     }
 
-    return Expanded(
-      child: GridView.builder(
-        padding: EdgeInsets.zero,
-        gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-          crossAxisCount: 3,
-          childAspectRatio: 0.7,
-        ),
-        itemCount: _students.length,
-        itemBuilder: (context, index) => _buildStudentCard(index),
+    return GridView.builder(
+      padding: EdgeInsets.zero,
+      shrinkWrap: true, // GridView akan menyusut sesuai isi
+      physics:
+          NeverScrollableScrollPhysics(), // Disable scroll GridView karena sudah dalam SingleChildScrollView
+      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+        crossAxisCount: 3,
+        childAspectRatio: 0.7,
       ),
+      itemCount: _students.length,
+      itemBuilder: (context, index) => _buildStudentCard(index),
     );
   }
 
-  Widget _buildStudentCard(int index) {
-    return Card(
-      elevation: 4,
-      margin: const EdgeInsets.all(8),
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-      child: InkWell(
-        onTap: () {
-          setState(() {
-            _hadirList[index] = !_hadirList[index];
-          });
-        },
-        child: Padding(
-          padding: const EdgeInsets.symmetric(vertical: 10.0, horizontal: 10.0),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              CircleAvatar(
-                radius: 20,
-                backgroundColor: Colors.blue[100],
-                child: Icon(
-                  Icons.person,
-                  size: 20,
-                  color: _hadirList[index] ? Colors.blue[700] : Colors.grey,
+Widget _buildStudentCard(int index) {
+  return Container(
+    decoration: BoxDecoration(
+      color: Colors.white,
+      borderRadius: BorderRadius.circular(8), // Rounded corners
+      boxShadow: [
+        BoxShadow(
+          color: Colors.grey.shade300, // Soft grey shadow with transparency
+          spreadRadius: 2, // Controls how much the shadow spreads
+          blurRadius: 8, // Higher value for smooth shadow
+          offset: Offset(0, 4), // Offset for vertical shadow
+        ),
+      ],
+    ),
+    margin: const EdgeInsets.all(8), // Similar margin as in Card
+    child: InkWell(
+      onTap: () {
+        setState(() {
+          _hadirList[index] = !_hadirList[index];
+        });
+      },
+      child: Padding(
+        padding: const EdgeInsets.symmetric(vertical: 10.0, horizontal: 10.0),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            CircleAvatar(
+              radius: 20,
+              backgroundColor: Colors.blue[100],
+              child: Icon(
+                Icons.person,
+                size: 20,
+                color: _hadirList[index] ? Colors.blue[700] : Colors.grey,
+              ),
+            ),
+            const SizedBox(height: 8),
+            Text(
+              _students[index].name,
+              style: _textStyle(13),
+              textAlign: TextAlign.center,
+              maxLines: 1, // Limit the text to one line
+              overflow: TextOverflow.ellipsis, // Add ellipsis for overflow
+            ),
+            const SizedBox(height: 12), // Increased space to lower the checkbox
+            GestureDetector(
+              onTap: () {
+                setState(() {
+                  _hadirList[index] = !_hadirList[index];
+                });
+              },
+              child: AnimatedContainer(
+                duration: const Duration(milliseconds: 300), // Animation duration
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: _hadirList[index]
+                      ? Colors.green
+                      : Colors.transparent, // Background color based on checked state
+                  border: Border.all(
+                      color: Colors.green, width: 2), // Border color
                 ),
+                width: 20, // Fixed width for circular checkbox
+                height: 20, // Fixed height for circular checkbox
+                alignment: Alignment.center, // Center the icon
+                child: _hadirList[index]
+                    ? Icon(
+                        Icons.check,
+                        color: Colors.white, // Check icon color
+                        size: 18, // Adjust the icon size for better fit
+                      )
+                    : null, // No icon when unchecked
               ),
-              const SizedBox(height: 8),
-              Text(
-                _students[index].name,
-                style: _textStyle(13),
-                textAlign: TextAlign.center,
-                maxLines: 1, // Limit the text to one line
-                overflow: TextOverflow.ellipsis, // Add ellipsis for overflow
-              ),
-              const SizedBox(
-                  height: 12), // Increased space to lower the checkbox
-              // Customized Circular Checkbox with Animation
-              GestureDetector(
-                onTap: () {
-                  setState(() {
-                    _hadirList[index] = !_hadirList[index];
-                  });
-                },
-                child: AnimatedContainer(
-                  duration:
-                      const Duration(milliseconds: 300), // Animation duration
-                  decoration: BoxDecoration(
-                    shape: BoxShape.circle,
-                    color: _hadirList[index]
-                        ? Colors.green
-                        : Colors
-                            .transparent, // Background color based on checked state
-                    border: Border.all(
-                        color: Colors.green, width: 2), // Border color
-                  ),
-                  width: 20, // Fixed width for circular checkbox
-                  height: 20, // Fixed height for circular checkbox
-                  alignment: Alignment.center, // Center the icon
-                  child: _hadirList[index]
-                      ? Icon(
-                          Icons.check,
-                          color: Colors.white, // Check icon color
-                          size: 18, // Adjust the icon size for better fit
-                        )
-                      : null, // No icon when unchecked
-                ),
-              ),
-            ],
-          ),
+            ),
+          ],
         ),
       ),
-    );
-  }
+    ),
+  );
+}
 
   Future<void> _submitAttendance() async {
   SharedPreferences prefs = await SharedPreferences.getInstance();
@@ -468,14 +484,16 @@ class _PresensiSiswaPageState extends State<PresensiSiswaPage> {
   // Log attendance data
   print("Prepared attendance data: $attendanceData");
 
+  // Update the status of the teacher based on isGuruHadir
+  int guruStatus = isGuruHadir == 1 ? 1 : 0; // Assuming 1 for present and 0 for absent
+
   Map<String, dynamic> presensiData = {
     'presensi': {
       'guru': {
         'id_jadwal_mapel': widget.idJadwal.toString(),
         'id_guru': NIP,
-        'status': 1,
-        'tanggal': formattedDate,  // Use current date here
-        'hari': widget.hari,       // Add hari field here
+        'status': guruStatus, // Use the updated status for the teacher
+        'tanggal': formattedDate, // Use current date here
       },
       'siswa': attendanceData,
     },
@@ -508,10 +526,10 @@ class _PresensiSiswaPageState extends State<PresensiSiswaPage> {
     }
   } catch (e) {
     print('Error submitting attendance: $e');
-    _showErrorDialog('Terjadi kesalahan saat Presensi: $e'); // Pass error message
+    _showErrorDialog(
+        'Terjadi kesalahan saat Presensi: $e'); // Pass error message
   }
 }
-
 
 
   void _showSuccessDialog(String message) {
@@ -570,56 +588,120 @@ class _PresensiSiswaPageState extends State<PresensiSiswaPage> {
     );
   }
 
-  Widget _buildInfoCard() {
-    return Card(
-      elevation: 4,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+Widget _buildInfoCard() {
+  return Container(
+    decoration: BoxDecoration(
       color: Colors.white,
-      child: Padding(
-        padding: const EdgeInsets.all(8.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            _buildRow(
-              icon: Icons.book_rounded,
-              color: Colors.blueAccent,
-              text: widget.namaMapel,
-              fontSize: 18,
-              isBold: true,
-              backgroundColor: Colors.blue[50],
-              padding: const EdgeInsets.symmetric(
-                  vertical: 8, horizontal: 12),
-              textColor: Colors.blueAccent,
-            ),
-            const SizedBox(height: 8),
-            _buildRow(
-              icon: Icons.class_,
-              color: Colors.purpleAccent,
-              text: 'Kelas: ${widget.namaKelas}',
-            ),
-            const SizedBox(height: 8),
-            _buildRow(
-              icon: Icons.access_time,
-              color: Colors.orangeAccent,
-              text: 'Waktu: ${widget.waktuMulai} - ${widget.waktuSelesai}',
-            ),
-            const SizedBox(height: 8),
-            _buildRow(
-              icon: Icons.calendar_today_outlined,
-              color: Colors.greenAccent,
-              text: 'Hari: ${widget.hari}',
-            ),
-            const SizedBox(height: 8),
-            _buildRow(
-              icon: Icons.calendar_today,
-              color: Colors.redAccent,
-              text: 'Tanggal: ${widget.tanggal.isNotEmpty ? widget.tanggal : 'Belum ditentukan'}',
-            ),
-          ],
+      borderRadius: BorderRadius.circular(8), // Rounded corners
+      boxShadow: [
+        BoxShadow(
+          color: Colors.grey.shade300, // Soft grey shadow with transparency
+          spreadRadius: 2, // Controls how much the shadow spreads
+          blurRadius: 8, // Higher value for smooth shadow
+          offset: Offset(0, 4), // Offset for vertical shadow, adjust as needed
         ),
+      ],
+    ),
+    child: Padding(
+      padding: const EdgeInsets.all(8.0),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          _buildRow(
+            icon: Icons.book_rounded,
+            color: Colors.blueAccent,
+            text: widget.namaMapel,
+            fontSize: 18,
+            isBold: true,
+            backgroundColor: Colors.blue[50],
+            padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 12),
+            textColor: Colors.blueAccent,
+          ),
+          const SizedBox(height: 8),
+          _buildRow(
+            icon: Icons.class_,
+            color: Colors.purpleAccent,
+            text: 'Kelas: ${widget.namaKelas}',
+          ),
+          const SizedBox(height: 8),
+          _buildRow(
+            icon: Icons.access_time,
+            color: Colors.orangeAccent,
+            text: 'Waktu: ${widget.waktuMulai} - ${widget.waktuSelesai}',
+          ),
+          const SizedBox(height: 8),
+          _buildRow(
+            icon: Icons.calendar_today_outlined,
+            color: Colors.greenAccent,
+            text: 'Hari: ${widget.hari}',
+          ),
+          const SizedBox(height: 8),
+          _buildRow(
+            icon: Icons.calendar_today,
+            color: Colors.redAccent,
+            text: 'Tanggal: ${widget.tanggal.isNotEmpty ? widget.tanggal : 'Belum ditentukan'}',
+          ),
+          const SizedBox(height: 10), // Space above the checkbox row
+          // Custom circular checkbox for teacher's attendance with icon and text
+         Row(
+  mainAxisAlignment: MainAxisAlignment.spaceBetween, // Aligns items to the edges
+  children: [
+    GestureDetector(
+      onTap: () {
+        setState(() {
+          // Toggle the value of isGuruHadir
+          isGuruHadir = isGuruHadir == 1 ? 0 : 1; // Switch between 0 and 1
+        });
+      },
+      child: Row(
+        children: [
+          Icon(Icons.person, color: Colors.green), // Icon for teacher
+          const SizedBox(width: 8), // Space between icon and text
+          Text(
+            'Presensi Guru:',
+            style: TextStyle(fontSize: 16, fontWeight: FontWeight.w400), // Text style
+          ),
+        ],
       ),
-    );
+    ),
+    GestureDetector(
+      onTap: () {
+        setState(() {
+          // Toggle the value of isGuruHadir
+          isGuruHadir = isGuruHadir == 1 ? 0 : 1; // Switch between 0 and 1
+        });
+      },
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 300), // Animation duration
+        decoration: BoxDecoration(
+          shape: BoxShape.circle,
+          color: isGuruHadir == 1 ? Colors.green : Colors.transparent, // Background color
+          border: Border.all(color: Colors.green, width: 2), // Border color
+        ),
+        width: 24, // Slightly larger for easier interaction
+        height: 24, // Slightly larger for easier interaction
+        alignment: Alignment.center, // Center the icon
+        child: isGuruHadir == 1
+            ? Icon(
+                Icons.check,
+                color: Colors.white, // Check icon color
+                size: 16, // Adjust the icon size for better fit
+              )
+            : null, // No icon when unchecked
+      ),
+    ),
+  ],
+),
+
+
+        ],
+      ),
+    ),
+  );
 }
+
+
+
 
   Widget _buildRow({
     required IconData icon,
@@ -670,13 +752,13 @@ class _PresensiSiswaPageState extends State<PresensiSiswaPage> {
       },
       items: const [
         BottomNavigationBarItem(
-          icon: Icon(Icons.home),
+          icon: Icon(Icons.assignment),
           label: 'Presensi',
         ),
-        BottomNavigationBarItem(
-          icon: Icon(Icons.history),
-          label: 'Riwayat',
-        ),
+      //  BottomNavigationBarItem(
+        //  icon: Icon(Icons.history),
+        //  label: 'Riwayat',
+      //  ),
         BottomNavigationBarItem(
           icon: Icon(Icons.person),
           label: 'Data Murid',
