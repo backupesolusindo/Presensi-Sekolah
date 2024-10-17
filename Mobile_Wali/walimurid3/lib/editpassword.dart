@@ -14,7 +14,7 @@ class _EditPasswordPageState extends State<EditPasswordPage> {
   final TextEditingController _newPasswordController = TextEditingController();
   final TextEditingController _confirmPasswordController =
       TextEditingController();
-  
+
   bool _isLoading = false;
 
   Future<void> _updatePassword() async {
@@ -26,7 +26,8 @@ class _EditPasswordPageState extends State<EditPasswordPage> {
 
     try {
       SharedPreferences prefs = await SharedPreferences.getInstance();
-      String? noHp = prefs.getString('no_hp'); // Ambil nomor HP dari Shared Preferences
+      String? noHp =
+          prefs.getString('no_hp'); // Ambil nomor HP dari Shared Preferences
 
       final requestBody = {
         'password_baru': _newPasswordController.text,
@@ -45,19 +46,19 @@ class _EditPasswordPageState extends State<EditPasswordPage> {
 
       final data = jsonDecode(response.body);
 
-      if (response.statusCode == 200 && data['success'] == true) {
+        if (response.statusCode == 200 && data['success'] == true) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text('Password berhasil diubah')),
         );
-
-        // Navigasi ke halaman Home setelah berhasil
-        Navigator.pushReplacement(
-          context,
+        
+        Navigator.of(context).pushAndRemoveUntil(
           MaterialPageRoute(builder: (context) => HomePage()),
+          (Route<dynamic> route) => false,
         );
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(data['message'] ?? 'Gagal memperbarui password')),
+          SnackBar(
+              content: Text(data['message'] ?? 'Gagal memperbarui password')),
         );
       }
     } catch (e) {
@@ -90,8 +91,6 @@ class _EditPasswordPageState extends State<EditPasswordPage> {
                 validator: (value) {
                   if (value == null || value.isEmpty) {
                     return 'Password baru tidak boleh kosong';
-                  } else if (value.length < 6) {
-                    return 'Password minimal 6 karakter';
                   }
                   return null;
                 },
@@ -99,7 +98,8 @@ class _EditPasswordPageState extends State<EditPasswordPage> {
               SizedBox(height: 16),
               TextFormField(
                 controller: _confirmPasswordController,
-                decoration: InputDecoration(labelText: 'Konfirmasi Password Baru'),
+                decoration:
+                    InputDecoration(labelText: 'Konfirmasi Password Baru'),
                 obscureText: true,
                 validator: (value) {
                   if (value != _newPasswordController.text) {
