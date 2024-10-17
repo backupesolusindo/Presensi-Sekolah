@@ -141,7 +141,7 @@ class _DataMuridPageState extends State<DataMuridPage> {
                       const SizedBox(height: 8), // Spacing
                       // Class name as styled text
                       Text(
-                        'Kelas: ${student.namaKelas}', // Display 'Kelas'
+                        ' ${student.namaKelas}', // Display 'Kelas'
                         style: TextStyle(
                           fontSize: 16,
                           color: Colors
@@ -190,8 +190,7 @@ class _DataMuridPageState extends State<DataMuridPage> {
           // ),
           // Overlay for background transparency
           // Container(
-          //   color: Colors.black.withOpacity(
-          //       0.3), // Increased transparency for better readability
+          //   color: Colors.black.withOpacity(0.3), // Increased transparency for better readability
           // ),
           // Loading indicator or student list
           _isLoading
@@ -200,13 +199,22 @@ class _DataMuridPageState extends State<DataMuridPage> {
                   // Changed from ListView to Column
                   children: [
                     // Card at the top with the title "Data Murid"
-                    Card(
-                      margin: const EdgeInsets.symmetric(
-                          vertical: 16, horizontal: 16),
-                      elevation: 6, // Enhanced shadow for card
-                      shape: RoundedRectangleBorder(
+                    SizedBox(height: 20),
+                    Container(
+                      decoration: BoxDecoration(
+                        color: Colors.white,
                         borderRadius:
-                            BorderRadius.circular(15), // Round card corners
+                            BorderRadius.circular(8), // Rounded corners
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.grey
+                                .shade300, // Soft grey shadow with transparency
+                            spreadRadius:
+                                2, // Controls how much the shadow spreads
+                            blurRadius: 8, // Higher value for smooth shadow
+                            offset: Offset(0, 4), // Offset for vertical shadow
+                          ),
+                        ],
                       ),
                       child: Padding(
                         padding: const EdgeInsets.all(
@@ -214,13 +222,18 @@ class _DataMuridPageState extends State<DataMuridPage> {
                         child: Text(
                           'Data Murid',
                           style: TextStyle(
-                            fontSize: 16, // Font size for the title
+                            fontSize:
+                                20, // Increased font size for better visibility
                             color: Colors.black, // Text color
                           ),
                           textAlign: TextAlign.center, // Center align the text
                         ),
                       ),
                     ),
+                     // SizedBox to create space between the title and the student list
+  SizedBox(height: 10), // Adjust height as needed
+
+
                     // ListView to display student details
                     Expanded(
                       // Make ListView take the remaining space
@@ -228,6 +241,12 @@ class _DataMuridPageState extends State<DataMuridPage> {
                         itemCount: _students.length,
                         itemBuilder: (context, index) {
                           return Container(
+                            margin: EdgeInsets.symmetric(
+                                horizontal: 8,
+                                vertical:
+                                    8), // Adds space outside the container
+                            padding: EdgeInsets.all(
+                                12), // Adds space inside the container
                             decoration: BoxDecoration(
                               color: Colors.white,
                               borderRadius:
@@ -240,13 +259,11 @@ class _DataMuridPageState extends State<DataMuridPage> {
                                       2, // Controls how much the shadow spreads
                                   blurRadius:
                                       8, // Higher value for smooth shadow
-                                  offset: Offset(0,
-                                      4), // Offset for vertical shadow, adjust as needed
+                                  offset: Offset(
+                                      0, 4), // Offset for vertical shadow
                                 ),
                               ],
                             ),
-                            margin: const EdgeInsets.symmetric(
-                                vertical: 8, horizontal: 16),
                             child: ListTile(
                               title: Text(
                                 _students[index].name,

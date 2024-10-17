@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'dart:convert';
 import 'package:http/http.dart' as http;
-
+import 'riwayat_siswa_page.dart';
 import 'data_murid_page.dart';
 import 'package:mobile_presensi_kdtg/core.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -231,6 +231,8 @@ class _PresensiSiswaPageState extends State<PresensiSiswaPage> {
 
   Widget _buildOtherPage() {
     switch (_selectedIndex) {
+      case 1:
+      //  return RiwayatSiswaPage();
       case 2:
         return DataMuridPage(idKelas: widget.idKelas);
       default:
@@ -657,7 +659,7 @@ Widget _buildInfoCard() {
           const SizedBox(width: 8), // Space between icon and text
           Text(
             'Presensi Guru:',
-            style: TextStyle(fontWeight: FontWeight.w400), // Text style
+            style: TextStyle(fontSize: 16, fontWeight: FontWeight.w400), // Text style
           ),
         ],
       ),
@@ -750,10 +752,13 @@ Widget _buildInfoCard() {
       },
       items: const [
         BottomNavigationBarItem(
-          icon: Icon(Icons.home),
+          icon: Icon(Icons.assignment),
           label: 'Presensi',
         ),
-
+      //  BottomNavigationBarItem(
+        //  icon: Icon(Icons.history),
+        //  label: 'Riwayat',
+      //  ),
         BottomNavigationBarItem(
           icon: Icon(Icons.person),
           label: 'Data Murid',
