@@ -47,10 +47,14 @@ class _HomePageState extends State<HomeScreen> {
                     ),
 
                     const SizedBox(height: 90),
-                    _buildButton("Daftar", () {
-                      _navigateWithLoading(context, const RegistrationScreen());
-                    }),
-                    const SizedBox(height: 20),
+
+                    // //Saya menyembunyikan registrasi anjay 
+                    // _buildButton("Daftar", () {
+                    //   _navigateWithLoading(context, const RegistrationScreen());
+                    // }),
+                    // const SizedBox(height: 20),
+                    // //oke bro jadi gitu ya
+
                     _buildButton("Absen", () {
                       _navigateWithLoading(context, const RecognitionScreen());
                     }),

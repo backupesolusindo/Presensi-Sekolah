@@ -534,7 +534,7 @@ class _RecognitionScreenState extends State<RecognitionScreen> {
                   child: const Text('Ambil Ulang'),
                   style: ElevatedButton.styleFrom(
                     shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(20),
+                      borderRadius: BorderRadius.circular(15),
                     ),
                     padding: EdgeInsets.symmetric(horizontal: 20, vertical: 0),
                   ),
@@ -549,7 +549,7 @@ class _RecognitionScreenState extends State<RecognitionScreen> {
                     foregroundColor: Colors.white,
                     backgroundColor: Colors.green, // Teks berwarna putih
                     shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(20),
+                      borderRadius: BorderRadius.circular(15),
                     ),
                     padding: EdgeInsets.symmetric(horizontal: 20, vertical: 0),
                   ),
