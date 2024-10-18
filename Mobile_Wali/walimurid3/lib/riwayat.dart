@@ -21,7 +21,7 @@ class _RiwayatPageState extends State<RiwayatPage> {
   String nis = "";
   String kelas = "";
   String namaSiswa = "";
-  DateTime? selectedDate; // Variabel untuk menyimpan tanggal yang dipilih
+  DateTime selectedDate = DateTime.now(); // Ubah menjadi non-nullable dengan nilai default
 
   @override
   void initState() {
@@ -148,7 +148,7 @@ class _RiwayatPageState extends State<RiwayatPage> {
   Future<void> _selectDate(BuildContext context) async {
     final DateTime? picked = await showDatePicker(
       context: context,
-      initialDate: selectedDate ?? DateTime.now(),
+      initialDate: selectedDate,
       firstDate: DateTime(2000),
       lastDate: DateTime(2101),
     );
@@ -240,14 +240,19 @@ class _RiwayatPageState extends State<RiwayatPage> {
                         child: Padding(
                           padding: const EdgeInsets.all(12.0),
                           child: Row(
-                            mainAxisAlignment: MainAxisAlignment.center,
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
-                              Icon(Icons.calendar_today, color: Colors.blue, size: 20),
-                              SizedBox(width: 8),
-                              Text(
-                                'Pilih Tanggal',
-                                style: TextStyle(color: Colors.blue, fontSize: 14, fontWeight: FontWeight.bold),
+                              Row(
+                                children: [
+                                  Icon(Icons.calendar_today, color: Colors.blue, size: 20),
+                                  SizedBox(width: 8),
+                                  Text(
+                                    '${selectedDate.day}/${selectedDate.month}/${selectedDate.year}',
+                                    style: TextStyle(color: Colors.blue, fontSize: 14, fontWeight: FontWeight.bold),
+                                  ),
+                                ],
                               ),
+                              Icon(Icons.arrow_forward_ios, color: Colors.blue, size: 16),
                             ],
                           ),
                         ),

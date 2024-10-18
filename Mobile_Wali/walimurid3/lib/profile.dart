@@ -101,10 +101,7 @@ class _ProfilePageState extends State<ProfilePage> {
             child: Container(
               height: MediaQuery.of(context).size.height * 0.3, // Sesuaikan tinggi sesuai kebutuhan
               decoration: BoxDecoration(
-                image: DecorationImage(
-                  image: AssetImage('assets/biru.png'),
-                  fit: BoxFit.cover,
-                ),
+                color: Color(0xFF1A237E), 
               ),
             ),
           ),
@@ -196,7 +193,7 @@ class _ProfilePageState extends State<ProfilePage> {
         padding: const EdgeInsets.all(0.0),
         child: Column(
           children: [
-            _buildInfoRow(Icons.person, namaSiswa, 'Nama Siswa'),
+            _buildInfoRow(Icons.person, namaSiswa, 'nama siswa'),
           ],
         ),
       ),
@@ -215,7 +212,7 @@ class _ProfilePageState extends State<ProfilePage> {
         padding: const EdgeInsets.all(0.0),
         child: Column(
           children: [
-            _buildInfoRow(Icons.credit_card, nis, 'NIS Siswa'),
+            _buildInfoRow(Icons.credit_card, nis, 'nis siswa'),
           ],
         ),
       ),
@@ -234,7 +231,7 @@ class _ProfilePageState extends State<ProfilePage> {
         padding: const EdgeInsets.all(0.0),
         child: Column(
           children: [
-            _buildInfoRow(Icons.class_, kelas, 'Kelas saat ini'),
+            _buildInfoRow(Icons.class_, kelas, 'kelas saat ini'),
           ],
         ),
       ),
