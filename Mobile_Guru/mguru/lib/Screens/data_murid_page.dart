@@ -40,6 +40,7 @@ class _DataMuridPageState extends State<DataMuridPage> {
   List<Student> _students = [];
   List<Student> _filteredStudents = [];
   bool _isLoading = true;
+  final TextEditingController _searchController = TextEditingController();
 
   @override
   void initState() {
@@ -270,17 +271,17 @@ class _DataMuridPageState extends State<DataMuridPage> {
                           ),
                         ),
                       ),
-                      // Search Field
                       Padding(
                         padding: const EdgeInsets.symmetric(
                             horizontal: 16, vertical: 8),
                         child: TextField(
-                          onChanged: _filterStudents,
+                          controller: _searchController,
+                          onChanged: (query) {
+                            _filterStudents(query);
+                          },
                           decoration: InputDecoration(
                             hintText: 'Search by Name or NIS',
-                            hintStyle: TextStyle(
-                                color: Colors
-                                    .blueGrey), // Optional: Change hint text color
+                            hintStyle: TextStyle(color: Colors.blueGrey),
                             border: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(8),
                               borderSide:
@@ -289,17 +290,22 @@ class _DataMuridPageState extends State<DataMuridPage> {
                             focusedBorder: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(8),
                               borderSide: BorderSide(
-                                  color: Colors.blueAccent,
-                                  width: 2), // Focused border color
+                                  color: Colors.blueAccent, width: 2),
                             ),
                             enabledBorder: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(8),
-                              borderSide: BorderSide(
-                                  color: Colors.blue,
-                                  width: 1), // Default border color
+                              borderSide:
+                                  BorderSide(color: Colors.blue, width: 1),
                             ),
-                            prefixIcon: const Icon(Icons.search,
-                                color: Colors.blue), // Search icon color
+                            prefixIcon:
+                                const Icon(Icons.search, color: Colors.blue),
+                            suffixIcon: IconButton(
+                              icon: Icon(Icons.clear, color: Colors.blue),
+                              onPressed: () {
+                                _searchController.clear();
+                                _filterStudents('');
+                              },
+                            ),
                           ),
                         ),
                       ),

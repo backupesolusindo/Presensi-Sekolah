@@ -152,13 +152,15 @@ class _StatsGridState extends State<StatsGrid> {
       margin: EdgeInsets.symmetric(vertical: 4.0),
       padding: EdgeInsets.symmetric(horizontal: 16.0),
       decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.8),
-        borderRadius: BorderRadius.circular(12.0),
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(8), // Rounded corners
         boxShadow: [
           BoxShadow(
-            color: Colors.white.withOpacity(0.8),
-            blurRadius: 4,
-            offset: Offset(4, 4), // Shadow position
+            color: Colors.grey.shade300, // Soft grey shadow with transparency
+            spreadRadius: 2, // Controls how much the shadow spreads
+            blurRadius: 8, // Higher value for smooth shadow
+            offset:
+                Offset(0, 4), // Offset for vertical shadow, adjust as needed
           ),
         ],
       ),

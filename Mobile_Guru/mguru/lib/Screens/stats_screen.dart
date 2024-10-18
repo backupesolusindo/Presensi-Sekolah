@@ -18,32 +18,26 @@ class _StatsScreenState extends State<StatsScreen> {
 
     return Scaffold(
       body: Container(
-        color: CBackground, // Background color
+        color: CBackground,
         child: Stack(
           children: [
-            // Center the background image, fitting to the box
-            Align(
-              alignment: Alignment.center, // Center the image
+            Positioned.fill(
               child: Image.asset(
                 "assets/images/WaliRename.png",
-                fit: BoxFit.cover, // Ensures the image fills the space
-                width: size.width, // Adjusts to full screen width
-                height: size.height, // Adjusts to full screen height
+                fit: BoxFit.cover,
               ),
             ),
-            
-            // CustomScrollView for scrollable content
             CustomScrollView(
               physics: ClampingScrollPhysics(),
               slivers: <Widget>[
-                _buildHeader(), // Build your header
+                _buildHeader(),
                 SliverPadding(
                   padding: const EdgeInsets.symmetric(horizontal: 10.0),
                   sliver: SliverToBoxAdapter(
-                    child: StatsGrid(), // Add your StatsGrid here
+                    child: StatsGrid(), // Replace with your actual StatsGrid widget
                   ),
                 ),
-                // Additional slivers can be added here
+                // Additional slivers go here
               ],
             ),
           ],
@@ -55,24 +49,33 @@ class _StatsScreenState extends State<StatsScreen> {
   SliverPadding _buildHeader() {
     return SliverPadding(
       padding: const EdgeInsets.only(
-        left: 20.0, 
-        right: 20.0, 
-        bottom: 20.0, 
-        top: 40.0,
+        left: 20.0,
+        right: 20.0,
+        bottom: 20.0,
+        top: 60.0,
       ),
       sliver: SliverToBoxAdapter(
-        child: Card(
-          elevation: 5.0, // Adds shadow for a 3D effect
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(10.0), // Rounded corners
+        child: Container(
+          decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(8), // Rounded corners
+        boxShadow: [
+          BoxShadow(
+            color: Colors.grey.shade300, // Soft grey shadow with transparency
+            spreadRadius: 2, // Controls how much the shadow spreads
+            blurRadius: 8, // Higher value for smooth shadow
+            offset:
+                Offset(0, 4), // Offset for vertical shadow, adjust as needed
           ),
+        ],
+      ),
           child: Padding(
-            padding: const EdgeInsets.all(16.0), // Inner padding for the card
+            padding: const EdgeInsets.all(16.0),
             child: Text(
               'Statistik Presensi',
-              style: const TextStyle(
+              style: TextStyle(
                 color: CText,
-                fontSize: 25.0,
+                fontSize: 20.0,
                 fontWeight: FontWeight.bold,
               ),
             ),
