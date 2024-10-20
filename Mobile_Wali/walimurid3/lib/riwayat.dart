@@ -195,6 +195,7 @@ class _RiwayatPageState extends State<RiwayatPage> {
                     Card(
                       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
                       elevation: 4,
+                      color: Colors.white, // Ubah warna menjadi putih
                       child: Padding(
                         padding: const EdgeInsets.all(8.0),
                         child: Row(
@@ -235,6 +236,7 @@ class _RiwayatPageState extends State<RiwayatPage> {
                     Card(
                       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
                       elevation: 4,
+                      color: Colors.white, // Ubah warna menjadi putih
                       child: InkWell(
                         onTap: () => _selectDate(context),
                         child: Padding(
@@ -242,6 +244,7 @@ class _RiwayatPageState extends State<RiwayatPage> {
                           child: Row(
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
+                              Text("Tanggal Filter:"),
                               Row(
                                 children: [
                                   Icon(Icons.calendar_today, color: Colors.blue, size: 20),
@@ -298,7 +301,6 @@ class _RiwayatPageState extends State<RiwayatPage> {
         decoration: BoxDecoration(
           color: selectedCardIndex == index ? color : Colors.white,
           borderRadius: BorderRadius.circular(10),
-          border: Border.all(color: color),
         ),
         child: Row(
           mainAxisSize: MainAxisSize.min,
@@ -329,13 +331,63 @@ class _RiwayatPageState extends State<RiwayatPage> {
       itemCount: riwayatData.length,
       itemBuilder: (context, index) {
         final item = riwayatData[index];
-        return Card(
-          margin: EdgeInsets.symmetric(vertical: 5),
-          color: Colors.green[100], // Menambahkan warna latar belakang hijau muda
-          child: ListTile(
-            title: Text(item['tanggal'] ?? ''),
-            subtitle: Text(item['status'] ?? ''),
-          ),
+        Color WarnaBG ;
+        if(item["status"].toString() == "absen"){
+          WarnaBG = Colors.teal;
+        }else{
+          WarnaBG = Colors.orange;
+        }
+        return Container(
+          margin: EdgeInsets.all(8),
+          child: Row(
+          children: [
+            Expanded(
+              flex: 2,
+              child: 
+            Container(
+              padding: EdgeInsets.symmetric(horizontal: 8, vertical: 8),
+              decoration: BoxDecoration(
+                color: WarnaBG,
+                borderRadius: BorderRadius.only(
+                  bottomLeft: Radius.circular(8),
+                  bottomRight: Radius.circular(24),
+                  topLeft: Radius.circular(8),
+                  topRight: Radius.circular(24),
+                )
+              ),
+              child: Column(
+                children: [
+                  Text("Waktu Masuk :", style: TextStyle(color: Colors.white)),
+                  Text(item['status'] ?? '', style: TextStyle(color: Colors.white))
+
+                ]
+              )
+            ),
+            ),
+            Expanded(
+              flex: 1,
+              child: Container(
+                padding: EdgeInsets.symmetric(horizontal: 8, vertical: 8),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.only(
+                  bottomLeft: Radius.circular(24),
+                  bottomRight: Radius.circular(8),
+                  topLeft: Radius.circular(24),
+                  topRight: Radius.circular(8),
+                )
+                
+              ),
+              child: Column(
+                children: [
+                  Text(item['tanggal'] ?? '', style: TextStyle(color: Colors.black))
+
+                ]
+              )
+            ),)
+            
+          ]
+        )
         );
       },
     );
