@@ -137,11 +137,12 @@ class _ProfilePageState extends State<ProfilePage> {
   Widget _buildProfileCard() {
     return LayoutBuilder(
       builder: (context, constraints) {
-        final cardWidth = constraints.maxWidth * 0.8; // 80% dari lebar layar
+        final cardWidth = constraints.maxWidth * 0.8;
         return Center(
           child: SizedBox(
             width: cardWidth,
             child: Card(
+              color: Colors.white, // Mengubah warna card menjadi putih
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(12),
               ),
@@ -186,9 +187,11 @@ class _ProfilePageState extends State<ProfilePage> {
 
   Widget _buildNamaCard() {
     return Card(
+      color: Colors.white, // Mengubah warna card menjadi putih
       margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 0),
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(12),
+        side: BorderSide(color: const Color.fromARGB(255, 0, 0, 0), width: 1),
       ),
       elevation: 6,
       shadowColor: Colors.black26,
@@ -205,9 +208,11 @@ class _ProfilePageState extends State<ProfilePage> {
 
   Widget _buildNisCard() {
     return Card(
+      color: Colors.white, // Mengubah warna card menjadi putih
       margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 0),
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(12),
+        side: BorderSide(color: const Color.fromARGB(255, 0, 0, 0), width: 1),
       ),
       elevation: 6,
       shadowColor: Colors.black26,
@@ -224,9 +229,11 @@ class _ProfilePageState extends State<ProfilePage> {
 
   Widget _buildKelasCard() {
     return Card(
+      color: Colors.white, // Mengubah warna card menjadi putih
       margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 0),
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(12),
+        side: BorderSide(color: const Color.fromARGB(255, 0, 0, 0), width: 1),
       ),
       elevation: 6,
       shadowColor: Colors.black26,
