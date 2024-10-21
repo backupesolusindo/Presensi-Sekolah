@@ -22,6 +22,7 @@ class _RiwayatPageState extends State<RiwayatPage> {
   String kelas = "";
   String namaSiswa = "";
   DateTime selectedDate = DateTime.now(); // Ubah menjadi non-nullable dengan nilai default
+  bool isRiwayatSelected = false; // Tambahkan variabel ini
 
   @override
   void initState() {
@@ -172,104 +173,58 @@ class _RiwayatPageState extends State<RiwayatPage> {
     }
   }
 
+  void _onRiwayatButtonTapped(bool isRiwayatMasuk) {
+    setState(() {
+      showRiwayatMasuk = isRiwayatMasuk;
+      selectedCardIndex = isRiwayatMasuk ? 0 : 1;
+      isRiwayatSelected = true;
+      isLoading = true;
+    });
+    if (isRiwayatMasuk) {
+      fetchRiwayatMasuk();
+    } else {
+      fetchRiwayatMapel();
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.white,
       body: Stack(
         children: [
-          Container(
-            decoration: BoxDecoration(
-              image: DecorationImage(
-                image: AssetImage('assets/walibg.png'),
-                fit: BoxFit.cover,
-              ),
-            ),
+          // Background image
+          Image.asset(
+            'assets/walibg.png',
+            fit: BoxFit.cover,
+            width: double.infinity,
+            height: double.infinity,
           ),
+          // Content
           SafeArea(
             child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 16.0),
-              child: SingleChildScrollView(
-                child: Column(
-                  children: <Widget>[
-                    Card(
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
-                      elevation: 4,
-                      color: Colors.white, // Ubah warna menjadi putih
-                      child: Padding(
-                        padding: const EdgeInsets.all(8.0),
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                          children: [
-                            Expanded(child: _buildRiwayatButton(
-                              index: 0,
-                              icon: Icons.door_front_door,
-                              title: 'Riwayat Masuk',
-                              color: Colors.orangeAccent,
-                              onTap: () {
-                                setState(() {
-                                  showRiwayatMasuk = true;
-                                  selectedCardIndex = 0;
-                                  fetchRiwayatMasuk();
-                                });
-                              },
-                            )),
-                            SizedBox(width: 8),
-                            Expanded(child: _buildRiwayatButton(
-                              index: 1,
-                              icon: Icons.book,
-                              title: 'Riwayat Mapel',
-                              color: Colors.purpleAccent,
-                              onTap: () {
-                                setState(() {
-                                  showRiwayatMasuk = false;
-                                  selectedCardIndex = 1;
-                                  fetchRiwayatMapel();
-                                });
-                              },
-                            )),
-                          ],
-                        ),
-                      ),
-                    ),
-                    SizedBox(height: 12),
-                    Card(
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
-                      elevation: 4,
-                      color: Colors.white, // Ubah warna menjadi putih
-                      child: InkWell(
-                        onTap: () => _selectDate(context),
-                        child: Padding(
-                          padding: const EdgeInsets.all(12.0),
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              Text("Tanggal Filter:"),
-                              Row(
-                                children: [
-                                  Icon(Icons.calendar_today, color: Colors.blue, size: 20),
-                                  SizedBox(width: 8),
-                                  Text(
-                                    '${selectedDate.day}/${selectedDate.month}/${selectedDate.year}',
-                                    style: TextStyle(color: Colors.blue, fontSize: 14, fontWeight: FontWeight.bold),
-                                  ),
-                                ],
-                              ),
-                              Icon(Icons.arrow_forward_ios, color: Colors.blue, size: 16),
-                            ],
-                          ),
-                        ),
-                      ),
-                    ),
-                    const SizedBox(height: 20),
-                    // Widget untuk menampilkan riwayat masuk atau mapel
-                    isLoading
+              padding: const EdgeInsets.all(16.0),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: <Widget>[
+                  Text(
+                    'Laporan',
+                    style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+                  ),
+                  SizedBox(height: 16),
+                  _buildRiwayatButtons(),
+                  SizedBox(height: 16),
+                  _buildDatePicker(),
+                  SizedBox(height: 16),
+                  Expanded(
+                    child: !isRiwayatSelected
                         ? Center(child: Text("Pilih riwayat yang ingin dilihat"))
-                        : showRiwayatMasuk
-                            ? _buildRiwayatMasukList()
-                            : _buildRiwayatMapelList(),
-                  ],
-                ),
+                        : isLoading
+                            ? Center(child: CircularProgressIndicator())
+                            : showRiwayatMasuk
+                                ? _buildRiwayatMasukList()
+                                : _buildRiwayatMapelList(),
+                  ),
+                ],
               ),
             ),
           ),
@@ -287,107 +242,149 @@ class _RiwayatPageState extends State<RiwayatPage> {
     );
   }
 
+  Widget _buildRiwayatButtons() {
+    return Container(
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(30),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.grey.withOpacity(0.3),
+            spreadRadius: 1,
+            blurRadius: 5,
+            offset: Offset(0, 3),
+          ),
+        ],
+      ),
+      child: Row(
+        children: [
+          Expanded(
+            child: _buildRiwayatButton(
+              index: 0,
+              title: 'Riwayat Masuk',
+              color: Colors.orange,
+              onTap: () => _onRiwayatButtonTapped(true),
+            ),
+          ),
+          Expanded(
+            child: _buildRiwayatButton(
+              index: 1,
+              title: 'Riwayat Mapel',
+              color: Colors.purple,
+              onTap: () => _onRiwayatButtonTapped(false),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
   Widget _buildRiwayatButton({
     required int index,
-    required IconData icon,
     required String title,
     required Color color,
     required VoidCallback onTap,
   }) {
+    bool isSelected = selectedCardIndex == index;
     return GestureDetector(
       onTap: onTap,
       child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
+        padding: EdgeInsets.symmetric(vertical: 12),
         decoration: BoxDecoration(
-          color: selectedCardIndex == index ? color : Colors.white,
-          borderRadius: BorderRadius.circular(10),
+          color: isSelected ? color : Colors.transparent,
+          borderRadius: BorderRadius.circular(30),
         ),
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Icon(icon, size: 20, color: selectedCardIndex == index ? Colors.white : color),
-            SizedBox(width: 4),
-            Flexible(
-              child: Text(
-                title,
-                style: TextStyle(
-                  color: selectedCardIndex == index ? Colors.white : color,
-                  fontSize: 12,
-                  fontWeight: FontWeight.bold,
+        child: Text(
+          title,
+          textAlign: TextAlign.center,
+          style: TextStyle(
+            color: isSelected ? Colors.white : color,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildDatePicker() {
+    return Container(
+      padding: EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(8),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.grey.withOpacity(0.3),
+            spreadRadius: 1,
+            blurRadius: 5,
+            offset: Offset(0, 3),
+          ),
+        ],
+      ),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Text("Pilih Tanggal"),
+          GestureDetector(
+            onTap: () => _selectDate(context),
+            child: Row(
+              children: [
+                Icon(Icons.calendar_today, color: Colors.blue, size: 20),
+                SizedBox(width: 8),
+                Text(
+                  '${selectedDate.day}/${selectedDate.month}/${selectedDate.year}',
+                  style: TextStyle(color: Colors.blue, fontWeight: FontWeight.bold),
                 ),
-                overflow: TextOverflow.ellipsis,
-              ),
+              ],
             ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }
 
   Widget _buildRiwayatMasukList() {
     return ListView.builder(
-      shrinkWrap: true,
-      physics: NeverScrollableScrollPhysics(),
       itemCount: riwayatData.length,
       itemBuilder: (context, index) {
         final item = riwayatData[index];
-        Color WarnaBG ;
-        if(item["status"].toString() == "absen"){
-          WarnaBG = Colors.teal;
-        }else{
-          WarnaBG = Colors.orange;
-        }
-        return Container(
-          margin: EdgeInsets.all(8),
+        Color cardColor = item["status"].toString() == "absen" ? Colors.teal : Colors.orange;
+        return Card(
+          margin: EdgeInsets.symmetric(vertical: 8),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
           child: Row(
-          children: [
-            Expanded(
-              flex: 2,
-              child: 
-            Container(
-              padding: EdgeInsets.symmetric(horizontal: 8, vertical: 8),
-              decoration: BoxDecoration(
-                color: WarnaBG,
-                borderRadius: BorderRadius.only(
-                  bottomLeft: Radius.circular(8),
-                  bottomRight: Radius.circular(24),
-                  topLeft: Radius.circular(8),
-                  topRight: Radius.circular(24),
-                )
+            children: [
+              Expanded(
+                flex: 3,
+                child: Container(
+                  padding: EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                    color: cardColor,
+                    borderRadius: BorderRadius.horizontal(left: Radius.circular(12)),
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text("Waktu Masuk:", style: TextStyle(color: Colors.white)),
+                      SizedBox(height: 4),
+                      Text(item['status'] ?? '', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+                    ],
+                  ),
+                ),
               ),
-              child: Column(
-                children: [
-                  Text("Waktu Masuk :", style: TextStyle(color: Colors.white)),
-                  Text(item['status'] ?? '', style: TextStyle(color: Colors.white))
-
-                ]
-              )
-            ),
-            ),
-            Expanded(
-              flex: 1,
-              child: Container(
-                padding: EdgeInsets.symmetric(horizontal: 8, vertical: 8),
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.only(
-                  bottomLeft: Radius.circular(24),
-                  bottomRight: Radius.circular(8),
-                  topLeft: Radius.circular(24),
-                  topRight: Radius.circular(8),
-                )
-                
+              Expanded(
+                flex: 2,
+                child: Padding(
+                  padding: EdgeInsets.all(16),
+                  child: Text(
+                    item['tanggal'] ?? '',
+                    style: TextStyle(fontWeight: FontWeight.bold),
+                    textAlign: TextAlign.center,
+                  ),
+                ),
               ),
-              child: Column(
-                children: [
-                  Text(item['tanggal'] ?? '', style: TextStyle(color: Colors.black))
-
-                ]
-              )
-            ),)
-            
-          ]
-        )
+            ],
+          ),
         );
       },
     );
@@ -395,26 +392,60 @@ class _RiwayatPageState extends State<RiwayatPage> {
 
   Widget _buildRiwayatMapelList() {
     return ListView.builder(
-      shrinkWrap: true,
-      physics: NeverScrollableScrollPhysics(),
       itemCount: riwayatData.length,
       itemBuilder: (context, index) {
-        var riwayat = riwayatData[index];
-        bool isHadir = riwayat['status'] == '1';
+        final item = riwayatData[index];
+        bool isHadir = item['status'] == '1';
+        Color cardColor = isHadir ? Colors.green : Colors.red;
         return Card(
-          margin: EdgeInsets.symmetric(vertical: 8, horizontal: 4),
-          color: isHadir ? Colors.green[100] : Colors.red[100],
-          child: ListTile(
-            title: Text('ID Jadwal: ${riwayat['id_jadwal'] ?? 'Tidak ada id jadwal'}'),
-            subtitle: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
+          margin: EdgeInsets.symmetric(vertical: 8),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+          child: IntrinsicHeight(
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                Text('Tanggal: ${riwayat['tanggal'] ?? 'Tidak ada tanggal'}'),
-                Text(
-                  isHadir ? 'Hadir' : 'Tidak Hadir',
-                  style: TextStyle(
-                    color: isHadir ? Colors.green[700] : Colors.red[700],
-                    fontWeight: FontWeight.bold,
+                Expanded(
+                  flex: 3,
+                  child: Container(
+                    padding: EdgeInsets.all(16),
+                    decoration: BoxDecoration(
+                      color: cardColor,
+                      borderRadius: BorderRadius.horizontal(left: Radius.circular(12)),
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Text("ID Jadwal: ${item['id_jadwal'] ?? 'Tidak ada'}",
+                            style: TextStyle(color: Colors.white)),
+                        SizedBox(height: 4),
+                        Text(isHadir ? 'Hadir' : 'Tidak Hadir',
+                            style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+                      ],
+                    ),
+                  ),
+                ),
+                Expanded(
+                  flex: 2,
+                  child: Padding(
+                    padding: EdgeInsets.all(16),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.center, // Ubah ke center
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Text(
+                          item['tanggal'] ?? 'Tidak ada tanggal',
+                          style: TextStyle(fontWeight: FontWeight.bold),
+                          textAlign: TextAlign.center, // Ubah ke center
+                        ),
+                        SizedBox(height: 4),
+                        Text(
+                          item['jam'] ?? '',
+                          style: TextStyle(color: Colors.grey),
+                          textAlign: TextAlign.center, // Ubah ke center
+                        ),
+                      ],
+                    ),
                   ),
                 ),
               ],
