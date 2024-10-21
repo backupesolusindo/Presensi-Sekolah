@@ -422,7 +422,7 @@ class _RiwayatPageState extends State<RiwayatPage> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        Text("ID Jadwal: ${item['id_jadwal'] ?? 'Tidak ada'}",
+                        Text("ID Jadwal: ${item['nama_mapel'] ?? 'Tidak ada'}",
                             style: TextStyle(color: Colors.white)),
                         SizedBox(height: 4),
                         Text(isHadir ? 'Hadir' : 'Tidak Hadir',
