@@ -15,7 +15,7 @@ class _ProfilePageState extends State<ProfilePage> {
   int _currentIndex = 2;
   String namaWali = "Loading...";
   String noHp = "Loading...";
-  String nis = "";
+  String nis = "Loading...";
   String kelas = "Loading...";
   String namaSiswa = "Loading...";
   List<dynamic> siswaList = [];
@@ -33,20 +33,13 @@ class _ProfilePageState extends State<ProfilePage> {
       final savedNamaWali = prefs.getString('nama_wali');
       final savedNoHp = prefs.getString('no_hp');
 
-      if (savedNamaWali != null) {
-        setState(() {
-          namaWali = savedNamaWali;
-        });
-      }
-
-      if (savedNoHp != null) {
-        setState(() {
-          noHp = savedNoHp;
-        });
-      }
+      setState(() {
+        namaWali = savedNamaWali ?? "Loading...";
+        noHp = savedNoHp ?? "Loading...";
+      });
 
       List<String>? siswaJsonList = prefs.getStringList('siswa_list');
-      if (siswaJsonList != null) {
+      if (siswaJsonList != null && siswaJsonList.isNotEmpty) {
         setState(() {
           siswaList = siswaJsonList.map((siswaJson) {
             return json.decode(siswaJson);
@@ -57,19 +50,29 @@ class _ProfilePageState extends State<ProfilePage> {
           _updateSiswaDetail(
               siswaList.firstWhere((siswa) => siswa['nama'] == selectedSiswa));
         });
+      } else {
+        setState(() {
+          namaSiswa = "Loading...";
+          nis = "Loading...";
+          kelas = "Loading...";
+        });
       }
     } catch (e) {
       setState(() {
         namaWali = "Error: ${e.toString()}";
+        noHp = "Loading...";
+        namaSiswa = "Loading...";
+        nis = "Loading...";
+        kelas = "Loading...";
       });
     }
   }
 
   void _updateSiswaDetail(Map<String, dynamic> siswa) {
     setState(() {
-      namaSiswa = siswa['nama'];
-      nis = siswa['nis'];
-      kelas = siswa['nama_kelas'];
+      namaSiswa = siswa['nama'] ?? "Loading...";
+      nis = siswa['nis'] ?? "Loading...";
+      kelas = siswa['nama_kelas'] ?? "Loading...";
     });
   }
 
@@ -242,7 +245,7 @@ class _ProfilePageState extends State<ProfilePage> {
     return ListTile(
       leading: Icon(icon, color: Colors.blueAccent),
       title: Text(
-        title,
+        title == "Loading..." ? title : title,
         style: const TextStyle(fontWeight: FontWeight.bold),
       ),
       subtitle: Text(subtitle),
