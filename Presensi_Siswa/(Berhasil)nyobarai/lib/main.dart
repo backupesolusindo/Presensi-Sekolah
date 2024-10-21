@@ -1,6 +1,6 @@
 // import 'package:camera/camera.dart';
 import 'package:flutter/material.dart';
-import 'HomeScreen.dart';
+import 'login.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 // late List<CameraDescription> cameras;
@@ -24,9 +24,9 @@ class MyApp extends StatelessWidget {
           Theme.of(context).textTheme,
         ),
       ),
-      home: const HomeScreen(),
+      home: LoginScreen(),
       routes: {
-        '/home': (context) => const HomeScreen(),
+        '/home': (context) => LoginScreen(),
       },
     );
   }

@@ -381,7 +381,7 @@ class _RecognitionScreenState extends State<RecognitionScreen> {
                 Navigator.pop(context); // Navigasi kembali ke layar sebelumnya
               },
             ),
-            backgroundColor: Colors.blueAccent,
+            backgroundColor: Colors.blue[600],
           ),
         ),
       ),

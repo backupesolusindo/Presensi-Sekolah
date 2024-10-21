@@ -239,7 +239,7 @@ class _UserListScreenState extends State<UserListScreen> {
                 Navigator.pop(context); // Navigasi kembali ke layar sebelumnya
               },
             ),
-            backgroundColor: Colors.blueAccent,
+            backgroundColor: Colors.blue[600],
           ),
         ),
       ),
@@ -305,7 +305,7 @@ class _UserListScreenState extends State<UserListScreen> {
                         child: Row(
                           children: [
                             CircleAvatar(
-                              backgroundColor: Colors.blueAccent,
+                              backgroundColor: Colors.blue[600],
                               child: Text(
                                 user[DatabaseHelper.columnName][0]
                                     .toUpperCase(),
