@@ -12,7 +12,6 @@ import 'package:mobile_presensi_kdtg/utils/custom_clipper.dart';
 import 'package:mobile_presensi_kdtg/widgets/top_bar.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:http/http.dart' as http;
-
 class ProfilUser extends StatefulWidget {
   @override
   _ProfilUserState createState() => _ProfilUserState();
@@ -20,41 +19,59 @@ class ProfilUser extends StatefulWidget {
 
 class _ProfilUserState extends State<ProfilUser> {
   String UUID = "";
-  String NamaPegawai = "Nama Pegawai";
-  String NIP = "-";
-  String Foto = "desain/POLIJE_mini.png";
+  String NamaPegawai = ""; // Default value
+  String NIP = ""; // Default value
+  String Foto = "desain/logo.png";
   String Email = "", Unit = "";
   var DataPegawai;
   int jmlPre = 0, jmlCuti = 0, jmlKegiatan = 0;
-  int statusLoading = 0;
 
   @override
   void initState() {
-    // TODO: implement initState
-    // WidgetsBinding.instance.addPostFrameCallback(getPref());
     super.initState();
-    getDataDash();
+    getPref(); // Ambil data dari SharedPreferences
+    getDataDash(); // Ambil data dari API
   }
 
-  Future<String> getDataDash() async {
+  Future<void> getPref() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
-    UUID = prefs.getString("ID")!;
-    var res = await http.get(Uri.parse(Core().ApiUrl + "Dash/get_dash/" + UUID),
-        headers: {"Accept": "application/json"});
-    var resBody = json.decode(res.body);
     setState(() {
-      DataPegawai = resBody['data']["pegawai"];
-      jmlCuti = resBody['data']['jmlCutiBln'];
-      jmlKegiatan = resBody['data']['jmlKegiatanBln'];
-      jmlPre = resBody['data']['jmlPresensiBln'];
-      NamaPegawai = DataPegawai["nama_pegawai"];
-      NIP = DataPegawai["NIP"];
-      Email = DataPegawai["email"];
-      Unit = DataPegawai["unit"];
-      Foto = DataPegawai["foto_profil"];
+      // Ambil NamaPegawai dan NIP dari SharedPreferences
+      NamaPegawai = prefs.getString("NamaPegawai") ?? "";
+      NIP = prefs.getString("NIP") ?? "";
     });
-    print(resBody);
-    return "";
+  }
+
+  Future<void> getDataDash() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    UUID = prefs.getString("ID") ?? "";
+
+    if (UUID.isNotEmpty) {
+      var res = await http.get(
+        Uri.parse(Core().ApiUrl + "Dash/get_dash/" + UUID),
+        headers: {"Accept": "application/json"},
+      );
+
+      if (res.statusCode == 200) {
+        var resBody = json.decode(res.body);
+        setState(() {
+          DataPegawai = resBody['data']["pegawai"];
+          jmlCuti = resBody['data']['jmlCutiBln'];
+          jmlKegiatan = resBody['data']['jmlKegiatanBln'];
+          jmlPre = resBody['data']['jmlPresensiBln'];
+          // Hanya update jika data tersedia
+          if (DataPegawai != null) {
+            NamaPegawai = DataPegawai["nama_pegawai"] ?? NamaPegawai;
+            NIP = DataPegawai["NIP"] ?? NIP;
+            Email = DataPegawai["email"] ?? Email;
+            Unit = DataPegawai["unit"] ?? Unit;
+            Foto = DataPegawai["foto_profil"] ?? Foto;
+          }
+        });
+      } else {
+        print("Error: ${res.statusCode}");
+      }
+    }
   }
 
   @override
@@ -70,7 +87,6 @@ class _ProfilUserState extends State<ProfilUser> {
               width: size.width,
               child: Stack(
                 children: <Widget>[
-                  Container(),
                   ClipPath(
                     clipper: MyCustomClipper(),
                     child: Container(
@@ -88,24 +104,28 @@ class _ProfilUserState extends State<ProfilUser> {
                       mainAxisSize: MainAxisSize.min,
                       children: <Widget>[
                         TextButton(
-                            onPressed: () {
-                              Navigator.push(context,
-                                  MaterialPageRoute(builder: (context) {
-                                return Foto_Profil();
-                              }));
-                            },
-                            child: CircularProfileAvatar(
-                              Core().Url + Foto,
-                              borderWidth: 4.0,
-                              radius: 60.0,
-                            )),
+                          onPressed: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(builder: (context) => Foto_Profil()),
+                            );
+                          },
+                          child: CircularProfileAvatar(
+                            Core().Url + Foto,
+                            borderWidth: 4.0,
+                            radius: 60.0,
+                          ),
+                        ),
                         SizedBox(height: 4.0),
                         Text(
                           NamaPegawai,
                           style: TextStyle(
-                            fontSize: 21.0,
+                            fontSize: 12.0,
                             fontWeight: FontWeight.bold,
                           ),
+                          maxLines: 2,
+                          overflow: TextOverflow.ellipsis,
+                          softWrap: true,
                         ),
                         SizedBox(height: 4.0),
                         Text(
@@ -123,72 +143,50 @@ class _ProfilUserState extends State<ProfilUser> {
             ),
             SizedBox(height: 16),
             _CartItem(
-                "Email",
-                Email,
-                Icon(
-                  Icons.mail_outline_rounded,
-                  size: 40.0,
-                  color: kPrimaryColor,
-                )),
+              "Email",
+              Email,
+              Icon(
+                Icons.mail_outline_rounded,
+                size: 40.0,
+                color: kPrimaryColor,
+              ),
+            ),
             _CartItem(
-                "Unit",
-                Unit,
-                Icon(
-                  Icons.location_city_rounded,
-                  size: 40.0,
-                  color: kPrimaryColor,
-                )),
+              "Unit",
+              Unit,
+              Icon(
+                Icons.location_city_rounded,
+                size: 40.0,
+                color: kPrimaryColor,
+              ),
+            ),
             _CartItem(
-                "Jumlah Presensi Bulan Ini",
-                jmlPre.toString() + " Presensi",
-                Icon(
-                  Icons.alarm_on,
-                  size: 40.0,
-                  color: approval_presensi,
-                )),
+              "Jumlah Presensi Bulan Ini",
+              jmlPre.toString() + " Presensi",
+              Icon(
+                Icons.alarm_on,
+                size: 40.0,
+                color: approval_presensi,
+              ),
+            ),
             _CartItem(
-                "Jumlah Kegiatan Bulan Ini",
-                jmlKegiatan.toString() + " Kegiatan",
-                Icon(
-                  Icons.directions_walk_outlined,
-                  size: 40.0,
-                  color: approval_kegiatan,
-                )),
+              "Jumlah Kegiatan Bulan Ini",
+              jmlKegiatan.toString() + " Kegiatan",
+              Icon(
+                Icons.directions_walk_outlined,
+                size: 40.0,
+                color: approval_kegiatan,
+              ),
+            ),
             _CartItem(
-                "Jumlah Cuti Bulan Ini",
-                jmlCuti.toString() + " Cuti",
-                Icon(
-                  Icons.home_work_rounded,
-                  size: 40.0,
-                  color: approval_cuti,
-                )),
-            // SizedBox(height: 30,),
-            // TextButton(onPressed: ()async{
-            //   SharedPreferences prefs = await SharedPreferences.getInstance();
-            //   print("Logout");
-            //   PostLogout.connectToApi(prefs.getString("ID")).then((value) {
-            //     setState(() {
-            //       // pesan = "tes api";
-            //       // pesan = value.message;
-            //       statusLoading = 0;
-            //     });
-            //       prefs.clear();
-            //       Navigator.of(context).pop();
-            //       Navigator.push(
-            //         context,
-            //         MaterialPageRoute(
-            //           builder: (context) {
-            //             return LoginScreen();
-            //           },
-            //         ),
-            //       );
-            //     });
-            // }, child: (statusLoading == 1) ? CircularProgressIndicator() : _CartItem("Log Out Aplikasi Monitoring", "LOG OUT",
-            //     Icon(
-            //       Icons.logout,
-            //       size: 40.0,
-            //       color: CDanger,
-            //     ))),
+              "Jumlah Cuti Bulan Ini",
+              jmlCuti.toString() + " Cuti",
+              Icon(
+                Icons.home_work_rounded,
+                size: 40.0,
+                color: approval_cuti,
+              ),
+            ),
           ],
         ),
       ),

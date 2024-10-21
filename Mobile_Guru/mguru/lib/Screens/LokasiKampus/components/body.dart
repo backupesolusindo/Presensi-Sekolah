@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 import 'package:mobile_presensi_kdtg/Screens/Absen/absen_screen.dart';
 import 'package:mobile_presensi_kdtg/Screens/LokasiKampus/components/background.dart';
 import 'package:mobile_presensi_kdtg/Screens/Login/post_login.dart';
@@ -40,15 +41,31 @@ class _Body extends State<Body> {
     var response = await http.get(Uri.parse(Core().ApiUrl + "Kampus/get_list"));
     print(response.body);
     if (response.statusCode == 200) {
-      var items = json.decode(response.body)['data'];
-      setState(() {
-        users = items;
-        isLoading = false;
-      });
+      var items = json.decode(response.body);
+      if (items['message']['status'] == 200) {
+        items = items['data'];
+        setState(() {
+          users = items;
+          isLoading = false;
+        });
+      } else {
+        Fluttertoast.showToast(
+          msg: items['message']['message'],
+          toastLength: Toast.LENGTH_SHORT, // Duration of the toast
+          gravity: ToastGravity.BOTTOM, // Position of the toast
+          timeInSecForIosWeb: 1, // Duration for iOS web
+          backgroundColor: Colors.blue.shade500, // Background color
+          textColor: Colors.white, // Text color
+          fontSize: 16.0, // Font size
+        );
+      }
     } else {
       users = [];
       isLoading = false;
     }
+    setState(() {
+      isLoading = false;
+    });
   }
 
   @override

@@ -242,35 +242,6 @@ class _DataMuridPageState extends State<DataMuridPage> {
                       top: 20), // Space for the search field
                   child: Column(
                     children: [
-                      // Container with title "Data Murid"
-                      Container(
-                        margin: const EdgeInsets.symmetric(
-                            horizontal: 16, vertical: 8),
-                        decoration: BoxDecoration(
-                          color: Colors.white,
-                          borderRadius:
-                              BorderRadius.circular(8), // Rounded corners
-                          boxShadow: [
-                            BoxShadow(
-                              color: Colors.grey
-                                  .shade300, // Soft grey shadow with transparency
-                              spreadRadius:
-                                  2, // Controls how much the shadow spreads
-                              blurRadius: 8, // Higher value for smooth shadow
-                              offset: Offset(0,
-                                  4), // Offset for vertical shadow, adjust as needed
-                            ),
-                          ],
-                        ),
-                        padding: const EdgeInsets.all(16.0),
-                        child: Text(
-                          'Data Murid',
-                          style: TextStyle(
-                            fontSize: 16, // Increased font size for prominence
-                            fontWeight: FontWeight.bold, // Bold title
-                          ),
-                        ),
-                      ),
                       Padding(
                         padding: const EdgeInsets.symmetric(
                             horizontal: 16, vertical: 8),

@@ -82,6 +82,8 @@ class _PresensiSiswaPageState extends State<PresensiSiswaPage> {
   bool _isLoading = true;
   String? NIP; // Declare NIP here
   int isGuruHadir = 0;
+  
+  
 
   @override
   void initState() {
@@ -186,8 +188,8 @@ class _PresensiSiswaPageState extends State<PresensiSiswaPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text(
-          'Presensi Siswa',
+        title: Text(
+          _selectedIndex == 0 ? 'Presensi Siswa' : 'Data Murid', // Title changes based on selected page
           style: TextStyle(
             fontWeight: FontWeight.bold,
             color: Colors.white,
@@ -225,18 +227,15 @@ class _PresensiSiswaPageState extends State<PresensiSiswaPage> {
     );
   }
 
+   // Page selection logic
   Widget _getSelectedPage() {
-    return _selectedIndex == 0 ? _buildPresensiPage() : _buildOtherPage();
-  }
-
-  Widget _buildOtherPage() {
     switch (_selectedIndex) {
+      case 0:
+        return _buildPresensiPage();
       case 1:
-      //  return RiwayatSiswaPage();
-      case 2:
-        return DataMuridPage(idKelas: widget.idKelas);
+        return DataMuridPage(idKelas: widget.idKelas); // Passing idKelas to DataMuridPage
       default:
-        return Container();
+        return Container(); // Fallback in case of error
     }
   }
 
@@ -766,7 +765,10 @@ class _PresensiSiswaPageState extends State<PresensiSiswaPage> {
       selectedItemColor: Colors.blueAccent[700],
       unselectedItemColor: Colors.grey[400],
       elevation: 30.0,
-      items: [Icons.assignment, Icons.person]
+      items: [
+        Icons.assignment, // Icon for Presensi Page
+        Icons.person      // Icon for Data Murid Page
+      ]
           .asMap()
           .map((key, value) => MapEntry(
                 key,
