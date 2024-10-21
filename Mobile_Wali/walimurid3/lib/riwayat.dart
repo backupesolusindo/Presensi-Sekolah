@@ -21,7 +21,8 @@ class _RiwayatPageState extends State<RiwayatPage> {
   String nis = "";
   String kelas = "";
   String namaSiswa = "";
-  DateTime selectedDate = DateTime.now(); // Ubah menjadi non-nullable dengan nilai default
+  DateTime selectedDate =
+      DateTime.now(); // Ubah menjadi non-nullable dengan nilai default
   bool isRiwayatSelected = false; // Tambahkan variabel ini
 
   @override
@@ -217,7 +218,8 @@ class _RiwayatPageState extends State<RiwayatPage> {
                   SizedBox(height: 16),
                   Expanded(
                     child: !isRiwayatSelected
-                        ? Center(child: Text("Pilih riwayat yang ingin dilihat"))
+                        ? Center(
+                            child: Text("Pilih riwayat yang ingin dilihat"))
                         : isLoading
                             ? Center(child: CircularProgressIndicator())
                             : showRiwayatMasuk
@@ -333,7 +335,8 @@ class _RiwayatPageState extends State<RiwayatPage> {
                 SizedBox(width: 8),
                 Text(
                   '${selectedDate.day}/${selectedDate.month}/${selectedDate.year}',
-                  style: TextStyle(color: Colors.blue, fontWeight: FontWeight.bold),
+                  style: TextStyle(
+                      color: Colors.blue, fontWeight: FontWeight.bold),
                 ),
               ],
             ),
@@ -348,10 +351,12 @@ class _RiwayatPageState extends State<RiwayatPage> {
       itemCount: riwayatData.length,
       itemBuilder: (context, index) {
         final item = riwayatData[index];
-        Color cardColor = item["status"].toString() == "absen" ? Colors.teal : Colors.orange;
+        Color cardColor =
+            item["status"].toString() == "absen" ? Colors.teal : Colors.orange;
         return Card(
           margin: EdgeInsets.symmetric(vertical: 8),
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+          shape:
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
           child: Row(
             children: [
               Expanded(
@@ -360,7 +365,8 @@ class _RiwayatPageState extends State<RiwayatPage> {
                   padding: EdgeInsets.all(16),
                   decoration: BoxDecoration(
                     color: cardColor,
-                    borderRadius: BorderRadius.horizontal(left: Radius.circular(12)),
+                    borderRadius:
+                        BorderRadius.horizontal(left: Radius.circular(12)),
                   ),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -368,12 +374,19 @@ class _RiwayatPageState extends State<RiwayatPage> {
                       Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
-                          Text("Waktu Masuk:", style: TextStyle(color: Colors.white)),
-                          Text(item['waktu'] ?? '', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+                          Text("Waktu Masuk:",
+                              style: TextStyle(color: Colors.white)),
+                          Text(item['waktu'] ?? '',
+                              style: TextStyle(
+                                  color: Colors.white,
+                                  fontWeight: FontWeight.bold)),
                         ],
                       ),
                       SizedBox(height: 4),
-                      Text(item['status'] ?? '', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+                      Text(item['status'] ?? '',
+                          style: TextStyle(
+                              color: Colors.white,
+                              fontWeight: FontWeight.bold)),
                     ],
                   ),
                 ),
@@ -405,7 +418,8 @@ class _RiwayatPageState extends State<RiwayatPage> {
         Color cardColor = isHadir ? Colors.green : Colors.red;
         return Card(
           margin: EdgeInsets.symmetric(vertical: 8),
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+          shape:
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
           child: IntrinsicHeight(
             child: Row(
               crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -416,17 +430,24 @@ class _RiwayatPageState extends State<RiwayatPage> {
                     padding: EdgeInsets.all(16),
                     decoration: BoxDecoration(
                       color: cardColor,
-                      borderRadius: BorderRadius.horizontal(left: Radius.circular(12)),
+                      borderRadius:
+                          BorderRadius.horizontal(left: Radius.circular(12)),
                     ),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        Text("ID Jadwal: ${item['nama_mapel'] ?? 'Tidak ada'}",
-                            style: TextStyle(color: Colors.white)),
+                        Text("${item['nama_mapel'] ?? 'loading...'}",
+                            style: TextStyle(
+                                color: Colors.white,
+                                fontWeight: FontWeight.bold)),
+                        SizedBox(height: 4),
+                        Text(kelas, style: TextStyle(color: Colors.white)),
                         SizedBox(height: 4),
                         Text(isHadir ? 'Hadir' : 'Tidak Hadir',
-                            style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+                            style: TextStyle(
+                                color: Colors.white,
+                                fontWeight: FontWeight.bold)),
                       ],
                     ),
                   ),
@@ -436,7 +457,8 @@ class _RiwayatPageState extends State<RiwayatPage> {
                   child: Padding(
                     padding: EdgeInsets.all(16),
                     child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.center, // Ubah ke center
+                      crossAxisAlignment:
+                          CrossAxisAlignment.center, // Ubah ke center
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
                         Text(
