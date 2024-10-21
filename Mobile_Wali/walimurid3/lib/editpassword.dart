@@ -75,47 +75,99 @@ class _EditPasswordPageState extends State<EditPasswordPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      extendBodyBehindAppBar: true,
       appBar: AppBar(
-        title: Text('Edit Password'),
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        title: Text('Edit Password', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+        iconTheme: IconThemeData(color: Colors.white),
       ),
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Form(
-          key: _formKey,
-          child: Column(
-            children: [
-              TextFormField(
-                controller: _newPasswordController,
-                decoration: InputDecoration(labelText: 'Password Baru'),
-                obscureText: true,
-                validator: (value) {
-                  if (value == null || value.isEmpty) {
-                    return 'Password baru tidak boleh kosong';
-                  }
-                  return null;
-                },
-              ),
-              SizedBox(height: 16),
-              TextFormField(
-                controller: _confirmPasswordController,
-                decoration:
-                    InputDecoration(labelText: 'Konfirmasi Password Baru'),
-                obscureText: true,
-                validator: (value) {
-                  if (value != _newPasswordController.text) {
-                    return 'Konfirmasi password tidak cocok';
-                  }
-                  return null;
-                },
-              ),
-              SizedBox(height: 24),
-              _isLoading
-                  ? CircularProgressIndicator()
-                  : ElevatedButton(
-                      onPressed: _updatePassword,
-                      child: Text('Simpan'),
+      body: Container(
+        decoration: BoxDecoration(
+          image: DecorationImage(
+            image: AssetImage('assets/walibg.png'),
+            fit: BoxFit.cover,
+          ),
+        ),
+        child: SafeArea(
+          child: Center(
+            child: SingleChildScrollView(
+              child: Padding(
+                padding: const EdgeInsets.all(24.0),
+                child: Card(
+                  elevation: 8,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(16),
+                  ),
+                  color: Colors.white.withOpacity(0.9),
+                  child: Padding(
+                    padding: const EdgeInsets.all(24.0),
+                    child: Form(
+                      key: _formKey,
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Text(
+                            'Ubah Password',
+                            style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: Colors.blue),
+                          ),
+                          SizedBox(height: 24),
+                          TextFormField(
+                            controller: _newPasswordController,
+                            decoration: InputDecoration(
+                              labelText: 'Password Baru',
+                              prefixIcon: Icon(Icons.lock_outline),
+                              border: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                            ),
+                            obscureText: true,
+                            validator: (value) {
+                              if (value == null || value.isEmpty) {
+                                return 'Password baru tidak boleh kosong';
+                              }
+                              return null;
+                            },
+                          ),
+                          SizedBox(height: 16),
+                          TextFormField(
+                            controller: _confirmPasswordController,
+                            decoration: InputDecoration(
+                              labelText: 'Konfirmasi Password Baru',
+                              prefixIcon: Icon(Icons.lock_outline),
+                              border: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                            ),
+                            obscureText: true,
+                            validator: (value) {
+                              if (value != _newPasswordController.text) {
+                                return 'Konfirmasi password tidak cocok';
+                              }
+                              return null;
+                            },
+                          ),
+                          SizedBox(height: 24),
+                          ElevatedButton(
+                            onPressed: _isLoading ? null : _updatePassword,
+                            child: _isLoading
+                                ? CircularProgressIndicator(color: Colors.white)
+                                : Text('Simpan', style: TextStyle(fontSize: 16)),
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: Colors.blue,
+                              padding: EdgeInsets.symmetric(horizontal: 32, vertical: 12),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
                     ),
-            ],
+                  ),
+                ),
+              ),
+            ),
           ),
         ),
       ),
