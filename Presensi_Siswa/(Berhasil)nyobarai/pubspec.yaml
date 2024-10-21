@@ -63,7 +63,7 @@ dev_dependencies:
 # following page: https://dart.dev/tools/pub/pubspec
 
 # The following section is specific to Flutter packages.
-flutter_icons:
+flutter_launcher_icons:
   android: true
   ios: true
   image_path: "assets/icon/icon.png" # Ganti dengan path file ikon Anda
@@ -81,7 +81,7 @@ flutter:
 
   assets:
     - assets/
-    - assets/icon/
+    - assets/icon/icon.png
     - assets/kotakwajah.png
     - assets/kotaknya.png
     - assets/logoSMP.png
