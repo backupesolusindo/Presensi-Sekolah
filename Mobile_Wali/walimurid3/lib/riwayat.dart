@@ -365,7 +365,13 @@ class _RiwayatPageState extends State<RiwayatPage> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text("Waktu Masuk:", style: TextStyle(color: Colors.white)),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Text("Waktu Masuk:", style: TextStyle(color: Colors.white)),
+                          Text(item['waktu'] ?? '', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+                        ],
+                      ),
                       SizedBox(height: 4),
                       Text(item['status'] ?? '', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
                     ],
