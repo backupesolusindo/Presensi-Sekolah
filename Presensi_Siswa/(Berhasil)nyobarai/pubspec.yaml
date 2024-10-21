@@ -81,6 +81,7 @@ flutter:
 
   assets:
     - assets/
+    - assets/bg.png
     - assets/icon/icon.png
     - assets/kotakwajah.png
     - assets/kotaknya.png
