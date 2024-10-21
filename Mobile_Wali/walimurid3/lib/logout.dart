@@ -5,8 +5,9 @@ import 'login.dart';
 
 Future<void> logout(BuildContext context) async {
   SharedPreferences prefs = await SharedPreferences.getInstance();
-  await prefs.remove('nama_wali');
-  await prefs.remove('no_hp');
+  
+  // Menghapus semua data dari SharedPreferences
+  await prefs.clear();
 
   // Navigasi ke halaman login
   Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => LoginPage()));

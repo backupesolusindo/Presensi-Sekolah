@@ -40,6 +40,7 @@ class _DataMuridPageState extends State<DataMuridPage> {
   List<Student> _students = [];
   List<Student> _filteredStudents = [];
   bool _isLoading = true;
+  final TextEditingController _searchController = TextEditingController();
 
   @override
   void initState() {
@@ -187,46 +188,48 @@ class _DataMuridPageState extends State<DataMuridPage> {
   }
 
   Widget _buildStudentTile(Student student) {
-    return Container(
-      margin: EdgeInsets.symmetric(horizontal: 8, vertical: 8),
-      padding: EdgeInsets.all(12),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(8), // Rounded corners
-        boxShadow: [
-          BoxShadow(
-            color: Colors.grey.shade300,
-            spreadRadius: 2,
-            blurRadius: 8,
-            offset: Offset(0, 4),
-          ),
-        ],
+  return Container(
+    margin: EdgeInsets.symmetric(horizontal: 8, vertical: 8), // Lebih kecil
+    padding: EdgeInsets.all(0), // Lebih kecil
+    decoration: BoxDecoration(
+      color: Colors.white,
+      borderRadius: BorderRadius.circular(8),
+      boxShadow: [
+        BoxShadow(
+          color: Colors.grey.shade300,
+          spreadRadius: 1, // Lebih kecil
+          blurRadius: 6,   // Lebih kecil
+          offset: Offset(0, 3), // Lebih kecil
+        ),
+      ],
+    ),
+    child: ListTile(
+      title: Text(
+        student.name,
+        style: TextStyle(
+          fontSize: 14, // Ukuran font lebih kecil
+          color: Colors.black,
+        ),
       ),
-      child: ListTile(
-        title: Text(
-          student.name,
-          style: TextStyle(
-            fontSize: 16,
-            color: Colors.black,
-          ),
+      subtitle: Text(
+        'NIS: ${student.nis}',
+        style: TextStyle(
+          fontSize: 12, // Ukuran font lebih kecil
+          color: Colors.grey[600],
         ),
-        subtitle: Text(
-          'NIS: ${student.nis}', // Show NIS as subtitle
-          style: TextStyle(
-            fontSize: 16,
-            color: Colors.grey[600],
-          ),
-        ),
-        leading: CircleAvatar(
-          backgroundColor: Colors.blue[100],
-          child: Icon(Icons.person, color: Colors.blue),
-        ),
-        onTap: () {
-          _showStudentDetails(student); // Show student details
-        },
       ),
-    );
-  }
+      leading: CircleAvatar(
+        radius: 20,  // Ukuran avatar lebih kecil
+        backgroundColor: Colors.blue[100],
+        child: Icon(Icons.person, color: Colors.blue, size: 20), // Ikon lebih kecil
+      ),
+      onTap: () {
+        _showStudentDetails(student);
+      },
+    ),
+  );
+}
+
 
   @override
   Widget build(BuildContext context) {
@@ -241,66 +244,59 @@ class _DataMuridPageState extends State<DataMuridPage> {
                       top: 20), // Space for the search field
                   child: Column(
                     children: [
-                      // Container with title "Data Murid"
-                      Container(
-                        margin: const EdgeInsets.symmetric(
-                            horizontal: 16, vertical: 8),
-                        decoration: BoxDecoration(
-                          color: Colors.white,
-                          borderRadius:
-                              BorderRadius.circular(8), // Rounded corners
-                          boxShadow: [
-                            BoxShadow(
-                              color: Colors.grey
-                                  .shade300, // Soft grey shadow with transparency
-                              spreadRadius:
-                                  2, // Controls how much the shadow spreads
-                              blurRadius: 8, // Higher value for smooth shadow
-                              offset: Offset(0,
-                                  4), // Offset for vertical shadow, adjust as needed
-                            ),
-                          ],
-                        ),
-                        padding: const EdgeInsets.all(16.0),
-                        child: Text(
-                          'Data Murid',
-                          style: TextStyle(
-                            fontSize: 16, // Increased font size for prominence
-                            fontWeight: FontWeight.bold, // Bold title
-                          ),
-                        ),
-                      ),
-                      // Search Field
                       Padding(
                         padding: const EdgeInsets.symmetric(
                             horizontal: 16, vertical: 8),
                         child: TextField(
-                          onChanged: _filterStudents,
+                          controller: _searchController,
+                          onChanged: (query) {
+                            _filterStudents(query);
+                          },
                           decoration: InputDecoration(
-                            hintText: 'Search by Name or NIS',
+                            hintText: 'Cari Berdasarkan Nama atau NIS',
                             hintStyle: TextStyle(
-                                color: Colors
-                                    .blueGrey), // Optional: Change hint text color
+                              color: Colors.blueGrey,
+                              fontSize: 12,  // Ukuran font lebih kecil
+                            ),
                             border: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(8),
-                              borderSide:
-                                  BorderSide(color: Colors.blue, width: 1),
+                              borderSide: BorderSide(
+                                color: Colors.blue,
+                                width: 1,
+                              ),
                             ),
                             focusedBorder: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(8),
                               borderSide: BorderSide(
-                                  color: Colors.blueAccent,
-                                  width: 2), // Focused border color
+                                color: Colors.blueAccent,
+                                width: 2,
+                              ),
                             ),
                             enabledBorder: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(8),
                               borderSide: BorderSide(
-                                  color: Colors.blue,
-                                  width: 1), // Default border color
+                                color: Colors.blue,
+                                width: 1,
+                              ),
                             ),
-                            prefixIcon: const Icon(Icons.search,
-                                color: Colors.blue), // Search icon color
+                            prefixIcon: Icon(
+                              Icons.search,
+                              color: Colors.blue,
+                              size: 20,  // Ukuran ikon lebih kecil
+                            ),
+                            suffixIcon: IconButton(
+                              icon: Icon(
+                                Icons.clear,
+                                color: Colors.blue,
+                                size: 20,  // Ukuran ikon lebih kecil
+                              ),
+                              onPressed: () {
+                                _searchController.clear();
+                                _filterStudents('');
+                              },
+                            ),
                           ),
+
                         ),
                       ),
                       // ListView to display student details

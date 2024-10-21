@@ -287,7 +287,7 @@ class _HomePageState extends State<HomePage> {
   Widget _buildInfoCard(String text, IconData icon, Color cardColor) {
     return Card(
       elevation: 5,
-      color: cardColor,
+      color: Colors.white,
       child: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Column(
@@ -304,6 +304,7 @@ class _HomePageState extends State<HomePage> {
   Widget _buildMenuPresensi() {
     return Card(
       elevation: 5,
+      color: Colors.white,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(15),
       ),
@@ -370,6 +371,7 @@ class _HomePageState extends State<HomePage> {
   Widget _buildPresenceStatusCard(String status) {
     return Card(
       elevation: 5,
+      color: Colors.white,
       child: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Center(
