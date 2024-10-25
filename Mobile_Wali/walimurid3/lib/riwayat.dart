@@ -362,7 +362,7 @@ class _RiwayatPageState extends State<RiwayatPage> {
               Expanded(
                 flex: 3,
                 child: Container(
-                  padding: EdgeInsets.all(16),
+                  padding: EdgeInsets.symmetric(horizontal: 16, vertical: 30), // Ubah padding
                   decoration: BoxDecoration(
                     color: cardColor,
                     borderRadius:
@@ -370,6 +370,7 @@ class _RiwayatPageState extends State<RiwayatPage> {
                   ),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween, // Tambahkan ini
                     children: [
                       Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -382,7 +383,6 @@ class _RiwayatPageState extends State<RiwayatPage> {
                                   fontWeight: FontWeight.bold)),
                         ],
                       ),
-                      SizedBox(height: 4),
                       Text(item['status'] ?? '',
                           style: TextStyle(
                               color: Colors.white,
@@ -395,17 +395,43 @@ class _RiwayatPageState extends State<RiwayatPage> {
                 flex: 2,
                 child: Padding(
                   padding: EdgeInsets.all(16),
-                  child: Text(
-                    item['tanggal'] ?? '',
-                    style: TextStyle(fontWeight: FontWeight.bold),
-                    textAlign: TextAlign.center,
-                  ),
+                  child: _buildFormattedDate(item['tanggal'] ?? ''),
                 ),
               ),
             ],
           ),
         );
       },
+    );
+  }
+
+  Widget _buildFormattedDate(String tanggal) {
+    final parts = tanggal.split('-');
+    if (parts.length != 3) return Text('Format tanggal tidak valid');
+
+    final bulan = [
+      'Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni',
+      'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'
+    ];
+
+    return Column(
+      children: [
+        Text(
+          bulan[int.parse(parts[1]) - 1],
+          style: TextStyle(fontSize: 14),
+          textAlign: TextAlign.center,
+        ),
+        Text(
+          parts[2],
+          style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: Colors.blue),
+          textAlign: TextAlign.center,
+        ),
+        Text(
+          parts[0],
+          style: TextStyle(fontSize: 14),
+          textAlign: TextAlign.center,
+        ),
+      ],
     );
   }
 
@@ -437,6 +463,15 @@ class _RiwayatPageState extends State<RiwayatPage> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
+                        Text(
+                          item['tanggal'] != null && item['tanggal'].split(' ').length > 1
+                              ? item['tanggal'].split(' ')[1] // Mengambil bagian waktu
+                              : 'Tidak ada waktu',
+                          style: TextStyle(
+                                color: Colors.white,
+                                fontWeight: FontWeight.bold),
+                        ),
+                        SizedBox(height: 4),
                         Text("${item['nama_mapel'] ?? 'loading...'}",
                             style: TextStyle(
                                 color: Colors.white,
@@ -461,17 +496,20 @@ class _RiwayatPageState extends State<RiwayatPage> {
                           CrossAxisAlignment.center, // Ubah ke center
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        Text(
-                          item['tanggal'] ?? 'Tidak ada tanggal',
-                          style: TextStyle(fontWeight: FontWeight.bold),
-                          textAlign: TextAlign.center, // Ubah ke center
+                        Column(
+                          children: [
+                            if (item['tanggal'] != null)
+                              ..._formatTanggal(item['tanggal'])
+                            else
+                              Text(
+                                'Tidak ada tanggal',
+                                style: TextStyle(fontWeight: FontWeight.bold),
+                                textAlign: TextAlign.center,
+                              ),
+                          ],
                         ),
                         SizedBox(height: 4),
-                        Text(
-                          item['jam'] ?? '',
-                          style: TextStyle(color: Colors.grey),
-                          textAlign: TextAlign.center, // Ubah ke center
-                        ),
+                        
                       ],
                     ),
                   ),
@@ -482,5 +520,37 @@ class _RiwayatPageState extends State<RiwayatPage> {
         );
       },
     );
+  }
+
+  List<Widget> _formatTanggal(String tanggal) {
+    if (tanggal.isEmpty) return [Text('Tidak ada tanggal')];
+    
+    final parts = tanggal.split(' ')[0].split('-');
+    if (parts.length != 3) return [Text('Format tanggal tidak valid')];
+
+    final bulan = [
+      'Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni',
+      'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'
+    ];
+
+    return [
+      Text(
+        bulan[int.parse(parts[1]) - 1],
+        style: TextStyle(fontSize: 14),
+        textAlign: TextAlign.center,
+      ),
+      SizedBox(height: 2), // Spasi antara bulan dan tanggal
+      Text(
+        parts[2],
+        style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+        textAlign: TextAlign.center,
+      ),
+      SizedBox(height: 2), // Spasi antara tanggal dan tahun
+      Text(
+        parts[0],
+        style: TextStyle(fontSize: 14),
+        textAlign: TextAlign.center,
+      ),
+    ];
   }
 }
