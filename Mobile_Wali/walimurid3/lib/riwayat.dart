@@ -354,7 +354,7 @@ class _RiwayatPageState extends State<RiwayatPage> {
         Color cardColor =
             item["status"].toString() == "absen" ? Colors.teal : Colors.orange;
         return Card(
-          margin: EdgeInsets.symmetric(vertical: 8),
+          margin: EdgeInsets.symmetric(vertical: 10),
           shape:
               RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
           child: Row(
@@ -362,7 +362,7 @@ class _RiwayatPageState extends State<RiwayatPage> {
               Expanded(
                 flex: 3,
                 child: Container(
-                  padding: EdgeInsets.symmetric(horizontal: 16, vertical: 30), // Ubah padding
+                  padding: EdgeInsets.symmetric(horizontal: 16, vertical: 20),
                   decoration: BoxDecoration(
                     color: cardColor,
                     borderRadius:
@@ -370,13 +370,14 @@ class _RiwayatPageState extends State<RiwayatPage> {
                   ),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween, // Tambahkan ini
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text("Waktu Masuk:",
                               style: TextStyle(color: Colors.white)),
+                          SizedBox(height: 4),
                           Text(item['waktu'] ?? '',
                               style: TextStyle(
                                   color: Colors.white,
@@ -542,7 +543,11 @@ class _RiwayatPageState extends State<RiwayatPage> {
       SizedBox(height: 2), // Spasi antara bulan dan tanggal
       Text(
         parts[2],
-        style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+        style: TextStyle(
+          fontSize: 24, 
+          fontWeight: FontWeight.bold,
+          color: Colors.blue
+        ),
         textAlign: TextAlign.center,
       ),
       SizedBox(height: 2), // Spasi antara tanggal dan tahun
