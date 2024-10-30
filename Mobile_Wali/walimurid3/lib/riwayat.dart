@@ -362,7 +362,7 @@ class _RiwayatPageState extends State<RiwayatPage> {
               Expanded(
                 flex: 3,
                 child: Container(
-                  padding: EdgeInsets.symmetric(horizontal: 16, vertical: 20),
+                  padding: EdgeInsets.symmetric(horizontal: 16, vertical: 21),
                   decoration: BoxDecoration(
                     color: cardColor,
                     borderRadius:
