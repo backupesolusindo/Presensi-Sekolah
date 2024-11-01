@@ -276,7 +276,7 @@ class _RecognitionScreenState extends State<RecognitionScreen> {
         final response = await http.post(
           Uri.parse(url),
           headers: {'Content-Type': 'application/json'},
-          body: json.encode({'nis': rectangle.nis, 'status': 'absen'}),
+          body: json.encode({'nis': rectangle.nis, 'status': 'Hadir'}),
         );
 
         if (response.statusCode != 200) {
@@ -285,7 +285,7 @@ class _RecognitionScreenState extends State<RecognitionScreen> {
             builder: (BuildContext context) {
               return _buildDialog(
                 title: 'Gagal',
-                message: 'Gagal Absen untuk $recognizedName',
+                message: 'Gagal presensi untuk $recognizedName',
                 icon: Icons.error,
                 iconColor: Colors.red,
               );
@@ -301,7 +301,7 @@ class _RecognitionScreenState extends State<RecognitionScreen> {
       builder: (BuildContext context) {
         return _buildDialog(
           title: 'Sukses',
-          message: 'Absen Berhasil',
+          message: 'Presensi Berhasil',
           icon: Icons.check_circle,
           iconColor: Colors.green,
         );
@@ -369,7 +369,7 @@ class _RecognitionScreenState extends State<RecognitionScreen> {
           ),
           child: AppBar(
             title: Text(
-              'Absensi Wajah',
+              'Presensi Wajah',
               style: TextStyle(
                   color: Colors.white), // Ubah warna teks menjadi putih
             ),

@@ -63,11 +63,10 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
   bool ssBody = false;
   bool ssFooter = false;
   int status_lintashari = 0;
+  int JenisAbsen = 0;
 
   @override
   void initState() {
-    // TODO: implement initState
-    // WidgetsBinding.instance.addPostFrameCallback(getPref());
     super.initState();
     statusLoading = 1;
     ssHeader = false;
@@ -81,8 +80,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
 
   cekFakeGPS() async {
     bool _isMockLocation = await TrustLocation.isMockLocation;
-    print("fake GPS :");
-    print(_isMockLocation);
+    print("Fake GPS: $_isMockLocation");
   }
 
   _getTime() {
@@ -93,9 +91,9 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
 
   getPref() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
-    UUID = prefs.getString("ID")!;
-    NIP = prefs.getString("NIP")!;
-    Nama = prefs.getString("Nama")!;
+    UUID = prefs.getString("ID") ?? '';
+    NIP = prefs.getString("NIP") ?? '';
+    Nama = prefs.getString("Nama") ?? '';
 
     if (prefs.getInt("CameraSelect") == null) {
       prefs.setInt("CameraSelect", 1);
@@ -103,9 +101,8 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
 
     bool status = await Geolocator.isLocationServiceEnabled();
     if (!status) {
-      Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) {
-        return AktifGPS();
-      }));
+      Navigator.pushReplacement(
+          context, MaterialPageRoute(builder: (context) => AktifGPS()));
     }
 
     var url = Uri.parse(Core().ApiUrl + "Login/set_token");
@@ -113,8 +110,9 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
       "uuid": prefs.getString("ID"),
       "token": prefs.getString("token"),
     });
-    print(response.body);
-    print("Login Pref :" + UUID);
+    print("Response Body: ${response.body}");
+    print("Login Pref: $UUID");
+
     getDataDash();
     fetchKegiatan();
     fetchJadwalMapel();
@@ -124,11 +122,11 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
     SharedPreferences prefs = await SharedPreferences.getInstance();
 
     try {
-      var res = await http.get(
-          Uri.parse(Core().ApiUrl + "Dash/get_dash/" + UUID),
+      var res = await http.get(Uri.parse(Core().ApiUrl + "Dash/get_dash/$UUID"),
           headers: {"Accept": "application/json"});
 
       var resBody = json.decode(res.body);
+      print("Response Body: $resBody");
 
       setState(() {
         statusLoading = 0;
@@ -140,7 +138,6 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
           });
         });
 
-        // Mengambil data pegawai, lokasi, dan lainnya
         DataPegawai = resBody['data']["pegawai"];
         DataLokasi = resBody['data']["lokasi"];
         DataAbsen = resBody['data']["absen"];
@@ -150,67 +147,70 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
         DataKegiatan = resBody['data']["kegiatan"];
         DataDinasLuar = resBody['data']["dinasluar"];
         DataTugasBelajar = resBody['data']["tugas_belajar"];
-        StatusDinasLuar = int.parse(DataDinasLuar['status']);
-        AdaDinasLuar = int.parse(DataDinasLuar['ada_surat']);
-        AdaTugasBelajar = int.parse(DataTugasBelajar['ada_tugas_belajar']);
-        Foto = DataPegawai["foto_profil"];
 
-        // Simpan data ke SharedPreferences
-        prefs.setString("NIP", DataPegawai['NIP']);
-        prefs.setString("Nama", DataPegawai['nama_pegawai']);
-        prefs.setString("Lokasi", DataLokasi['nama_kampus']);
-        LokasiAnda = prefs.getString("Lokasi")!;
-        prefs.setString("idKampus", DataLokasi['idkampus']);
-        prefs.setDouble("LokasiLat", double.parse(DataLokasi['latitude']));
-        prefs.setDouble("LokasiLng", double.parse(DataLokasi['longtitude']));
-        prefs.setDouble("Radius", double.parse(DataLokasi['radius']));
+        StatusDinasLuar = int.parse(DataDinasLuar?['status'] ?? '0');
+        AdaDinasLuar = int.parse(DataDinasLuar?['ada_surat'] ?? '0');
+        AdaTugasBelajar =
+            int.parse(DataTugasBelajar?['ada_tugas_belajar'] ?? '0');
+        Foto = DataPegawai?["foto_profil"] ?? '';
 
-        // Cek versi
+        prefs.setString("NIP", DataPegawai?['NIP'] ?? '');
+        prefs.setString("Nama", DataPegawai?['nama_pegawai'] ?? '');
+        prefs.setString("Lokasi", DataLokasi?['nama_kampus'] ?? '');
+        LokasiAnda = prefs.getString("Lokasi") ?? '';
+        prefs.setString("idKampus", DataLokasi?['idkampus'] ?? '');
+        prefs.setDouble("LokasiLat",
+            double.tryParse(DataLokasi?['latitude']?.trim() ?? '0.0') ?? 0.0);
+        prefs.setDouble("LokasiLng",
+            double.tryParse(DataLokasi?['longtitude']?.trim() ?? '0.0') ?? 0.0);
+        prefs.setDouble("Radius",
+            double.tryParse(DataLokasi?['radius'].toString() ?? '0.0') ?? 0.0);
+
         if (resBody['data']["version"] > Core().Version) {
+          print("Update Available");
           _showNotifUpdate();
         }
 
-        // Status lintas hari
-        if (resBody['data']["jabatan"]["lintas_hari"] != null) {
+        if (resBody['data']["jabatan"]?["lintas_hari"] != null) {
           status_lintashari =
               int.parse(resBody['data']["jabatan"]["lintas_hari"]);
+          print("Status Lintas Hari: $status_lintashari");
         }
 
-        // Set status kerja dan keterangan
-        if (DataAbsen["jenis_absen"] == "1") {
+        if (DataAbsen?["jenis_absen"] == "1") {
           statusWF = 1;
           KeteranganMulai = "Jam Presensi Datang";
           KeteranganSelesai = "Jam Presensi Pulang";
-        } else if (DataAbsen["jenis_absen"] == "4") {
+        } else if (DataAbsen?["jenis_absen"] == "4") {
           statusWF = 4;
           KeteranganMulai = "Jam Presensi Mulai WFH";
           KeteranganSelesai = "Jam Presensi Selesai WFH";
         }
+        print("Status Kerja: $statusWF");
 
-        // Waktu pulang
-        if (DataAbsenPulang != null) {
+        if (DataAbsenPulang?['waktu'] != null) {
           jam_pulang = formatDate(
               DateTime.parse(DataAbsenPulang['waktu']), [HH, ':', nn, ':', ss]);
           tgl_pulang = formatDate(DateTime.parse(DataAbsenPulang['waktu']),
               [dd, '/', mm, '/', yyyy]);
+          print("Jam Pulang: $jam_pulang, Tanggal Pulang: $tgl_pulang");
         }
 
-        // Waktu istirahat
-        if (DataSelesaiIstirahat != null) {
-          jam_istirahat = formatDate(DateTime.parse(DataIstirahat['waktu']),
-                  [HH, ':', nn, ':', ss]) +
-              " s/d " +
-              formatDate(DateTime.parse(DataSelesaiIstirahat['waktu']),
-                  [HH, ':', nn, ':', ss]);
-        } else {
-          jam_istirahat = formatDate(DateTime.parse(DataIstirahat['waktu']),
-                  [HH, ':', nn, ':', ss]) +
-              " - Belum Presensi";
+        if (DataIstirahat?['waktu'] != null) {
+          jam_istirahat = formatDate(
+              DateTime.parse(DataIstirahat['waktu']), [HH, ':', nn, ':', ss]);
+          if (DataSelesaiIstirahat?['waktu'] != null) {
+            jam_istirahat += " s/d " +
+                formatDate(DateTime.parse(DataSelesaiIstirahat['waktu']),
+                    [HH, ':', nn, ':', ss]);
+          } else {
+            jam_istirahat += " - Belum Presensi";
+          }
         }
+        print("Jam Istirahat: $jam_istirahat");
       });
 
       await fetchJadwalMapel();
-      print(resBody);
       return "";
     } catch (e) {
       print("Error fetching data: $e");
@@ -236,38 +236,36 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
   }
 
   Future<void> fetchJadwalMapel() async {
-  String uuid = await SharedPreferences.getInstance()
-      .then((prefs) => prefs.getString('NIP') ?? '');
+    String uuid = await SharedPreferences.getInstance()
+        .then((prefs) => prefs.getString('NIP') ?? '');
 
-  var url = Uri.parse(
-    Core().ApiUrl + "ApiJadwalMapel/JadwalMapel/getJadwalMapel_byUUID/$uuid");
+    var url = Uri.parse(Core().ApiUrl +
+        "ApiJadwalMapel/JadwalMapel/getJadwalMapel_byUUID/$uuid");
 
-  try {
-    final response = await http.get(url);
-    if (response.statusCode == 200) {
-      final Map<String, dynamic> jsonResponse = json.decode(response.body);
-      if (jsonResponse['status'] == true) {
-        final List<dynamic> data = jsonResponse['data'] ?? [];
+    try {
+      final response = await http.get(url);
+      if (response.statusCode == 200) {
+        final Map<String, dynamic> jsonResponse = json.decode(response.body);
+        if (jsonResponse['status'] == true) {
+          final List<dynamic> data = jsonResponse['data'] ?? [];
 
-        if (data.isNotEmpty) {
-          ListJadwalMapel = List<Map<String, dynamic>>.from(data);
-          print(
-              "Debug: Number of schedules received: ${ListJadwalMapel.length}");
+          if (data.isNotEmpty) {
+            ListJadwalMapel = List<Map<String, dynamic>>.from(data);
+            print(
+                "Debug: Number of schedules received: ${ListJadwalMapel.length}");
+          } else {
+            print("Debug: No schedules found.");
+          }
         } else {
-          print("Debug: No schedules found.");
+          print("Debug: API Error: ${jsonResponse['message']['message']}");
         }
       } else {
-        print("Debug: API Error: ${jsonResponse['message']['message']}");
+        print("Debug: HTTP Response status code: ${response.statusCode}");
       }
-    } else {
-      print("Debug: HTTP Response status code: ${response.statusCode}");
+    } catch (e) {
+      print("Error fetching data: $e");
     }
-  } catch (e) {
-    print("Error fetching data: $e");
   }
-}
-
-
 
   @override
   Widget build(BuildContext context) {
@@ -342,37 +340,34 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                   ),
                 ),
               ),
-              // Card for missing presence with icon
+              // Card untuk absen yang belum dilakukan
               if (DataAbsen == null &&
                   DataKegiatan.length < 1 &&
                   StatusDinasLuar == 1)
                 Container(
-                  padding: const EdgeInsets.all(
-                      15.0), // Smaller padding for compact look
+                  padding: const EdgeInsets.all(15.0),
                   margin:
                       const EdgeInsets.symmetric(vertical: 0, horizontal: 15.0),
                   width: size.width,
                   decoration: BoxDecoration(
-                    color: Colors.blue, // Change CWarning to a blue color
-                    borderRadius:
-                        BorderRadius.circular(10.0), // Adjust corner radius
+                    color: Colors.blue,
+                    borderRadius: BorderRadius.circular(10.0),
                     boxShadow: [
                       BoxShadow(
-                        color: Colors.blue
-                            .withOpacity(0.5), // Softer shadow in blue
+                        color: Colors.blue.withOpacity(0.5),
                         blurRadius: 4,
-                        offset: Offset(2, 2), // Softer shadow position
+                        offset: Offset(2, 2),
                       ),
                     ],
                   ),
                   child: Row(
                     children: [
                       Icon(
-                        Icons.error_outline, // Using "!" symbol
+                        Icons.error_outline,
                         color: Colors.white70,
-                        size: 24, // Adjusted icon size for compactness
+                        size: 24,
                       ),
-                      SizedBox(width: 10), // Space between icon and text
+                      SizedBox(width: 10),
                       Expanded(
                         child: Text(
                           "Anda Hari Ini Belum Melakukan Presensi",
@@ -385,7 +380,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                     ],
                   ),
                 ),
-              // Cards for Absen if available
+              // Kartu untuk Absen jika tersedia
               if (DataAbsen != null)
                 Row(
                   children: <Widget>[
@@ -395,13 +390,17 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                           [HH, ':', nn, ':', ss]),
                       formatDate(DateTime.parse(DataAbsen['waktu']),
                           [dd, '/', mm, '/', yyyy]),
-                      Colors.lightBlue, // Change this if needed
+                      Colors.lightBlue,
                     ),
                     _buildStatCard(
-                        KeteranganSelesai, jam_pulang, tgl_pulang, Colors.cyan),
+                      KeteranganSelesai,
+                      jam_pulang,
+                      tgl_pulang,
+                      Colors.cyan,
+                    ),
                   ],
                 ),
-              // Cards for Istirahat if available
+              // Kartu untuk Istirahat jika tersedia
               if (DataIstirahat != null)
                 Row(
                   children: <Widget>[
@@ -413,22 +412,19 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                     ),
                   ],
                 ),
-              // Card for Dinas Luar if applicable
+              // Kartu untuk Dinas Luar jika berlaku
               if (AdaDinasLuar == 1)
                 Container(
                   width: size.width,
                   margin: const EdgeInsets.symmetric(
                       vertical: 5.0, horizontal: 15.0),
-                  padding: const EdgeInsets.all(
-                      12.0), // Adjusted padding for consistency
+                  padding: const EdgeInsets.all(12.0),
                   decoration: BoxDecoration(
-                    color: Colors.blue.withOpacity(
-                        0.8), // Change kPrimaryColor to a blue color
+                    color: Colors.blue.withOpacity(0.8),
                     borderRadius: BorderRadius.circular(12.0),
                     boxShadow: [
                       BoxShadow(
-                        color: Colors.blue
-                            .withOpacity(0.8), // Change to blue shadow
+                        color: Colors.blue.withOpacity(0.8),
                         blurRadius: 4,
                         offset: Offset(4, 4),
                       ),
@@ -477,15 +473,15 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                     ],
                   ),
                 ),
-              // Card for Tugas Belajar if applicable
+              // Kartu untuk Tugas Belajar jika berlaku
               if (AdaTugasBelajar == 1)
                 Container(
                   width: size.width,
                   margin: const EdgeInsets.symmetric(
                       vertical: 5.0, horizontal: 15.0),
-                  padding: const EdgeInsets.all(12.0), // Consistent padding
+                  padding: const EdgeInsets.all(12.0),
                   decoration: BoxDecoration(
-                    color: Colors.blue, // Change kPrimaryColor to a blue color
+                    color: Colors.blue,
                     borderRadius: BorderRadius.circular(10.0),
                   ),
                   child: Column(
@@ -603,7 +599,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
               Padding(
                 padding: const EdgeInsets.only(top: 8, left: 20),
                 child: const Text(
-                  'Jadwal Mapel Hari Ini :',
+                  'Jadwal Mapel :',
                   style: TextStyle(
                     fontSize: 15.0,
                     fontWeight: FontWeight.w600,
@@ -1007,148 +1003,100 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
     );
   }
 
-SliverToBoxAdapter _buildHeader(double screenHeight) {
-  Size size = MediaQuery.of(context).size;
-  return SliverToBoxAdapter(
-    child: AnimatedOpacity(
-      opacity: ssHeader ? 1 : 0,
-      duration: const Duration(milliseconds: 500),
-      child: AnimatedContainer(
-        padding: const EdgeInsets.only(left: 20.0, right: 20.0, bottom: 0.0, top: 40.0),
-        margin: ssHeader ? EdgeInsets.only(top: 0) : EdgeInsets.only(top: 8),
+  SliverToBoxAdapter _buildHeader(double screenHeight) {
+    Size size = MediaQuery.of(context).size;
+    return SliverToBoxAdapter(
+      child: AnimatedOpacity(
+        opacity: ssHeader ? 1 : 0,
         duration: const Duration(milliseconds: 500),
-        curve: Curves.fastEaseInToSlowEaseOut,
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: <Widget>[
-            Container(
-              padding: EdgeInsets.symmetric(horizontal: 18, vertical: 12),
-              decoration: BoxDecoration(
-                color: Colors.white,  // Putih polos
-                borderRadius: BorderRadius.circular(12.0),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withOpacity(0.1),  // Shadow tipis
-                    blurRadius: 10,
-                    spreadRadius: 2,
-                    offset: Offset(0, 5),  // Shadow posisi ke bawah
-                  ),
-                ],
-              ),
-              child: Row(
-                children: <Widget>[
-                  Container(
-                    height: 59,
-                    width: 59,
-                    decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(70),
-                      image: DecorationImage(
-                        image: AssetImage('assets/images/smp1logo.png'),
+        child: AnimatedContainer(
+          padding: const EdgeInsets.only(
+              left: 20.0, right: 20.0, bottom: 0.0, top: 40.0),
+          margin: ssHeader ? EdgeInsets.only(top: 0) : EdgeInsets.only(top: 8),
+          duration: const Duration(milliseconds: 500),
+          curve: Curves.fastEaseInToSlowEaseOut,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: <Widget>[
+              Container(
+                padding: EdgeInsets.symmetric(horizontal: 18, vertical: 12),
+                decoration: BoxDecoration(
+                  color: Colors.white, // Putih polos
+                  borderRadius: BorderRadius.circular(12.0),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withOpacity(0.1), // Shadow tipis
+                      blurRadius: 10,
+                      spreadRadius: 2,
+                      offset: Offset(0, 5), // Shadow posisi ke bawah
+                    ),
+                  ],
+                ),
+                child: Row(
+                  children: <Widget>[
+                    Container(
+                      height: 59,
+                      width: 59,
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(70),
+                        image: DecorationImage(
+                          image: AssetImage('assets/images/smp1logo.png'),
+                        ),
                       ),
                     ),
-                  ),
-                  SizedBox(width: 15),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: <Widget>[
-                        Text(
-                          "Good Day!",
-                          style: TextStyle(
-                            fontSize: 14,
-                            fontWeight: FontWeight.w500,
-                            color: CText,
-                          ),
-                        ),
-                        Text(
-                          Nama,
-                          style: TextStyle(
-                            fontSize: 15,
-                            fontWeight: FontWeight.w600,
-                            color: Colors.black,
-                          ),
-                          overflow: TextOverflow.visible,
-                        ),
-                        Text(
-                          (NIP == "") ? "-" : NIP,
-                          style: TextStyle(
-                            fontSize: 14,
-                            fontWeight: FontWeight.w400,
-                            color: CText,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            SizedBox(height: 10),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-              children: <Widget>[
-                Expanded(
-                  child: Container(
-                    height: 125,
-                    width: size.width * 0.43,
-                    margin: EdgeInsets.only(right: 4),
-                    padding: EdgeInsets.symmetric(horizontal: 8, vertical: 8),
-                    decoration: BoxDecoration(
-                      color: Colors.white,  // Putih polos
-                      borderRadius: BorderRadius.circular(12.0),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.black.withOpacity(0.1),  // Shadow tipis
-                          blurRadius: 10,
-                          spreadRadius: 2,
-                          offset: Offset(0, 5),
-                        ),
-                      ],
-                    ),
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: <Widget>[
-                        Icon(
-                          Icons.watch_later_outlined,
-                          color: Colors.blue,
-                        ),
-                        Text(
-                          jam,
-                          style: TextStyle(
-                              fontSize: 16,
+                    SizedBox(width: 15),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: <Widget>[
+                          Text(
+                            "Good Day!",
+                            style: TextStyle(
+                              fontSize: 14,
                               fontWeight: FontWeight.w500,
-                              color: CText),
-                        ),
-                        SizedBox(height: 5),
-                        Text(
-                          formatDate(DateTime.now(), [D, ', ', dd, ' ', M, ' ', yyyy]),
-                          style: TextStyle(
-                              fontSize: 12,
-                              fontWeight: FontWeight.w500,
-                              color: CText),
-                        ),
-                      ],
+                              color: CText,
+                            ),
+                          ),
+                          Text(
+                            Nama,
+                            style: TextStyle(
+                              fontSize: 15,
+                              fontWeight: FontWeight.w600,
+                              color: Colors.black,
+                            ),
+                            overflow: TextOverflow.visible,
+                          ),
+                          Text(
+                            (NIP == "") ? "-" : NIP,
+                            style: TextStyle(
+                              fontSize: 14,
+                              fontWeight: FontWeight.w400,
+                              color: CText,
+                            ),
+                          ),
+                        ],
+                      ),
                     ),
-                  ),
+                  ],
                 ),
-                Expanded(
-                  child: TextButton(
-                    onPressed: () {
-                      Navigator.push(context, MaterialPageRoute(builder: (context) {
-                        return LokasiKampusScreen();
-                      }));
-                    },
+              ),
+              SizedBox(height: 10),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                children: <Widget>[
+                  Expanded(
                     child: Container(
                       height: 125,
                       width: size.width * 0.43,
-                      margin: EdgeInsets.only(left: 4),
+                      margin: EdgeInsets.only(right: 4),
                       padding: EdgeInsets.symmetric(horizontal: 8, vertical: 8),
                       decoration: BoxDecoration(
-                        color: Colors.white,  // Putih polos
+                        color: Colors.white, // Putih polos
                         borderRadius: BorderRadius.circular(12.0),
                         boxShadow: [
                           BoxShadow(
-                            color: Colors.black.withOpacity(0.1),  // Shadow tipis
+                            color:
+                                Colors.black.withOpacity(0.1), // Shadow tipis
                             blurRadius: 10,
                             spreadRadius: 2,
                             offset: Offset(0, 5),
@@ -1159,20 +1107,20 @@ SliverToBoxAdapter _buildHeader(double screenHeight) {
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: <Widget>[
                           Icon(
-                            Icons.location_on_outlined,
+                            Icons.watch_later_outlined,
                             color: Colors.blue,
                           ),
                           Text(
-                            LokasiAnda,
-                            textAlign: TextAlign.center,
+                            jam,
                             style: TextStyle(
-                                fontSize: 14,
+                                fontSize: 16,
                                 fontWeight: FontWeight.w500,
                                 color: CText),
                           ),
                           SizedBox(height: 5),
                           Text(
-                            "Lokasi Anda",
+                            formatDate(DateTime.now(),
+                                [D, ', ', dd, ' ', M, ' ', yyyy]),
                             style: TextStyle(
                                 fontSize: 12,
                                 fontWeight: FontWeight.w500,
@@ -1182,18 +1130,69 @@ SliverToBoxAdapter _buildHeader(double screenHeight) {
                       ),
                     ),
                   ),
-                ),
-              ],
-            ),
-          ],
+                  Expanded(
+                    child: TextButton(
+                      onPressed: () {
+                        Navigator.push(context,
+                            MaterialPageRoute(builder: (context) {
+                          return LokasiKampusScreen();
+                        }));
+                      },
+                      child: Container(
+                        height: 125,
+                        width: size.width * 0.43,
+                        margin: EdgeInsets.only(left: 4),
+                        padding:
+                            EdgeInsets.symmetric(horizontal: 8, vertical: 8),
+                        decoration: BoxDecoration(
+                          color: Colors.white, // Putih polos
+                          borderRadius: BorderRadius.circular(12.0),
+                          boxShadow: [
+                            BoxShadow(
+                              color:
+                                  Colors.black.withOpacity(0.1), // Shadow tipis
+                              blurRadius: 10,
+                              spreadRadius: 2,
+                              offset: Offset(0, 5),
+                            ),
+                          ],
+                        ),
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: <Widget>[
+                            Icon(
+                              Icons.location_on_outlined,
+                              color: Colors.blue,
+                            ),
+                            Text(
+                              LokasiAnda,
+                              textAlign: TextAlign.center,
+                              style: TextStyle(
+                                  fontSize: 14,
+                                  fontWeight: FontWeight.w500,
+                                  color: CText),
+                            ),
+                            SizedBox(height: 5),
+                            Text(
+                              "Lokasi Anda",
+                              style: TextStyle(
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.w500,
+                                  color: CText),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
         ),
       ),
-    ),
-  );
-}
-
-
-
+    );
+  }
 
   Expanded _buildStatCard(
       String title, String count, String ket, MaterialColor color) {
@@ -1202,13 +1201,13 @@ SliverToBoxAdapter _buildHeader(double screenHeight) {
         margin: const EdgeInsets.symmetric(vertical: 5.0, horizontal: 8.0),
         padding: const EdgeInsets.all(10.0),
         decoration: BoxDecoration(
-          color: Colors.white,
+          color: color,
           borderRadius: BorderRadius.circular(12.0),
           boxShadow: [
             BoxShadow(
-              color: Colors.white30,
+              color: color.withOpacity(0.3),
               blurRadius: 4,
-              offset: Offset(2, 4), // Shadow position
+              offset: Offset(2, 4),
             ),
           ],
         ),
@@ -1223,10 +1222,9 @@ SliverToBoxAdapter _buildHeader(double screenHeight) {
                 fontSize: 12.0,
                 fontWeight: FontWeight.w600,
               ),
+              textAlign: TextAlign.center,
             ),
-            SizedBox(
-              height: 1,
-            ),
+            SizedBox(height: 4),
             Text(
               count,
               style: const TextStyle(
@@ -1234,17 +1232,18 @@ SliverToBoxAdapter _buildHeader(double screenHeight) {
                 fontSize: 14.0,
                 fontWeight: FontWeight.bold,
               ),
+              textAlign: TextAlign.center,
             ),
-            (ket != "")
-                ? Text(
-                    ket,
-                    style: const TextStyle(
-                      color: Colors.white,
-                      fontSize: 12.0,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  )
-                : SizedBox(),
+            if (ket.isNotEmpty)
+              Text(
+                ket,
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontSize: 12.0,
+                  fontWeight: FontWeight.bold,
+                ),
+                textAlign: TextAlign.center,
+              ),
           ],
         ),
       ),
@@ -1253,128 +1252,189 @@ SliverToBoxAdapter _buildHeader(double screenHeight) {
 
   // Semua Menu
   SliverToBoxAdapter _buildMenuWFO(double screenHeight) {
-  return SliverToBoxAdapter(
-    child: AnimatedOpacity(
-      opacity: ssBody ? 1 : 0,
-      duration: const Duration(milliseconds: 500),
-      child: AnimatedContainer(
-        margin: ssBody ? EdgeInsets.only(top: 0) : EdgeInsets.only(top: 10),
+    return SliverToBoxAdapter(
+      child: AnimatedOpacity(
+        opacity: ssBody ? 1 : 0,
         duration: const Duration(milliseconds: 500),
-        curve: Curves.fastEaseInToSlowEaseOut,
-        child: Container(
-          padding: const EdgeInsets.all(20.0),
-          margin: const EdgeInsets.symmetric(vertical: 5.0, horizontal: 15.0),
-          decoration: BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.circular(12.0),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withOpacity(0.15),  // Shadow lebih tegas
-                blurRadius: 10,  // Menambah blur untuk shadow
-                spreadRadius: 2,  // Area shadow lebih luas
-                offset: Offset(4, 4),  // Posisi shadow (x: kanan, y: bawah)
-              ),
-            ],
-          ),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: <Widget>[
-              Text(
-                'Menu Presensi :',
-                style: const TextStyle(
-                  fontSize: 14.0,
-                  fontWeight: FontWeight.w600,
+        child: AnimatedContainer(
+          margin: EdgeInsets.only(top: ssBody ? 0 : 10),
+          duration: const Duration(milliseconds: 500),
+          curve: Curves.fastEaseInToSlowEaseOut,
+          child: Container(
+            padding: const EdgeInsets.all(20.0),
+            margin: const EdgeInsets.symmetric(vertical: 5.0, horizontal: 15.0),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(12.0),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.15),
+                  blurRadius: 10,
+                  spreadRadius: 2,
+                  offset: const Offset(4, 4),
                 ),
-              ),
-              SingleChildScrollView(
-                scrollDirection: Axis.horizontal,
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: <Widget>[
-                    TextButton(
-                      onPressed: () {
-                        Navigator.push(context,
-                            MaterialPageRoute(builder: (context) {
-                          return SemuaMenu();
-                        }));
-                      },
-                      child: Column(
-                        children: <Widget>[
-                          Image.asset(
-                            "assets/icons/semua_menu.png",
-                            height: screenHeight * 0.07,
-                          ),
-                          SizedBox(height: screenHeight * 0.003),
-                          Text(
-                            "Semua\nMenu",
-                            style: const TextStyle(
-                              fontSize: 11.0,
-                              fontWeight: FontWeight.w500,
-                            ),
-                            textAlign: TextAlign.center,
-                          ),
-                        ],
-                      ),
-                    ),
-                    TextButton(
-                      onPressed: () {
-                        // Logika Presensi Masuk
-                      },
-                      child: Column(
-                        children: <Widget>[
-                          Image.asset(
-                            (StatusDinasLuar == 1)
-                                ? "assets/icons/presensi_datang_warna.png"
-                                : "assets/icons/presensi_datang_monokrom.png",
-                            height: screenHeight * 0.07,
-                          ),
-                          SizedBox(height: screenHeight * 0.003),
-                          Text(
-                            "Presensi\nMasuk",
-                            style: const TextStyle(
-                              fontSize: 11.0,
-                              fontWeight: FontWeight.w500,
-                            ),
-                            textAlign: TextAlign.center,
-                          ),
-                        ],
-                      ),
-                    ),
-                    TextButton(
-                      onPressed: () {
-                        // Logika Presensi Pulang
-                      },
-                      child: Column(
-                        children: <Widget>[
-                          Image.asset(
-                            (StatusDinasLuar == 1)
-                                ? "assets/icons/presensi_pulang_warna.png"
-                                : "assets/icons/presensi_pulang_monokrom.png",
-                            height: screenHeight * 0.07,
-                          ),
-                          SizedBox(height: screenHeight * 0.003),
-                          Text(
-                            "Presensi\nPulang",
-                            style: const TextStyle(
-                              fontSize: 11.0,
-                              fontWeight: FontWeight.w500,
-                            ),
-                            textAlign: TextAlign.center,
-                          ),
-                        ],
-                      ),
-                    ),
-                  ],
+              ],
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'Menu Presensi :',
+                  style: const TextStyle(
+                    fontSize: 14.0,
+                    fontWeight: FontWeight.w600,
+                  ),
                 ),
-              ),
-            ],
+                SingleChildScrollView(
+                  scrollDirection: Axis.horizontal,
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      // Semua Menu Button
+                      TextButton(
+                        onPressed: () {
+                          Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => SemuaMenu(),
+                              ));
+                        },
+                        child: Column(
+                          children: [
+                            Image.asset(
+                              "assets/icons/semua_menu.png",
+                              height: screenHeight * 0.07,
+                            ),
+                            SizedBox(height: screenHeight * 0.003),
+                            Text(
+                              "Semua\nMenu",
+                              style: const TextStyle(
+                                fontSize: 11.0,
+                                fontWeight: FontWeight.w500,
+                              ),
+                              textAlign: TextAlign.center,
+                            ),
+                          ],
+                        ),
+                      ),
+                      // Presensi Masuk Button
+                      TextButton(
+                        onPressed: () {
+                          if (JenisAbsen == 0 || JenisAbsen == 1) {
+                            if (StatusDinasLuar == 1) {
+                              if (DataAbsen == null) {
+                                _showMyDialog(
+                                  "Presensi Harian",
+                                  "Anda belum melakukan Presensi Harian. Silakan Presensi Harian terlebih dahulu!",
+                                  MaterialPageRoute(
+                                    builder: (context) => AbsenHarianScreen(),
+                                  ),
+                                );
+                              } else {
+                                Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (context) => AbsenHarianScreen(),
+                                    ));
+                              }
+                            } else {
+                              _showNotif(
+                                "Presensi Harian",
+                                "Anda Dilarang Melakukan Presensi Karena Sedang Dinas Luar",
+                              );
+                            }
+                          }
+                        },
+                        child: Column(
+                          children: [
+                            Image.asset(
+                              StatusDinasLuar == 1
+                                  ? "assets/icons/presensi_datang_warna.png"
+                                  : "assets/icons/presensi_datang_monokrom.png",
+                              height: screenHeight * 0.07,
+                            ),
+                            SizedBox(height: screenHeight * 0.003),
+                            Text(
+                              "Presensi\nMasuk",
+                              style: const TextStyle(
+                                fontSize: 11.0,
+                                fontWeight: FontWeight.w500,
+                              ),
+                              textAlign: TextAlign.center,
+                            ),
+                          ],
+                        ),
+                      ),
+                      // Presensi Pulang Button
+                      TextButton(
+                        onPressed: () {
+                          if (JenisAbsen == 0 || JenisAbsen == 1) {
+                            if (StatusDinasLuar == 1) {
+                              if (DataAbsen == null) {
+                                _showMyDialog(
+                                  "Presensi Harian",
+                                  "Anda belum melakukan Presensi Harian. Silakan Presensi Harian terlebih dahulu!",
+                                  MaterialPageRoute(
+                                    builder: (context) => AbsenHarianScreen(),
+                                  ),
+                                );
+                              } else {
+                                if (DataAbsenPulang == null) {
+                                  Navigator.push(
+                                      context,
+                                      MaterialPageRoute(
+                                        builder: (context) =>
+                                            AbsenPulangHarianScreen(),
+                                      ));
+                                } else {
+                                  _showMyDialog(
+                                    "Presensi Harian",
+                                    "Apakah Anda Memperbarui Pulang Sebelumnya?",
+                                    MaterialPageRoute(
+                                      builder: (context) =>
+                                          AbsenPulangHarianScreen(),
+                                    ),
+                                  );
+                                }
+                              }
+                            } else {
+                              _showNotif(
+                                "Presensi Harian",
+                                "Anda Dilarang Melakukan Presensi Karena Sedang Dinas Luar",
+                              );
+                            }
+                          }
+                        },
+                        child: Column(
+                          children: [
+                            Image.asset(
+                              StatusDinasLuar == 1
+                                  ? "assets/icons/presensi_pulang_warna.png"
+                                  : "assets/icons/presensi_pulang_monokrom.png",
+                              height: screenHeight * 0.07,
+                            ),
+                            SizedBox(height: screenHeight * 0.003),
+                            Text(
+                              "Presensi\nPulang",
+                              style: const TextStyle(
+                                fontSize: 11.0,
+                                fontWeight: FontWeight.w500,
+                              ),
+                              textAlign: TextAlign.center,
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
           ),
         ),
       ),
-    ),
-  );
-}
-
+    );
+  }
 
   SliverToBoxAdapter _buildMenuWFH(double screenHeight) {
     return SliverToBoxAdapter(
