@@ -47,7 +47,7 @@ class _HomePageState extends State<HomeScreen> {
                         ),
                         const SizedBox(height: 20), // Jarak antara logo dan tombol
                         Text(
-                          "Absensi Wajah\nSMPN 1 Jember",
+                          "Presensi Wajah\nSMPN 1 Jember",
                           textAlign: TextAlign.center, // Membuat teks rata tengah
                           style: TextStyle(
                             fontSize: 24,
@@ -56,7 +56,7 @@ class _HomePageState extends State<HomeScreen> {
                           ),
                         ),
                         const SizedBox(height: 90),
-                        _buildButton("Absen", () {
+                        _buildButton("Presensi", () {
                           _navigateWithLoading(context, const RecognitionScreen());
                         }),
                         const SizedBox(height: 20),
