@@ -153,7 +153,7 @@ class _ProfilePageState extends State<ProfilePage> {
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     Container(
-                      width: 75, // Lebar gambar
+                      width: 80, // Lebar gambar
                       height: 100, // Tinggi gambar
                       decoration: BoxDecoration(
                         borderRadius: BorderRadius.circular(12), // Sudut membulat

@@ -347,12 +347,21 @@ class _RiwayatPageState extends State<RiwayatPage> {
   }
 
   Widget _buildRiwayatMasukList() {
+    if (riwayatData.isEmpty) {
+      return Center(
+        child: Text(
+          "Belum ada riwayat",
+          style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+        ),
+      );
+    }
+    
     return ListView.builder(
       itemCount: riwayatData.length,
       itemBuilder: (context, index) {
         final item = riwayatData[index];
         Color cardColor =
-            item["status"].toString() == "absen" ? Colors.teal : Colors.orange;
+            item["status"].toString() == "Hadir" ? Colors.teal : Colors.orange;
         return Card(
           margin: EdgeInsets.symmetric(vertical: 10),
           shape:
@@ -437,6 +446,15 @@ class _RiwayatPageState extends State<RiwayatPage> {
   }
 
   Widget _buildRiwayatMapelList() {
+    if (riwayatData.isEmpty) {
+      return Center(
+        child: Text(
+          "Belum ada riwayat",
+          style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+        ),
+      );
+    }
+    
     return ListView.builder(
       itemCount: riwayatData.length,
       itemBuilder: (context, index) {
@@ -510,7 +528,6 @@ class _RiwayatPageState extends State<RiwayatPage> {
                           ],
                         ),
                         SizedBox(height: 4),
-                        
                       ],
                     ),
                   ),
