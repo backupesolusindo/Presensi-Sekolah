@@ -228,7 +228,7 @@ class _Body extends State<Body> {
     var status_absensi = item['status_absensi'];
     var foto = item['foto'];
     var waktu_pulang = item['waktu_pulang'];
-    var waktu_istirahat = item['waktu_istirahat'];
+    // var waktu_istirahat = item['waktu_istirahat'];
 
     return Container(
       margin: const EdgeInsets.symmetric(vertical: 8, horizontal: 8),
@@ -252,8 +252,8 @@ class _Body extends State<Body> {
           title: Row(
             children: <Widget>[
               Container(
-                width: 70,
-                height: 130,
+                width: 50,
+                height: 100,
                 decoration: BoxDecoration(
                     color: kPrimaryColor,
                     borderRadius: BorderRadius.circular(3),
@@ -261,116 +261,85 @@ class _Body extends State<Body> {
                         fit: BoxFit.cover,
                         image: NetworkImage(Core().Url + foto))),
               ),
-              SizedBox(
-                width: 10,
-              ),
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: <Widget>[
-                  SizedBox(
-                      width: MediaQuery.of(context).size.width - 140,
-                      child: Text(
-                        waktu,
-                        style: TextStyle(fontSize: 14),
-                      )),
-                  SizedBox(
-                    height: 5,
-                  ),
-                  SizedBox(
-                    height: 8,
-                  ),
-                  Row(
-                    children: [
-                      Container(
-                        width: 90,
-                        child: Text("Presensi Datang",
-                            style: const TextStyle(fontSize: 12)),
-                      ),
-                      Container(
-                        width: 120,
-                        child: Text(
-                          ": " + waktu.toString(),
-                          style: const TextStyle(fontSize: 13),
-                        ),
-                      )
-                    ],
-                  ),
-                  SizedBox(
-                    height: 8,
-                  ),
-                  Row(
-                    children: <Widget>[
-                      Container(
-                        width: 90,
-                        child: Text("Istirahat",
-                            maxLines: 1,
-                            softWrap: true,
-                            overflow: TextOverflow.fade,
-                            textAlign: TextAlign.left,
-                            style: const TextStyle(
-                              fontSize: 12,
-                              wordSpacing: 10.0,
-                            )),
-                      ),
-                      Container(
-                        width: 120,
-                        child: Text(
-                          ": " + waktu_istirahat.toString(),
-                          style: const TextStyle(fontSize: 12),
-                        ),
-                      )
-                    ],
-                  ),
-                  SizedBox(
-                    height: 8,
-                  ),
-                  Row(
-                    children: [
-                      Container(
-                        width: 90,
-                        child: Text("Presensi Pulang",
-                            style: const TextStyle(fontSize: 12)),
-                      ),
-                      Container(
-                        width: 120,
-                        child: Text(
-                          ": " + waktu_pulang.toString(),
-                          style: const TextStyle(fontSize: 13),
-                        ),
-                      )
-                    ],
-                  ),
-                  Container(
-                    width: 80.0,
-                    height: 30.0,
-                    margin: EdgeInsets.only(left: 145, top: 10),
-                    decoration: BoxDecoration(
-                      color: (item['status_absensi'] == "1")
-                          ? softblue
-                          : (item['status_absensi'] == "2")
-                              ? softred
-                              : softorange,
-                      borderRadius: BorderRadius.circular(20.0),
+              SizedBox(width: 5),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: <Widget>[
+                    Text(
+                      waktu,
+                      style: TextStyle(fontSize: 12),
+                      overflow: TextOverflow.ellipsis,
                     ),
-                    alignment: Alignment.center,
-                    child: Text(
-                      (item['status_absensi'] == "1")
-                          ? 'Diterima'
-                          : (item['status_absensi'] == "2")
-                              ? 'Ditolak'
-                              : 'Menunggu',
-                      style: TextStyle(
-                        color: (item['status_absensi'] == "1")
-                            ? Colors.blue
-                            : (item['status_absensi'] == "2")
-                                ? Colors.redAccent
-                                : Colors.deepOrangeAccent,
-                        fontSize: 14.0,
-                        fontWeight: FontWeight.bold,
-                      ),
+                    SizedBox(height: 5),
+                    Row(
+                      children: [
+                        Container(
+                          width: 75,
+                          child: Text("Presensi Datang",
+                              style: const TextStyle(fontSize: 10)),
+                        ),
+                        Expanded(
+                          child: Text(
+                            ": " + waktu.toString(),
+                            style: const TextStyle(fontSize: 10),
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        )
+                      ],
                     ),
-                  )
-                ],
+                    SizedBox(height: 5),
+                    Row(
+                      children: [
+                        Container(
+                          width: 75,
+                          child: Text("Presensi Pulang",
+                              style: const TextStyle(fontSize: 10)),
+                        ),
+                        Expanded(
+                          child: Text(
+                            ": " + waktu_pulang.toString(),
+                            style: const TextStyle(fontSize: 10),
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        )
+                      ],
+                    ),
+                    Align(
+                      alignment: Alignment.centerRight,
+                      child: Container(
+                        width: 70,
+                        height: 25,
+                        margin: EdgeInsets.only(top: 8),
+                        decoration: BoxDecoration(
+                          color: (item['status_absensi'] == "1")
+                              ? softblue
+                              : (item['status_absensi'] == "2")
+                                  ? softred
+                                  : softorange,
+                          borderRadius: BorderRadius.circular(20.0),
+                        ),
+                        alignment: Alignment.center,
+                        child: Text(
+                          (item['status_absensi'] == "1")
+                              ? 'Diterima'
+                              : (item['status_absensi'] == "2")
+                                  ? 'Ditolak'
+                                  : 'Menunggu',
+                          style: TextStyle(
+                            color: (item['status_absensi'] == "1")
+                                ? Colors.blue
+                                : (item['status_absensi'] == "2")
+                                    ? Colors.redAccent
+                                    : Colors.deepOrangeAccent,
+                            fontSize: 10.0,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ),
+                    )
+                  ],
+                ),
               )
             ],
           ),
