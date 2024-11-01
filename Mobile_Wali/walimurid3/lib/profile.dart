@@ -104,7 +104,7 @@ class _ProfilePageState extends State<ProfilePage> {
             child: Container(
               height: MediaQuery.of(context).size.height * 0.3, // Sesuaikan tinggi sesuai kebutuhan
               decoration: BoxDecoration(
-                color: Color(0xFF1A237E), 
+                color: Color(0xFF03A9F4), 
               ),
             ),
           ),
@@ -142,7 +142,7 @@ class _ProfilePageState extends State<ProfilePage> {
           child: SizedBox(
             width: cardWidth,
             child: Card(
-              color: Colors.white, // Mengubah warna card menjadi putih
+              color: Colors.white,
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(12),
               ),
@@ -152,9 +152,16 @@ class _ProfilePageState extends State<ProfilePage> {
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    CircleAvatar(
-                      radius: 50,
-                      backgroundImage: AssetImage('assets/logopoltek.png'),
+                    Container(
+                      width: 75, // Lebar gambar
+                      height: 100, // Tinggi gambar
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(12), // Sudut membulat
+                        image: DecorationImage(
+                          image: AssetImage('assets/logoSMP.png'),
+                          fit: BoxFit.fill, // Mengisi area tanpa mempertahankan proporsi
+                        ),
+                      ),
                     ),
                     const SizedBox(height: 16),
                     Text(
@@ -298,7 +305,7 @@ class _ProfilePageState extends State<ProfilePage> {
       ),
       elevation: 6,
       shadowColor: Colors.black26,
-      color: Colors.red, // Mengubah warna latar belakang kartu menjadi merah
+      color: Color(0xFFFF5252), // Menggunakan warna biru muda
       child: InkWell(
         onTap: () {
           // Logika logout

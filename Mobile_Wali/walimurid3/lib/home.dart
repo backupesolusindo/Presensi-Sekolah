@@ -198,8 +198,16 @@ class _HomePageState extends State<HomePage> {
             padding: const EdgeInsets.all(16.0),
             child: Row(
               children: [
-                CircleAvatar(
-                  backgroundImage: AssetImage('assets/logopoltek.png'),
+                Container(
+                  width: 50, // Lebar gambar
+                  height: 60, // Tinggi gambar
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(12), // Sudut membulat
+                    image: DecorationImage(
+                      image: AssetImage('assets/logoSMP.png'), // Ganti dengan gambar profil
+                      fit: BoxFit.fill, // Mengisi area tanpa mempertahankan proporsi
+                    ),
+                  ),
                 ),
                 SizedBox(width: 16),
                 Flexible(
