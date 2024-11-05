@@ -66,7 +66,22 @@ dev_dependencies:
 flutter_launcher_icons:
   android: true
   ios: true
-  image_path: "assets/icon/icon.png" # Ganti dengan path file ikon Anda
+  image_path: "assets/icon/icon.png"
+  adaptive_icon_background: "#ffffff"
+  adaptive_icon_foreground: "assets/icon/icon.png"
+  min_sdk_android: 21
+  android_generate_round: true
+  remove_alpha_ios: true
+  adaptive_icon_padding: true
+  android_res_folders:
+    - "android/app/src/main/res/"
+  android_sizes:
+    - mdpi
+    - hdpi
+    - xhdpi
+    - xxhdpi
+    - xxxhdpi
+  ios_content_mode: center
 
 flutter:
   # The following line ensures that the Material Icons font is
