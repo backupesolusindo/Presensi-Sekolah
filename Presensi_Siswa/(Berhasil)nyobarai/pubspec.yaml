@@ -63,25 +63,18 @@ dev_dependencies:
 # following page: https://dart.dev/tools/pub/pubspec
 
 # The following section is specific to Flutter packages.
-flutter_launcher_icons:
-  android: true
+flutter_icons:
+  android: "launcher_icon"
   ios: true
   image_path: "assets/icon/icon.png"
-  adaptive_icon_background: "#ffffff"
-  adaptive_icon_foreground: "assets/icon/icon.png"
-  min_sdk_android: 21
-  android_generate_round: true
-  remove_alpha_ios: true
-  adaptive_icon_padding: true
-  android_res_folders:
-    - "android/app/src/main/res/"
-  android_sizes:
-    - mdpi
-    - hdpi
-    - xhdpi
-    - xxhdpi
-    - xxxhdpi
-  ios_content_mode: center
+  adaptive_icon_background: "#ffffff" # Warna background untuk Android adaptive icons
+  adaptive_icon_foreground: "assets/icon/icon_foreground.png" # Icon foreground untuk Android adaptive icons
+  min_sdk_android: 28 # Optional, minimal SDK Android
+  # Ukuran spesifik untuk Android (opsional)
+  android_generate_round: true # Membuat versi round icon
+  # Ukuran spesifik untuk iOS (opsional)
+  ios_content_mode: center # center/scaleAspectFit/scaleAspectFill
+  remove_alpha_ios: true # Menghapus alpha channel untuk iOS
 
 flutter:
   # The following line ensures that the Material Icons font is

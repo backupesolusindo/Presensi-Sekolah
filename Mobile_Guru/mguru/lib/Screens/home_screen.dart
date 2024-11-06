@@ -25,7 +25,7 @@ import 'package:geolocator/geolocator.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:http/http.dart' as http;
 import 'package:trust_location/trust_location.dart';
-import 'package:launch_review/launch_review.dart';
+// import 'package:launch_review/launch_review.dart';
 import 'package:mobile_presensi_kdtg/Screens/presensi_siswa_page.dart';
 
 import 'Absen/WorkFrom/absen_selesai_wf_screen.dart';
@@ -1697,12 +1697,12 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                   Navigator.of(context).pop();
                 },
               ),
-              TextButton(
-                child: Text('Perbarui Sekarang'),
-                onPressed: () {
-                  LaunchReview.launch();
-                },
-              )
+              // TextButton(
+              //   child: Text('Perbarui Sekarang'),
+              //   onPressed: () {
+              //     LaunchReview.launch();
+              //   },
+              // )
             ],
           ),
         );
