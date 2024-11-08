@@ -169,7 +169,7 @@ class _HomePageState extends State<HomePage> {
                   ),
                   SizedBox(height: 8),
                   _buildPresenceStatusCard(
-                      'Aplikasi ini bisa Ibu/Bapak gunakan untuk memantau absensi anak anda'),
+                      'Aplikasi ini bisa Ibu/Bapak gunakan untuk memantau Presensi anak anda'),
                   SizedBox(height: 16),
                 ],
               ),
