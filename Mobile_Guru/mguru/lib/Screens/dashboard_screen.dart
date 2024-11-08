@@ -8,7 +8,7 @@ class DashboardScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Presensi POLIJE',
+      title: 'Presensi SMPN 1 JEMBER',
       debugShowCheckedModeBanner: false,
       theme: ThemeData(
         primarySwatch: MaterialColor(
