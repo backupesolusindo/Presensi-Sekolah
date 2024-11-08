@@ -46,6 +46,7 @@ dependencies:
   http: ^1.2.2
   lottie: ^3.1.2
   google_fonts: ^4.0.3
+  change_app_package_name: ^1.4.0
 
 dev_dependencies:
   flutter_launcher_icons: ^0.14.1
