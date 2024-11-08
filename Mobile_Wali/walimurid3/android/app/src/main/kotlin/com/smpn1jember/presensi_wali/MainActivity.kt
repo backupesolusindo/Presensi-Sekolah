@@ -1,4 +1,4 @@
-package com.example.walimurid3
+package com.smpn1jember.presensi_wali
 
 import io.flutter.embedding.android.FlutterActivity
 
