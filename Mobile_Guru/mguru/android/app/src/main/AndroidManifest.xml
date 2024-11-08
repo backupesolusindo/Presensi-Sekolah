@@ -12,9 +12,9 @@
     </queries>
 
     <application
-        android:label="E-Presensi KDTG"
+        android:label="E-Presensi SMPN1"
         android:name="${applicationName}"
-        android:icon="@mipmap/ic_launcher">
+        android:icon="@mipmap/launcher_icon">
         <meta-data
            android:name="com.google.android.geo.API_KEY"
            android:value="AIzaSyCIm5nxQcBezTHpw9v2bFdb6ac4CJhzqwA"

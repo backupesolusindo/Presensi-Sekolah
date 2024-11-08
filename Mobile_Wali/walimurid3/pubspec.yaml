@@ -1,11 +1,11 @@
 name: walimurid3
 description: "A new Flutter project."
-publish_to: 'none' 
+publish_to: "none"
 
 version: 1.0.0+1
 
 environment:
-  sdk: ^3.5.2
+  sdk: ">=3.5.1 <4.0.0" # Change this line to match your current SDK version
 
 dependencies:
   flutter:
@@ -31,11 +31,12 @@ dev_dependencies:
     sdk: flutter
   flutter_lints: ^4.0.0
   flutter_launcher_icons: ^0.13.1
+  change_app_package_name: ^1.4.0
 
 flutter:
   uses-material-design: true
 
-  # Menambahkan aset gambar 
+  # Menambahkan aset gambar
   assets:
     - assets/
     - assets/logopoltek.png
