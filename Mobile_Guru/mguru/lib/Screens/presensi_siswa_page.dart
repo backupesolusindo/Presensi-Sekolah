@@ -643,7 +643,7 @@ class _PresensiSiswaPageState extends State<PresensiSiswaPage> {
               icon: Icons.calendar_today,
               color: Colors.redAccent,
               text:
-                  'Tanggal: ${widget.tanggal.isNotEmpty ? widget.tanggal : 'Belum ditentukan'}',
+                  'Tanggal: ${widget.tanggal.isNotEmpty ? formatTanggal(widget.tanggal) : 'Belum ditentukan'}',
             ),
             const SizedBox(height: 10), // Space above the checkbox row
             // Custom circular checkbox for teacher's attendance with icon and text
@@ -805,5 +805,11 @@ class _PresensiSiswaPageState extends State<PresensiSiswaPage> {
       fontWeight: FontWeight.w500,
       color: Colors.black,
     );
+  }
+
+  String formatTanggal(String tanggal) {
+    // Mengubah string tanggal dari "YYYY-MM-DD" menjadi "DD-MM-YYYY"
+    DateTime dateTime = DateTime.parse(tanggal);
+    return '${dateTime.day.toString().padLeft(2, '0')}-${dateTime.month.toString().padLeft(2, '0')}-${dateTime.year}';
   }
 }

@@ -795,7 +795,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                 ),
                 const SizedBox(width: 6),
                 Text(
-                  item['tanggal'] ?? 'Tanggal belum ditentukan', // tanggal
+                  formatTanggal(item['tanggal'] ?? 'Tanggal belum ditentukan'), // tanggal
                   style: const TextStyle(
                     fontSize: 16.0,
                     color: Colors.grey,
@@ -1708,5 +1708,11 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
         );
       },
     );
+  }
+
+  String formatTanggal(String tanggal) {
+    // Mengubah string tanggal dari "YYYY-MM-DD" menjadi "DD-MM-YYYY"
+    DateTime dateTime = DateTime.parse(tanggal);
+    return '${dateTime.day.toString().padLeft(2, '0')}-${dateTime.month.toString().padLeft(2, '0')}-${dateTime.year}';
   }
 }

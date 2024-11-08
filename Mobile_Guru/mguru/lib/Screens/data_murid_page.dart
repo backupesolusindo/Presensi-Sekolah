@@ -130,38 +130,81 @@ class _DataMuridPageState extends State<DataMuridPage> {
                 Align(
                   alignment: Alignment.centerLeft, // Align text to the left
                   child: Column(
-                    crossAxisAlignment: CrossAxisAlignment
-                        .start, // Align text items to the start
+                    crossAxisAlignment: CrossAxisAlignment.start, // Align text items to the start
                     children: [
-                      // Student's name with label
-                      Text(
-                        'Nama: ${student.name}', // Added label "Nama:"
-                        style: TextStyle(
-                          fontSize: 16, // Font size for the name
-                          color: Colors.black,
-                        ),
+                      // Row for Student's name
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween, // Space between columns
+                        children: [
+                          const Text(
+                            'Nama:',
+                            style: TextStyle(
+                              fontSize: 16,
+                              color: Colors.black,
+                            ),
+                          ),
+                          const SizedBox(width: 20), // Spacing between label and value
+                          Expanded(
+                            child: Text(
+                              '${student.name}', // Display student's name
+                              style: TextStyle(
+                                fontSize: 16,
+                                color: Colors.black,
+                              ),
+                            ),
+                          ),
+                        ],
                       ),
-                      const SizedBox(
-                          height: 8), // Spacing between name and other details
-                      // NIS as a styled text
-                      Text(
-                        'NIS: ${student.nis}',
-                        style: TextStyle(
-                          fontSize: 16,
-                          color: Colors
-                              .grey[800], // Darker grey for better readability
-                        ),
+                      const SizedBox(height: 8), // Spacing between name and NIS
+                      // Row for NIS
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween, // Space between columns
+                        children: [
+                          const Text(
+                            'NIS:',
+                            style: TextStyle(
+                              fontSize: 16,
+                              color: Colors.black,
+                            ),
+                          ),
+                          const SizedBox(width: 38), // Spacing between label and value
+                          Expanded(
+                            child: Text(
+                              '${student.nis}',
+                              style: TextStyle(
+                                fontSize: 16,
+                                color: Colors.black, // Darker grey for better readability
+                              ),
+                            ),
+                          ),
+                        ],
                       ),
-                      const SizedBox(height: 8), // Spacing
-                      // Class name as styled text
-                      Text(
-                        ' ${student.namaKelas}', // Display 'Kelas'
-                        style: TextStyle(
-                          fontSize: 16,
-                          color: Colors
-                              .grey[800], // Darker grey for better readability
+                      const SizedBox(height: 8), // Spacing between NIS and class name
+                      // Row for Class name
+                      if (student.namaKelas.isNotEmpty) ...[
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween, // Space between columns
+                          children: [
+                            const Text(
+                              'Kelas:',
+                              style: TextStyle(
+                                fontSize: 16,
+                                color: Colors.black,
+                              ),
+                            ),
+                            const SizedBox(width: 26), // Spacing between label and value
+                            Expanded(
+                              child: Text(
+                                '${student.namaKelas.split(' ').last}', // Display only the class part (e.g., "7A")
+                                style: TextStyle(
+                                  fontSize: 16,
+                                  color: Colors.black, // Darker grey for better readability
+                                ),
+                              ),
+                            ),
+                          ],
                         ),
-                      ),
+                      ],
                     ],
                   ),
                 ),
