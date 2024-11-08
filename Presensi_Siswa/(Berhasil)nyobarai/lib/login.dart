@@ -232,7 +232,7 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
                     _buildTextField(
                       controller: _usernameController,
                       labelText: 'NIP',
-                      icon: Icons.phone,
+                      icon: Icons.person,
                     ),
                     SizedBox(height: 20.0),
                     _buildTextField(
