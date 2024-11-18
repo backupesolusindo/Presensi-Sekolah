@@ -795,7 +795,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                 ),
                 const SizedBox(width: 6),
                 Text(
-                  formatTanggal(item['tanggal'] ?? 'Tanggal belum ditentukan'), // tanggal
+                  _formatDate(item['tanggal']), // Use the new method to format the date
                   style: const TextStyle(
                     fontSize: 16.0,
                     color: Colors.grey,
@@ -1714,5 +1714,18 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
     // Mengubah string tanggal dari "YYYY-MM-DD" menjadi "DD-MM-YYYY"
     DateTime dateTime = DateTime.parse(tanggal);
     return '${dateTime.day.toString().padLeft(2, '0')}-${dateTime.month.toString().padLeft(2, '0')}-${dateTime.year}';
+  }
+
+  String _formatDate(String? date) {
+    if (date == null || date.isEmpty) {
+      return 'Tanggal belum ditentukan'; // Return default message if date is null or empty
+    }
+    
+    try {
+      DateTime parsedDate = DateTime.parse(date); // Parse the date string
+      return '${parsedDate.day.toString().padLeft(2, '0')}-${parsedDate.month.toString().padLeft(2, '0')}-${parsedDate.year}'; // Format to DD-MM-YYYY
+    } catch (e) {
+      return 'Tanggal tidak valid'; // Return error message if parsing fails
+    }
   }
 }

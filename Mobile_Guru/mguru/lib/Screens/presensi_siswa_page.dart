@@ -100,32 +100,45 @@ class _PresensiSiswaPageState extends State<PresensiSiswaPage> {
     var url = Uri.parse(
         Core().ApiUrl + "ApiSiswa/Siswa/getSiswabykelas/${widget.idKelas}");
 
+    print("Fetching students from URL: $url"); // Log the URL being fetched
+
     try {
-      final response = await http.get(url);
-      if (response.statusCode == 200) {
-        final apiResponse = ApiResponse.fromJson(json.decode(response.body));
-        if (apiResponse.status) {
-          setState(() {
-            _students = apiResponse.data;
-            _isLoading = false;
-            _hadirList = List.generate(_students.length, (_) => false);
-          });
+        final response = await http.get(url);
+        print("Response status code: ${response.statusCode}"); // Log the response status code
+
+        if (response.statusCode == 200) {
+            final apiResponse = ApiResponse.fromJson(json.decode(response.body));
+            print("API Response: ${apiResponse.toString()}"); // Log the API response
+
+            if (apiResponse.status) {
+                setState(() {
+                    _students = apiResponse.data;
+                    _isLoading = false;
+                    _hadirList = List.generate(_students.length, (_) => false);
+                });
+                print("Students fetched successfully: ${_students.length} students."); // Log success
+            } else {
+                _showErrorDialog(apiResponse.message);
+                print("API Error: ${apiResponse.message}"); // Log API error message
+            }
+        } else if (response.statusCode == 404) {
+            _showErrorDialog('Resource not found. Please check the URL.');
+            print("HTTP Error: 404 - Resource not found."); // Log HTTP error
         } else {
-          _showErrorDialog(apiResponse.message);
+            _showErrorDialog('Error: ${response.statusCode}');
+            print("HTTP Error: ${response.statusCode}"); // Log HTTP error
         }
-      } else {
-        _showErrorDialog('Error: ${response.statusCode}');
-      }
     } catch (e) {
-      _showErrorDialog('Failed to load students. Error: $e');
+        _showErrorDialog('Failed to load students. Error: $e');
+        print("Exception occurred: $e"); // Log exception
     } finally {
-      if (mounted) {
-        setState(() {
-          _isLoading = false;
-        });
-      }
+        if (mounted) {
+            setState(() {
+                _isLoading = false;
+            });
+        }
     }
-  }
+}
 
   void _showErrorDialog(String message) {
     showDialog(
@@ -642,8 +655,7 @@ class _PresensiSiswaPageState extends State<PresensiSiswaPage> {
             _buildRow(
               icon: Icons.calendar_today,
               color: Colors.redAccent,
-              text:
-                  'Tanggal: ${widget.tanggal.isNotEmpty ? formatTanggal(widget.tanggal) : 'Belum ditentukan'}',
+              text: 'Tanggal: ${_formatDate(widget.tanggal)}',
             ),
             const SizedBox(height: 10), // Space above the checkbox row
             // Custom circular checkbox for teacher's attendance with icon and text
@@ -807,9 +819,16 @@ class _PresensiSiswaPageState extends State<PresensiSiswaPage> {
     );
   }
 
-  String formatTanggal(String tanggal) {
-    // Mengubah string tanggal dari "YYYY-MM-DD" menjadi "DD-MM-YYYY"
-    DateTime dateTime = DateTime.parse(tanggal);
-    return '${dateTime.day.toString().padLeft(2, '0')}-${dateTime.month.toString().padLeft(2, '0')}-${dateTime.year}';
+  String _formatDate(String? date) {
+    if (date == null || date.isEmpty) {
+      return 'Belum ditentukan'; // Return default message if date is null or empty
+    }
+    
+    try {
+      DateTime parsedDate = DateTime.parse(date); // Parse the date string
+      return '${parsedDate.day.toString().padLeft(2, '0')}-${parsedDate.month.toString().padLeft(2, '0')}-${parsedDate.year}'; // Format to DD-MM-YYYY
+    } catch (e) {
+      return 'Tanggal tidak valid'; // Return error message if parsing fails
+    }
   }
 }
