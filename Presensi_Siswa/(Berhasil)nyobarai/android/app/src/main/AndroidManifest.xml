@@ -6,7 +6,7 @@
 
 
     <application
-        android:label="FaceRecognitionSMPN1"
+        android:label="E-PRESENSI SMPN 1 JBR - SISWA"
         android:name="${applicationName}"
         android:icon="@mipmap/launcher_icon">
         <activity
