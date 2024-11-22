@@ -1,4 +1,4 @@
-name: E-PRESENSISMPN1JBR-SISWA
+name: presensiSiswa
 description: "Sebuah aplikasi untuk presensi pada SMPN1 JEMBER."
 # The following line prevents the package from being accidentally published to
 # pub.dev using `flutter pub publish`. This is preferred for private packages.
