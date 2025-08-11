@@ -34,25 +34,7 @@ Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   // await Firebase.initializeApp();
 
-  // Set the background messaging handler early on, as a named top-level function
   // FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
-
-  /// Create an Android Notification Channel.
-  ///
-  /// We use this channel in the `AndroidManifest.xml` file to override the
-  /// default FCM channel to enable heads up notifications.
-  // await flutterLocalNotificationsPlugin
-  //     .resolvePlatformSpecificImplementation<
-  //         AndroidFlutterLocalNotificationsPlugin>()
-  //     ?.createNotificationChannel(channel);
-
-  // /// Update the iOS foreground notification presentation options to allow
-  // /// heads up notifications.
-  // await FirebaseMessaging.instance.setForegroundNotificationPresentationOptions(
-  //   alert: true,
-  //   badge: true,
-  //   sound: true,
-  // );
 
   runApp(const MyApp());
 }
@@ -60,7 +42,6 @@ Future<void> main() async {
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
 
-  // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
@@ -85,8 +66,6 @@ class MyHomePage extends StatefulWidget {
 class _MyHomePageState extends State<MyHomePage> {
   late FirebaseMessaging fm;
 
-  // _MyHomePageState() {}
-
   @override
   void initState() {
     super.initState();
@@ -97,54 +76,46 @@ class _MyHomePageState extends State<MyHomePage> {
         InitializationSettings(android: initializationSettingsAndroid);
 
     flutterLocalNotificationsPlugin.initialize(initializationSetting);
+
     FirebaseMessaging.onMessage.listen((RemoteMessage message) {
-      RemoteNotification notification = message.notification!;
+      RemoteNotification? notification = message.notification;
       AndroidNotification? android = message.notification?.android;
-      if (android != null) {
+      if (notification != null && android != null) {
         flutterLocalNotificationsPlugin.show(
-            notification.hashCode,
-            notification.title,
-            notification.body,
-            NotificationDetails(
-              android: AndroidNotificationDetails(
-                channel.id,
-                channel.name,
-                // TODO add a proper drawable resource to android, for now using
-                //      one that already exists in example app.
-                icon: 'launch_background',
-              ),
-            ));
+          notification.hashCode,
+          notification.title,
+          notification.body,
+          NotificationDetails(
+            android: AndroidNotificationDetails(
+              channel.id,
+              channel.name,
+              icon: 'launch_background',
+            ),
+          ),
+        );
       }
     });
 
     _getMockLocation();
-    // _Cek_Login();
     getToken();
   }
 
-  getToken() async {
+  Future<void> getToken() async {
     String? token = await FirebaseMessaging.instance.getToken();
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    prefs.setString("token", token);
-    print("Token : $token");
+    if (token != null) {
+      SharedPreferences prefs = await SharedPreferences.getInstance();
+      prefs.setString("token", token);
+      print("Token : $token");
+    } else {
+      print("Token FCM null, tidak disimpan");
+    }
   }
 
   Future<void> _getMockLocation() async {
     Timer(const Duration(seconds: 2), () => _Cek_Login());
-    // bool _mocklocation = await TrustLocation.isMockLocation;
-    // print(_mocklocation);
-    // if (_mocklocation == true) {
-    //   print("fake");
-    //   _showMyDialogFake();
-    // }else{
-    //   print("no_fake");
-    //   Timer(
-    //       Duration(seconds: 2),
-    //           () => _Cek_Login());
-    // }
   }
 
-  _Cek_Login() async {
+  Future<void> _Cek_Login() async {
     print("StatusLogin");
     SharedPreferences prefs = await SharedPreferences.getInstance();
     if (prefs.getBool("status_login") == null) {
@@ -155,14 +126,22 @@ class _MyHomePageState extends State<MyHomePage> {
       print(prefs.getString("Nama"));
       Navigator.pop(context);
       Navigator.push(
-          context,
-          PageTransition(
-              type: PageTransitionType.fade, child: const DashboardScreen()));
+        context,
+        PageTransition(
+          type: PageTransitionType.fade,
+          child: const DashboardScreen(),
+        ),
+      );
     } else {
       print("StatusLogin : Logout");
       Navigator.pop(context);
-      Navigator.push(context,
-          PageTransition(type: PageTransitionType.fade, child: const LoginScreen()));
+      Navigator.push(
+        context,
+        PageTransition(
+          type: PageTransitionType.fade,
+          child: const LoginScreen(),
+        ),
+      );
     }
   }
 
@@ -171,9 +150,10 @@ class _MyHomePageState extends State<MyHomePage> {
     return MaterialApp(
       title: 'Presensi Polije',
       theme: ThemeData(
-          primaryColor: kPrimaryColor,
-          scaffoldBackgroundColor: Colors.white,
-          visualDensity: VisualDensity.adaptivePlatformDensity),
+        primaryColor: kPrimaryColor,
+        scaffoldBackgroundColor: Colors.white,
+        visualDensity: VisualDensity.adaptivePlatformDensity,
+      ),
       home: const WelcomeScreen(),
     );
   }
@@ -181,7 +161,7 @@ class _MyHomePageState extends State<MyHomePage> {
   Future<void> _showMyDialogFake() async {
     return showDialog<void>(
       context: context,
-      barrierDismissible: false, // user must tap button!
+      barrierDismissible: false,
       builder: (BuildContext context) {
         return BackdropFilter(
           filter: ImageFilter.blur(sigmaX: 6, sigmaY: 6),
