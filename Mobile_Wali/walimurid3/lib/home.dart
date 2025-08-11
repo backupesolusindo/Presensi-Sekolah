@@ -1,7 +1,7 @@
 import 'dart:async';
-import 'dart:convert'; // Untuk JSON decoding
+import 'dart:convert';
 import 'package:flutter/material.dart';
-import 'package:http/http.dart' as http; // Import http
+import 'package:http/http.dart' as http;
 import 'package:intl/date_symbol_data_local.dart';
 import 'package:intl/intl.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -17,22 +17,32 @@ class HomePage extends StatefulWidget {
   _HomePageState createState() => _HomePageState();
 }
 
-class _HomePageState extends State<HomePage> {
+class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
   String namaWali = '';
   String noHp = '';
   int _currentIndex = 0;
   String _currentTime = '';
   String _currentDate = '';
   late Timer _timer;
+  late AnimationController _animationController;
+  late Animation<double> _fadeAnimation;
 
-  List<dynamic> siswaList = []; // Menampung data siswa
-  String? selectedSiswa; // Menampung siswa yang dipilih
+  List<dynamic> siswaList = [];
+  String? selectedSiswa;
 
   @override
   void initState() {
     super.initState();
     _initializeLocale();
     _loadUserData();
+    _animationController = AnimationController(
+      duration: const Duration(milliseconds: 1000),
+      vsync: this,
+    );
+    _fadeAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
+      CurvedAnimation(parent: _animationController, curve: Curves.easeInOut),
+    );
+    _animationController.forward();
   }
 
   Future<void> _initializeLocale() async {
@@ -46,6 +56,7 @@ class _HomePageState extends State<HomePage> {
   @override
   void dispose() {
     _timer.cancel();
+    _animationController.dispose();
     super.dispose();
   }
 
@@ -54,13 +65,10 @@ class _HomePageState extends State<HomePage> {
     setState(() {
       namaWali = prefs.getString('nama_wali') ?? 'Nama Wali';
       noHp = prefs.getString('no_hp') ?? 'Nomor HP';
-
-      // Ambil NIS dari SharedPreferences
       String nis = prefs.getString('nis') ?? 'NIS tidak tersedia';
-      print('NIS: $nis'); // Anda bisa mencetak NIS untuk memastikan
+      print('NIS: $nis');
     });
-
-    await _fetchSiswaData(); // Panggil API setelah data pengguna di-load
+    await _fetchSiswaData();
   }
 
   Future<void> _fetchSiswaData() async {
@@ -74,11 +82,9 @@ class _HomePageState extends State<HomePage> {
 
         if (data['data'].isNotEmpty) {
           setState(() {
-            siswaList = data['data']; // Simpan data siswa ke siswaList
-            selectedSiswa =
-                siswaList.first['nama']; // Pilih siswa pertama sebagai default
+            siswaList = data['data'];
+            selectedSiswa = siswaList.first['nama'];
 
-            // Simpan seluruh data siswa ke SharedPreferences
             final prefs = SharedPreferences.getInstance();
             prefs.then((prefs) {
               List<String> siswaJsonList = siswaList.map((siswa) {
@@ -88,7 +94,6 @@ class _HomePageState extends State<HomePage> {
                   'nama_kelas': siswa['nama_kelas']
                 });
               }).toList();
-
               prefs.setStringList('siswa_list', siswaJsonList);
             });
           });
@@ -127,161 +132,548 @@ class _HomePageState extends State<HomePage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: Stack(
-        children: [
-          Container(
-            decoration: const BoxDecoration(
-              image: DecorationImage(
-                image: AssetImage('assets/walibg.png'),
-                fit: BoxFit.cover,
+      body: Container(
+        decoration: const BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+            colors: [
+              Color(0xFF4A90E2),
+              Color(0xFF007AFF),
+              Color(0xFF5AC8FA),
+            ],
+          ),
+        ),
+        child: SafeArea(
+          child: FadeTransition(
+            opacity: _fadeAnimation,
+            child: SingleChildScrollView(
+              physics: const BouncingScrollPhysics(),
+              child: Padding(
+                padding: const EdgeInsets.all(20.0),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    _buildModernHeader(),
+                    const SizedBox(height: 24),
+                    _buildProfileCard(),
+                    const SizedBox(height: 20),
+                    _buildDropdownSiswa(),
+                    const SizedBox(height: 20),
+                    _buildTimeCards(),
+                    const SizedBox(height: 24),
+                    _buildSectionTitle('Menu Utama', Icons.dashboard),
+                    const SizedBox(height: 16),
+                    _buildModernMenuGrid(),
+                    const SizedBox(height: 24),
+                    _buildSectionTitle('Informasi', Icons.info_outline),
+                    const SizedBox(height: 16),
+                    _buildInfoCard(),
+                    const SizedBox(height: 20),
+                  ],
+                ),
               ),
             ),
           ),
-          SingleChildScrollView(
-            child: Padding(
-              padding: const EdgeInsets.all(16.0),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  _buildProfileCard(),
-                  const SizedBox(height: 16),
-                  _buildDropdownSiswa(),
-                  const SizedBox(height: 16),
-                  // Membuat Row untuk Card Waktu dan Date
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      _buildInfoCard(
-                          _currentTime, Icons.access_time, Colors.white),
-                      _buildInfoCard(
-                          _currentDate, Icons.calendar_today, Colors.white),
-                    ],
-                  ),
-                  const SizedBox(height: 16),
-                  const Text(
-                    'Menu :',
-                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-                  ),
-                  const SizedBox(height: 8),
-                  _buildMenuPresensi(),
-                  const SizedBox(height: 16),
-                  const Text(
-                    'Fungsi Aplikasi :',
-                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-                  ),
-                  const SizedBox(height: 8),
-                  _buildPresenceStatusCard(
-                      'Aplikasi ini bisa Ibu/Bapak gunakan untuk memantau Presensi anak anda'),
-                  const SizedBox(height: 16),
-                ],
+        ),
+      ),
+      bottomNavigationBar: _buildModernBottomNav(),
+    );
+  }
+
+  Widget _buildModernHeader() {
+    return Container(
+      padding: const EdgeInsets.symmetric(vertical: 10),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                'Selamat Datang! 👋',
+                style: TextStyle(
+                  fontSize: 24,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.white.withOpacity(0.9),
+                ),
               ),
+              Text(
+                'Pantau kehadiran anak dengan mudah',
+                style: TextStyle(
+                  fontSize: 14,
+                  color: Colors.white.withOpacity(0.7),
+                ),
+              ),
+            ],
+          ),
+          Container(
+            padding: const EdgeInsets.all(12),
+            decoration: BoxDecoration(
+              color: Colors.white.withOpacity(0.2),
+              borderRadius: BorderRadius.circular(15),
+              border: Border.all(color: Colors.white.withOpacity(0.3)),
+            ),
+            child: const Icon(
+              Icons.notifications_outlined,
+              color: Colors.white,
+              size: 24,
             ),
           ),
         ],
-      ),
-      bottomNavigationBar: CustomBottomBar(
-        currentIndex: _currentIndex,
-        onTap: _onItemTapped,
       ),
     );
   }
 
   Widget _buildProfileCard() {
-    return Column(
-      children: [
-        const SizedBox(height: 40),
-        Card(
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(15.0),
+    return Container(
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [
+            Colors.white,
+            Colors.white.withOpacity(0.95),
+          ],
+        ),
+        borderRadius: BorderRadius.circular(20),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.1),
+            blurRadius: 20,
+            offset: const Offset(0, 10),
           ),
-          elevation: 5,
-          color: Colors.white,
-          child: Padding(
-            padding: const EdgeInsets.all(16.0),
-            child: Row(
+        ],
+      ),
+      child: Row(
+        children: [
+          Container(
+            width: 70,
+            height: 70,
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(20),
+              gradient: const LinearGradient(
+                colors: [Color(0xFF4A90E2), Color(0xFF007AFF)],
+              ),
+              boxShadow: [
+                BoxShadow(
+                  color: const Color(0xFF4A90E2).withOpacity(0.3),
+                  blurRadius: 10,
+                  offset: const Offset(0, 5),
+                ),
+              ],
+            ),
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(20),
+              child: Image.asset(
+                'assets/logoSMP.png',
+                fit: BoxFit.cover,
+              ),
+            ),
+          ),
+          const SizedBox(width: 20),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Container(
-                  width: 50, // Lebar gambar
-                  height: 60, // Tinggi gambar
-                  decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(12), // Sudut membulat
-                    image: const DecorationImage(
-                      image: AssetImage('assets/logoSMP.png'), // Ganti dengan gambar profil
-                      fit: BoxFit.fill, // Mengisi area tanpa mempertahankan proporsi
-                    ),
+                Text(
+                  namaWali,
+                  style: const TextStyle(
+                    fontSize: 20,
+                    fontWeight: FontWeight.bold,
+                    color: Color(0xFF2D3748),
                   ),
                 ),
-                const SizedBox(width: 16),
-                Flexible(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      const Text(
-                        'Selamat Datang :',
-                        style: TextStyle(
-                          fontSize: 18,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.black,
-                        ),
-                      ),
-                      Text(
-                        namaWali,
-                        style: const TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.black,
-                        ),
-                      ),
-                      Text(
-                        'No HP : $noHp',
-                        style: TextStyle(
-                          fontSize: 14,
-                          color: Colors.grey[600],
-                        ),
-                      ),
-                    ],
+                const SizedBox(height: 4),
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFF4A90E2).withOpacity(0.1),
+                    borderRadius: BorderRadius.circular(20),
+                  ),
+                  child: Text(
+                    noHp,
+                    style: const TextStyle(
+                      fontSize: 12,
+                      color: Color(0xFF4A90E2),
+                      fontWeight: FontWeight.w600,
+                    ),
                   ),
                 ),
               ],
             ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildDropdownSiswa() {
+    return Container(
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(20),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.05),
+            blurRadius: 15,
+            offset: const Offset(0, 5),
+          ),
+        ],
+      ),
+      child: Row(
+        children: [
+          Container(
+            padding: const EdgeInsets.all(12),
+            decoration: BoxDecoration(
+              gradient: const LinearGradient(
+                colors: [Color(0xFF4A90E2), Color(0xFF007AFF)],
+              ),
+              borderRadius: BorderRadius.circular(15),
+            ),
+            child: const Icon(Icons.person, color: Colors.white, size: 20),
+          ),
+          const SizedBox(width: 16),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Text(
+                  'Pilih Siswa',
+                  style: TextStyle(
+                    fontSize: 12,
+                    color: Color(0xFF718096),
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+                const SizedBox(height: 4),
+                siswaList.isEmpty
+                    ? const Text('Memuat data...')
+                    : DropdownButton<String>(
+                        value: selectedSiswa,
+                        hint: const Text('Pilih Siswa'),
+                        isExpanded: true,
+                        underline: Container(),
+                        icon: const Icon(Icons.keyboard_arrow_down, color: Color(0xFF4A90E2)),
+                        style: const TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w600,
+                          color: Color(0xFF2D3748),
+                        ),
+                        items: siswaList.map((siswa) {
+                          return DropdownMenuItem<String>(
+                            value: siswa['nama'],
+                            child: Text(siswa['nama']),
+                          );
+                        }).toList(),
+                        onChanged: (value) {
+                          setState(() {
+                            selectedSiswa = value;
+                            _saveSelectedSiswa(selectedSiswa!);
+                          });
+                        },
+                      ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildTimeCards() {
+    return Row(
+      children: [
+        Expanded(
+          child: _buildModernInfoCard(
+            _currentTime,
+            'Waktu Sekarang',
+            Icons.access_time_rounded,
+            const Color(0xFF4A90E2),
+          ),
+        ),
+        const SizedBox(width: 16),
+        Expanded(
+          child: _buildModernInfoCard(
+            _currentDate.split(',')[0],
+            _currentDate.split(',')[1].trim(),
+            Icons.calendar_today_rounded,
+            const Color(0xFF007AFF),
           ),
         ),
       ],
     );
   }
 
-  Widget _buildDropdownSiswa() {
-    return Card(
-      elevation: 5,
-      color: Colors.white,
-      child: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Row(
+  Widget _buildModernInfoCard(String title, String subtitle, IconData icon, Color color) {
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [color, color.withOpacity(0.8)],
+        ),
+        borderRadius: BorderRadius.circular(20),
+        boxShadow: [
+          BoxShadow(
+            color: color.withOpacity(0.3),
+            blurRadius: 15,
+            offset: const Offset(0, 8),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Icon(icon, color: Colors.white, size: 24),
+          const SizedBox(height: 12),
+          Text(
+            title,
+            style: const TextStyle(
+              fontSize: 16,
+              fontWeight: FontWeight.bold,
+              color: Colors.white,
+            ),
+          ),
+          const SizedBox(height: 4),
+          Text(
+            subtitle,
+            style: TextStyle(
+              fontSize: 11,
+              color: Colors.white.withOpacity(0.8),
+            ),
+            maxLines: 2,
+            overflow: TextOverflow.ellipsis,
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildSectionTitle(String title, IconData icon) {
+    return Row(
+      children: [
+        Container(
+          padding: const EdgeInsets.all(8),
+          decoration: BoxDecoration(
+            color: Colors.white.withOpacity(0.2),
+            borderRadius: BorderRadius.circular(10),
+          ),
+          child: Icon(icon, color: Colors.white, size: 20),
+        ),
+        const SizedBox(width: 12),
+        Text(
+          title,
+          style: const TextStyle(
+            fontSize: 20,
+            fontWeight: FontWeight.bold,
+            color: Colors.white,
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildModernMenuGrid() {
+    return Container(
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(25),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.08),
+            blurRadius: 25,
+            offset: const Offset(0, 10),
+          ),
+        ],
+      ),
+      child: Row(
+        children: [
+          Expanded(
+            child: _buildModernMenuButton(
+              Icons.face_retouching_natural,
+              'Daftarkan\nWajah Anak',
+              const Color(0xFF667eea),
+              () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => const RegistrationScreen()),
+                );
+              },
+            ),
+          ),
+          Container(
+            width: 1,
+            height: 80,
+            color: Colors.grey.withOpacity(0.2),
+            margin: const EdgeInsets.symmetric(horizontal: 20),
+          ),
+          Expanded(
+            child: _buildModernMenuButton(
+              Icons.lock_outline_rounded,
+              'Edit\nPassword',
+              const Color(0xFF764ba2),
+              () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => const EditPasswordPage()),
+                );
+              },
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildModernMenuButton(IconData icon, String label, Color color, Function onTap) {
+    return InkWell(
+      onTap: () => onTap(),
+      borderRadius: BorderRadius.circular(15),
+      child: Container(
+        padding: const EdgeInsets.symmetric(vertical: 16),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
           children: [
-            const Icon(Icons.face, color: Colors.blueAccent),
-            const SizedBox(width: 8),
-            Expanded(
-              child: siswaList.isEmpty
-                  ? const Text('Loading...')
-                  : DropdownButton<String>(
-                      value: selectedSiswa,
-                      hint: const Text('Pilih Siswa'),
-                      isExpanded: true,
-                      items: siswaList.map((siswa) {
-                        return DropdownMenuItem<String>(
-                          value:
-                              siswa['nama'], // Pastikan key benar sesuai JSON
-                          child: Text(siswa['nama']),
-                        );
-                      }).toList(),
-                      onChanged: (value) {
-                        setState(() {
-                          selectedSiswa = value; // Mengubah nilai yang dipilih
-                          _saveSelectedSiswa(
-                              selectedSiswa!); // Simpan ke SharedPreferences
-                        });
-                      },
-                    ),
+            Container(
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  colors: [color, color.withOpacity(0.8)],
+                ),
+                borderRadius: BorderRadius.circular(20),
+                boxShadow: [
+                  BoxShadow(
+                    color: color.withOpacity(0.3),
+                    blurRadius: 10,
+                    offset: const Offset(0, 5),
+                  ),
+                ],
+              ),
+              child: Icon(icon, color: Colors.white, size: 24),
+            ),
+            const SizedBox(height: 12),
+            Text(
+              label,
+              textAlign: TextAlign.center,
+              style: const TextStyle(
+                fontSize: 13,
+                fontWeight: FontWeight.w600,
+                color: Color(0xFF2D3748),
+                height: 1.2,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildInfoCard() {
+    return Container(
+      padding: const EdgeInsets.all(24),
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [
+            Colors.white,
+            Colors.white.withOpacity(0.95),
+          ],
+        ),
+        borderRadius: BorderRadius.circular(25),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.08),
+            blurRadius: 25,
+            offset: const Offset(0, 10),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  gradient: const LinearGradient(
+                    colors: [Color(0xFF667eea), Color(0xFF764ba2)],
+                  ),
+                  borderRadius: BorderRadius.circular(15),
+                ),
+                child: const Icon(Icons.info_outline, color: Colors.white, size: 20),
+              ),
+              const SizedBox(width: 16),
+              const Text(
+                'Tentang Aplikasi',
+                style: TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                  color: Color(0xFF2D3748),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 16),
+          Text(
+            'Aplikasi ini memungkinkan Ibu/Bapak untuk memantau kehadiran anak dengan mudah dan real-time. Dapatkan notifikasi langsung ketika anak tiba di sekolah.',
+            style: TextStyle(
+              fontSize: 15,
+              color: const Color(0xFF4A5568),
+              height: 1.5,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildModernBottomNav() {
+    return Container(
+      margin: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        gradient: const LinearGradient(
+          colors: [Color(0xFF667eea), Color(0xFF764ba2)],
+        ),
+        borderRadius: BorderRadius.circular(25),
+        boxShadow: [
+          BoxShadow(
+            color: const Color(0xFF667eea).withOpacity(0.3),
+            blurRadius: 20,
+            offset: const Offset(0, 10),
+          ),
+        ],
+      ),
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(25),
+        child: BottomNavigationBar(
+          currentIndex: _currentIndex,
+          onTap: _onItemTapped,
+          backgroundColor: Colors.transparent,
+          elevation: 0,
+          selectedItemColor: Colors.white,
+          unselectedItemColor: Colors.white.withOpacity(0.6),
+          selectedLabelStyle: const TextStyle(fontWeight: FontWeight.w600),
+          unselectedLabelStyle: const TextStyle(fontWeight: FontWeight.w500),
+          type: BottomNavigationBarType.fixed,
+          items: const [
+            BottomNavigationBarItem(
+              icon: Icon(Icons.home_rounded),
+              label: 'Beranda',
+            ),
+            BottomNavigationBarItem(
+              icon: Icon(Icons.history_rounded),
+              label: 'Riwayat',
+            ),
+            BottomNavigationBarItem(
+              icon: Icon(Icons.person_rounded),
+              label: 'Profil',
             ),
           ],
         ),
@@ -291,103 +683,6 @@ class _HomePageState extends State<HomePage> {
 
   _saveSelectedSiswa(String siswa) async {
     final prefs = await SharedPreferences.getInstance();
-    prefs.setString('selectedSiswa', siswa); // Simpan siswa yang dipilih
-  }
-
-  Widget _buildInfoCard(String text, IconData icon, Color cardColor) {
-    return Card(
-      elevation: 5,
-      color: Colors.white,
-      child: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          children: [
-            Icon(icon, size: 30, color: Colors.blueAccent),
-            const SizedBox(height: 8),
-            Text(text, textAlign: TextAlign.center),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildMenuPresensi() {
-    return Card(
-      elevation: 5,
-      color: Colors.white,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(15),
-      ),
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 12.0),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-          children: [
-            _buildMenuColumn(
-              Icons.document_scanner,
-              'Daftarkan\nWajah Anak',
-              () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (context) => const RegistrationScreen()),
-                );
-              },
-            ),
-            VerticalDivider(thickness: 1, color: Colors.grey[300]),
-            _buildMenuColumn(
-              Icons.lock_open,
-              'Edit\nPassword',
-              () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (context) => const EditPasswordPage()),
-                );
-              },
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildMenuColumn(IconData icon, String label, Function onTap) {
-    return Expanded(
-      child: InkWell(
-        onTap: () => onTap(),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            CircleAvatar(
-              radius: 20,
-              backgroundColor: Colors.blueAccent,
-              child: Icon(icon, color: Colors.white, size: 18),
-            ),
-            const SizedBox(height: 8),
-            Text(
-              label,
-              textAlign: TextAlign.center,
-              style: const TextStyle(
-                fontSize: 12,
-                fontWeight: FontWeight.bold,
-                color: Colors.black,
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildPresenceStatusCard(String status) {
-    return Card(
-      elevation: 5,
-      color: Colors.white,
-      child: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Center(
-          child: Text(status, style: const TextStyle(fontSize: 16)),
-        ),
-      ),
-    );
+    prefs.setString('selectedSiswa', siswa);
   }
 }
