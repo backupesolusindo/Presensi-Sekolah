@@ -3,17 +3,17 @@ import 'package:path/path.dart';
 
 class DatabaseHelper {
   // Nama database dan versi
-  static final _databaseName = "faces_database.db";
-  static final _databaseVersion = 3; // Update versi database
+  static const _databaseName = "faces_database.db";
+  static const _databaseVersion = 3; // Update versi database
 
   // Nama tabel dan kolom
-  static final table = 'registered_faces';
-  static final columnId = '_id';
-  static final columnName = 'name';
-  static final columnNIS = 'nis'; 
-  static final columnKelas = 'kelas'; 
-  static final columnNoHpOrtu = 'noHpOrtu'; // Tambahkan kolom No HP Orang Tua
-  static final columnEmbedding = 'embedding';
+  static const table = 'registered_faces';
+  static const columnId = '_id';
+  static const columnName = 'name';
+  static const columnNIS = 'nis'; 
+  static const columnKelas = 'kelas'; 
+  static const columnNoHpOrtu = 'noHpOrtu'; // Tambahkan kolom No HP Orang Tua
+  static const columnEmbedding = 'embedding';
 
   // Singleton pattern
   DatabaseHelper._privateConstructor();

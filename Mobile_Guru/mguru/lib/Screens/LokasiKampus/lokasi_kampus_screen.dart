@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:mobile_presensi_kdtg/Screens/LokasiKampus/components/body.dart';
 
 class LokasiKampusScreen extends StatelessWidget {
+  const LokasiKampusScreen({super.key});
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -13,7 +15,7 @@ class LokasiKampusScreen extends StatelessWidget {
           ),
         ),
       ),
-      body: Body(),
+      body: const Body(),
     );
   }
 }

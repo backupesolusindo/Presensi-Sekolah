@@ -103,6 +103,8 @@ class PostLogout {
 }
 
 class LoginScreen extends StatefulWidget {
+  const LoginScreen({super.key});
+
   @override
   _LoginScreenState createState() => _LoginScreenState();
 }
@@ -155,12 +157,12 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
       Navigator.pop(context); // Close the loading dialog
       Navigator.pushReplacement(
         context,
-        MaterialPageRoute(builder: (context) => HomeScreen()),
+        MaterialPageRoute(builder: (context) => const HomeScreen()),
       );
     } else {
       Navigator.pop(context); // Close the loading dialog
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Login gagal, silakan coba lagi.')),
+        const SnackBar(content: Text('Login gagal, silakan coba lagi.')),
       );
     }
 
@@ -193,8 +195,8 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
               mainAxisSize: MainAxisSize.min,
               children: [
                 Lottie.asset('assets/loading.json', width: 150, height: 150),
-                SizedBox(height: 20),
-                Text("Loading..."),
+                const SizedBox(height: 20),
+                const Text("Loading..."),
               ],
             ),
           ),
@@ -209,7 +211,7 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
       body: Stack(
         children: [
           Container(
-            decoration: BoxDecoration(
+            decoration: const BoxDecoration(
               image: DecorationImage(
                 image: AssetImage('assets/bg.png'),
                 fit: BoxFit.cover,
@@ -224,27 +226,27 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
                   mainAxisAlignment: MainAxisAlignment.center,
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: <Widget>[
-                    SizedBox(height: 60.0),
+                    const SizedBox(height: 60.0),
                     _buildLogo(),
-                    SizedBox(height: 40.0),
+                    const SizedBox(height: 40.0),
                     _buildTitle(),
-                    SizedBox(height: 20.0),
+                    const SizedBox(height: 20.0),
                     _buildTextField(
                       controller: _usernameController,
                       labelText: 'NIP',
                       icon: Icons.person,
                     ),
-                    SizedBox(height: 20.0),
+                    const SizedBox(height: 20.0),
                     _buildTextField(
                       controller: _passwordController,
                       labelText: 'Password',
                       icon: Icons.lock,
                       isPassword: true,
                     ),
-                    SizedBox(height: 30.0),
+                    const SizedBox(height: 30.0),
                     _isLoading ? _buildLoadingIndicator() : _buildLoginButton(),
-                    SizedBox(height: 20),
-                    SizedBox(height: 20.0),
+                    const SizedBox(height: 20),
+                    const SizedBox(height: 20.0),
                   ],
                 ),
               ),
@@ -269,7 +271,7 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
     return Text(
       'LOGIN ADMIN SMPN 1 JEMBER',
       style: GoogleFonts.poppins(
-        textStyle: TextStyle(
+        textStyle: const TextStyle(
           fontSize: 26.0,
           fontWeight: FontWeight.bold,
           color: Colors.black87,
@@ -317,7 +319,7 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
     return ElevatedButton(
       onPressed: _login,
       style: ElevatedButton.styleFrom(
-        padding: EdgeInsets.symmetric(vertical: 16.0, horizontal: 24.0),
+        padding: const EdgeInsets.symmetric(vertical: 16.0, horizontal: 24.0),
         backgroundColor: Colors.blue[600],
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(12.0),
@@ -326,7 +328,7 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
       child: Text(
         'Login',
         style: GoogleFonts.poppins(
-          textStyle: TextStyle(
+          textStyle: const TextStyle(
             fontSize: 18.0,
             fontWeight: FontWeight.bold,
             color: Colors.white,
@@ -337,7 +339,7 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
   }
 
   Widget _buildLoadingIndicator() {
-    return Center(
+    return const Center(
       child: CircularProgressIndicator(),
     );
   }

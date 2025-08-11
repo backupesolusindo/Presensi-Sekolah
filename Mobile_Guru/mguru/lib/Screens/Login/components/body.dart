@@ -16,12 +16,14 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:trust_location/trust_location.dart';
 
 class Body extends StatefulWidget {
+  const Body({super.key});
+
   @override
   _Body createState() => _Body();
 }
 
 class _Body extends State<Body> {
-  PostLogin postLogin = new PostLogin();
+  PostLogin postLogin = PostLogin();
   String pesan = "";
   final txtUsername = TextEditingController();
   final txtPassword = TextEditingController();
@@ -37,9 +39,9 @@ class _Body extends State<Body> {
   }
 
   cekFakeGPS() async {
-    bool _isMockLocation = await TrustLocation.isMockLocation;
+    bool isMockLocation = await TrustLocation.isMockLocation;
     print("fake GPS :");
-    print(_isMockLocation);
+    print(isMockLocation);
   }
 
   void getToken() async {
@@ -54,7 +56,7 @@ class _Body extends State<Body> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: <Widget>[
-            Text(
+            const Text(
               "HALAMAN LOGIN",
               style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
             ),
@@ -81,7 +83,7 @@ class _Body extends State<Body> {
                 color: Colors.redAccent.withOpacity(0.8),
               ),
             ),
-            if (statusLoading == 1) CircularProgressIndicator(),
+            if (statusLoading == 1) const CircularProgressIndicator(),
             if (statusLoading == 0)
               RoundedButton(
                 text: "LOGIN",
@@ -133,7 +135,7 @@ class _Body extends State<Body> {
                           context,
                           PageTransition(
                               type: PageTransitionType.fade,
-                              child: DashboardScreen()));
+                              child: const DashboardScreen()));
                     }
                   });
                 },

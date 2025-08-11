@@ -8,6 +8,8 @@ import 'home.dart'; // Ganti dengan file dashboard kamu
 import 'signup.dart'; // Ganti dengan file signup kamu
 
 class LoginPage extends StatefulWidget {
+  const LoginPage({super.key});
+
   @override
   _LoginPageState createState() => _LoginPageState();
 }
@@ -33,15 +35,15 @@ class _LoginPageState extends State<LoginPage>
   }
 
   Future<void> login() async {
-    final String no_hp = no_hpController.text;
+    final String noHp = no_hpController.text;
     final String password = passwordController.text;
 
-    if (no_hp.isEmpty || password.isEmpty) {
+    if (noHp.isEmpty || password.isEmpty) {
       _showErrorSnackbar('Nomor telepon dan password tidak boleh kosong');
       return;
     }
 
-    final url = Uri.parse(UrlApi + '/WaliAPI/login');
+    final url = Uri.parse('$UrlApi/WaliAPI/login');
     setState(() {
       _isLoading = true;
     });
@@ -50,7 +52,7 @@ class _LoginPageState extends State<LoginPage>
       final response = await http.post(
         url,
         body: {
-          'no_hp': no_hp,
+          'no_hp': noHp,
           'password': password,
         },
       );
@@ -66,7 +68,7 @@ class _LoginPageState extends State<LoginPage>
 
           Navigator.pushReplacement(
             context,
-            MaterialPageRoute(builder: (context) => HomePage()),
+            MaterialPageRoute(builder: (context) => const HomePage()),
           );
         } else {
           _showErrorSnackbar('Nomor telepon atau password salah');
@@ -87,16 +89,16 @@ class _LoginPageState extends State<LoginPage>
     final snackBar = SnackBar(
       content: Row(
         children: [
-          Icon(Icons.error_outline, color: Colors.white),
-          SizedBox(width: 10),
+          const Icon(Icons.error_outline, color: Colors.white),
+          const SizedBox(width: 10),
           Expanded(child: Text(message)),
         ],
       ),
       backgroundColor: Colors.redAccent,
       behavior: SnackBarBehavior.floating,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-      margin: EdgeInsets.all(10),
-      duration: Duration(seconds: 3),
+      margin: const EdgeInsets.all(10),
+      duration: const Duration(seconds: 3),
     );
     ScaffoldMessenger.of(context).showSnackBar(snackBar);
   }
@@ -116,7 +118,7 @@ class _LoginPageState extends State<LoginPage>
         children: [
           // Ganti dengan gambar background walibg.png
           Container(
-            decoration: BoxDecoration(
+            decoration: const BoxDecoration(
               image: DecorationImage(
                 image: AssetImage('assets/walibg.png'),
                 fit: BoxFit.cover, // Sesuaikan gambar dengan layar
@@ -131,28 +133,28 @@ class _LoginPageState extends State<LoginPage>
                   mainAxisAlignment: MainAxisAlignment.center,
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: <Widget>[
-                    SizedBox(height: 60.0),
+                    const SizedBox(height: 60.0),
                     _buildLogo(),
-                    SizedBox(height: 40.0),
+                    const SizedBox(height: 40.0),
                     _buildTitle(),
-                    SizedBox(height: 20.0),
+                    const SizedBox(height: 20.0),
                     _buildTextField(
                       controller: no_hpController,
                       labelText: 'Nomor Telepon',
                       icon: Icons.phone,
                     ),
-                    SizedBox(height: 20.0),
+                    const SizedBox(height: 20.0),
                     _buildTextField(
                       controller: passwordController,
                       labelText: 'Password',
                       icon: Icons.lock,
                       isPassword: true,
                     ),
-                    SizedBox(height: 30.0),
+                    const SizedBox(height: 30.0),
                     _isLoading ? _buildLoadingIndicator() : _buildLoginButton(),
-                    SizedBox(height: 20),
+                    const SizedBox(height: 20),
                     _buildSignupButton(),
-                    SizedBox(height: 20.0),
+                    const SizedBox(height: 20.0),
                   ],
                 ),
               ),
@@ -177,7 +179,7 @@ class _LoginPageState extends State<LoginPage>
     return Text(
       'LOGIN WALI SMPN 1 JEMBER',
       style: GoogleFonts.poppins(
-        textStyle: TextStyle(
+        textStyle: const TextStyle(
           fontSize: 26.0,
           fontWeight: FontWeight.bold,
           color: Colors.black87,
@@ -225,7 +227,7 @@ class _LoginPageState extends State<LoginPage>
     return ElevatedButton(
       onPressed: login,
       style: ElevatedButton.styleFrom(
-        padding: EdgeInsets.symmetric(vertical: 16.0, horizontal: 24.0),
+        padding: const EdgeInsets.symmetric(vertical: 16.0, horizontal: 24.0),
         backgroundColor: Colors.blueAccent,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(12.0),
@@ -234,7 +236,7 @@ class _LoginPageState extends State<LoginPage>
       child: Text(
         'Login',
         style: GoogleFonts.poppins(
-          textStyle: TextStyle(
+          textStyle: const TextStyle(
             fontSize: 18.0,
             fontWeight: FontWeight.bold,
             color: Colors.white,
@@ -249,20 +251,20 @@ class _LoginPageState extends State<LoginPage>
       onPressed: () {
         Navigator.push(
           context,
-          MaterialPageRoute(builder: (context) => SignupPage()),
+          MaterialPageRoute(builder: (context) => const SignupPage()),
         );
       },
       child: Text(
         'Belum punya akun? Daftar di sini',
         style: GoogleFonts.raleway(
-          textStyle: TextStyle(color: Colors.blueAccent),
+          textStyle: const TextStyle(color: Colors.blueAccent),
         ),
       ),
     );
   }
 
   Widget _buildLoadingIndicator() {
-    return Center(
+    return const Center(
       child: CircularProgressIndicator(),
     );
   }

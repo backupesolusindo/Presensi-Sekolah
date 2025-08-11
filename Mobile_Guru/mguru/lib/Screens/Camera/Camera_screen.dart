@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:mobile_presensi_kdtg/Screens/Camera/components/body.dart';
 
 class CameraScreen extends StatelessWidget {
+  const CameraScreen({super.key});
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -13,7 +15,7 @@ class CameraScreen extends StatelessWidget {
           ),
         ),
       ),
-      body: Body(),
+      body: const Body(),
     );
   }
 }

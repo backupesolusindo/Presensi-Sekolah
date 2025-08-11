@@ -7,6 +7,8 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'dart:convert';
 
 class ProfilePage extends StatefulWidget {
+  const ProfilePage({super.key});
+
   @override
   _ProfilePageState createState() => _ProfilePageState();
 }
@@ -39,16 +41,21 @@ class _ProfilePageState extends State<ProfilePage> {
       });
 
       List<String>? siswaJsonList = prefs.getStringList('siswa_list');
-      if (siswaJsonList != null && siswaJsonList.isNotEmpty) {
+      if (siswaJsonList?.isNotEmpty ?? false) {
         setState(() {
-          siswaList = siswaJsonList.map((siswaJson) {
-            return json.decode(siswaJson);
-          }).toList();
+          siswaList = siswaJsonList!
+              .map((siswaJson) => json.decode(siswaJson))
+              .toList();
 
           selectedSiswa =
               prefs.getString('selectedSiswa') ?? siswaList.first['nama'];
+
           _updateSiswaDetail(
-              siswaList.firstWhere((siswa) => siswa['nama'] == selectedSiswa));
+            siswaList.firstWhere(
+              (siswa) => siswa['nama'] == selectedSiswa,
+              orElse: () => siswaList.first,
+            ),
+          );
         });
       } else {
         setState(() {
@@ -84,12 +91,12 @@ class _ProfilePageState extends State<ProfilePage> {
     if (index == 0) {
       Navigator.pushReplacement(
         context,
-        MaterialPageRoute(builder: (context) => HomePage()),
+        MaterialPageRoute(builder: (context) => const HomePage()),
       );
     } else if (index == 1) {
       Navigator.pushReplacement(
         context,
-        MaterialPageRoute(builder: (context) => RiwayatPage()),
+        MaterialPageRoute(builder: (context) => const RiwayatPage()),
       );
     }
   }
@@ -102,9 +109,9 @@ class _ProfilePageState extends State<ProfilePage> {
           ClipPath(
             clipper: CustomSemiCircleClipper(),
             child: Container(
-              height: MediaQuery.of(context).size.height * 0.3, // Sesuaikan tinggi sesuai kebutuhan
-              decoration: BoxDecoration(
-                color: Color(0xFF03A9F4), 
+              height: MediaQuery.of(context).size.height * 0.3,
+              decoration: const BoxDecoration(
+                color: Color(0xFF03A9F4),
               ),
             ),
           ),
@@ -153,13 +160,13 @@ class _ProfilePageState extends State<ProfilePage> {
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     Container(
-                      width: 80, // Lebar gambar
-                      height: 100, // Tinggi gambar
+                      width: 80,
+                      height: 100,
                       decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(12), // Sudut membulat
-                        image: DecorationImage(
+                        borderRadius: BorderRadius.circular(12),
+                        image: const DecorationImage(
                           image: AssetImage('assets/logoSMP.png'),
-                          fit: BoxFit.fill, // Mengisi area tanpa mempertahankan proporsi
+                          fit: BoxFit.fill,
                         ),
                       ),
                     ),
@@ -194,11 +201,11 @@ class _ProfilePageState extends State<ProfilePage> {
 
   Widget _buildNamaCard() {
     return Card(
-      color: Colors.white, // Mengubah warna card menjadi putih
+      color: Colors.white,
       margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 0),
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(12),
-        side: BorderSide(color: const Color.fromARGB(255, 0, 0, 0), width: 1),
+        side: const BorderSide(color: Colors.black, width: 1),
       ),
       elevation: 6,
       shadowColor: Colors.black26,
@@ -215,11 +222,11 @@ class _ProfilePageState extends State<ProfilePage> {
 
   Widget _buildNisCard() {
     return Card(
-      color: Colors.white, // Mengubah warna card menjadi putih
+      color: Colors.white,
       margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 0),
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(12),
-        side: BorderSide(color: const Color.fromARGB(255, 0, 0, 0), width: 1),
+        side: const BorderSide(color: Colors.black, width: 1),
       ),
       elevation: 6,
       shadowColor: Colors.black26,
@@ -236,11 +243,11 @@ class _ProfilePageState extends State<ProfilePage> {
 
   Widget _buildKelasCard() {
     return Card(
-      color: Colors.white, // Mengubah warna card menjadi putih
+      color: Colors.white,
       margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 0),
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(12),
-        side: BorderSide(color: const Color.fromARGB(255, 0, 0, 0), width: 1),
+        side: const BorderSide(color: Colors.black, width: 1),
       ),
       elevation: 6,
       shadowColor: Colors.black26,
@@ -259,7 +266,7 @@ class _ProfilePageState extends State<ProfilePage> {
     return ListTile(
       leading: Icon(icon, color: Colors.blueAccent),
       title: Text(
-        title == "Loading..." ? title : title,
+        title,
         style: const TextStyle(fontWeight: FontWeight.bold),
       ),
       subtitle: Text(subtitle),
@@ -287,7 +294,7 @@ class _ProfilePageState extends State<ProfilePage> {
                 await prefs.clear();
                 Navigator.pushReplacement(
                   context,
-                  MaterialPageRoute(builder: (context) => LoginPage()),
+                  MaterialPageRoute(builder: (context) => const LoginPage()),
                 );
               },
             ),
@@ -305,26 +312,22 @@ class _ProfilePageState extends State<ProfilePage> {
       ),
       elevation: 6,
       shadowColor: Colors.black26,
-      color: Color(0xFFFF5252), // Menggunakan warna biru muda
+      color: const Color(0xFFFF5252),
       child: InkWell(
         onTap: () {
-          // Logika logout
-          Navigator.pushReplacement(
-            context,
-            MaterialPageRoute(builder: (context) => LoginPage()),
-          );
+          _showLogoutConfirmation(context);
         },
-        child: Padding(
-          padding: const EdgeInsets.symmetric(vertical: 16),
+        child: const Padding(
+          padding: EdgeInsets.symmetric(vertical: 16),
           child: Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Icon(Icons.logout, color: Colors.white), // Mengubah warna ikon menjadi putih
+              Icon(Icons.logout, color: Colors.white),
               SizedBox(width: 8),
               Text(
                 'Logout',
                 style: TextStyle(
-                  color: Colors.white, // Mengubah warna teks menjadi putih
+                  color: Colors.white,
                   fontWeight: FontWeight.bold,
                   fontSize: 16,
                 ),
@@ -341,12 +344,12 @@ class CustomSemiCircleClipper extends CustomClipper<Path> {
   @override
   Path getClip(Size size) {
     var path = Path();
-    path.lineTo(0, size.height * 0.85); // Menggeser titik awal kurva ke bawah
+    path.lineTo(0, size.height * 0.85);
     path.quadraticBezierTo(
       size.width / 2,
-      size.height * 1.1, // Menggeser titik kontrol ke bawah
+      size.height * 1.1,
       size.width,
-      size.height * 0.85, // Menggeser titik akhir kurva ke bawah
+      size.height * 0.85,
     );
     path.lineTo(size.width, 0);
     path.close();

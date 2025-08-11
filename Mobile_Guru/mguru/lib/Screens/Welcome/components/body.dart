@@ -6,6 +6,8 @@ import 'package:mobile_presensi_kdtg/constants.dart';
 import 'package:flutter_svg/svg.dart';
 
 class Body extends StatefulWidget {
+  const Body({super.key});
+
   @override
   _BodyState createState() => _BodyState();
 }
@@ -20,7 +22,7 @@ class _BodyState extends State<Body> with SingleTickerProviderStateMixin {
     super.initState();
     _controller = AnimationController(
       vsync: this,
-      duration: Duration(seconds: 2),
+      duration: const Duration(seconds: 2),
     );
 
     _opacityAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
@@ -53,7 +55,7 @@ class _BodyState extends State<Body> with SingleTickerProviderStateMixin {
               opacity: _opacityAnimation,
               child: Column(
                 children: [
-                  Text(
+                  const Text(
                     "PRESENSI ONLINE",
                     style: TextStyle(
                       fontSize: 24,
@@ -92,7 +94,7 @@ class _BodyState extends State<Body> with SingleTickerProviderStateMixin {
                     context,
                     MaterialPageRoute(
                       builder: (context) {
-                        return LoginScreen();
+                        return const LoginScreen();
                       },
                     ),
                   );

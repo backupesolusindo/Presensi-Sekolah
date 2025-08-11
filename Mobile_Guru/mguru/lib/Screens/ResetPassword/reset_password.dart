@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:mobile_presensi_kdtg/Screens/ResetPassword/components/body.dart';
 
 class ResetPasswordScreen extends StatelessWidget {
+  const ResetPasswordScreen({super.key});
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -16,13 +18,13 @@ class ResetPasswordScreen extends StatelessWidget {
           onTap: () {
             Navigator.of(context).pop();
           },
-          child: Icon(
+          child: const Icon(
             Icons.arrow_back_ios_rounded,
             color: Colors.white, // add custom icons also
           ),
         ),
       ),
-      body: Body(),
+      body: const Body(),
     );
   }
 }

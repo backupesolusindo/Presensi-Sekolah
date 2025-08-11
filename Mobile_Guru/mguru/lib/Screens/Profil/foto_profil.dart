@@ -17,6 +17,8 @@ import 'package:mobile_presensi_kdtg/Screens/AktifGPS/aktifgps_screen.dart'; // 
 
 
 class Foto_Profil extends StatefulWidget {
+  const Foto_Profil({super.key});
+
   @override
   _Foto_ProfilState createState() => _Foto_ProfilState();
 }
@@ -58,7 +60,7 @@ class _Foto_ProfilState extends State<Foto_Profil> {
     bool status = await Geolocator.isLocationServiceEnabled();
     if (!status) {
       Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) {
-        return AktifGPS();
+        return const AktifGPS();
       }));
     }
 
@@ -72,7 +74,7 @@ class _Foto_ProfilState extends State<Foto_Profil> {
   Future<void> getDataDash() async {
     try {
       var res = await http.get(
-        Uri.parse(Core().ApiUrl + "Dash/get_dash/" + UUID),
+        Uri.parse("${Core().ApiUrl}Dash/get_dash/$UUID"),
         headers: {"Accept": "application/json"},
       );
 
@@ -121,18 +123,18 @@ class _Foto_ProfilState extends State<Foto_Profil> {
             SizedBox(
               height: size.height * 0.15,
             ),
-            Text(
+            const Text(
                 "Upload Foto Profil Anda yang Baru, Dengan cara klik foto profil Anda, Pilih Foto dan Upload",
                 style: TextStyle(
                   fontSize: 18.0,
                   color: kDarkPrimaryColor,
                   fontWeight: FontWeight.bold,
                 )),
-            SizedBox(height: 16),
+            const SizedBox(height: 16),
             TextButton(
               onPressed: _show,
               child: Padding(
-                padding: EdgeInsets.symmetric(horizontal: 8.0, vertical: 8.0),
+                padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 8.0),
                 child: _image == null
                     ? Image.network(
                         Core().Url + Foto,
@@ -147,7 +149,7 @@ class _Foto_ProfilState extends State<Foto_Profil> {
               ),
             ),
             Padding(
-              padding: EdgeInsets.symmetric(horizontal: 4.0, vertical: 8.0),
+              padding: const EdgeInsets.symmetric(horizontal: 4.0, vertical: 8.0),
               child: RoundedButtonSmall(
                 text: "UPLOAD FOTO",
                 color: kPrimaryColor,
@@ -163,7 +165,7 @@ class _Foto_ProfilState extends State<Foto_Profil> {
                       if (value!.status_kode == 200) {
                         Navigator.pushReplacement(context,
                             MaterialPageRoute(builder: (context) {
-                          return DashboardScreen();
+                          return const DashboardScreen();
                         }));
                       } else {
                         _showMyDialog("Upload Foto Profil", value.message);
@@ -174,7 +176,7 @@ class _Foto_ProfilState extends State<Foto_Profil> {
               ),
             ),
             Padding(
-              padding: EdgeInsets.symmetric(horizontal: 4.0, vertical: 32.0),
+              padding: const EdgeInsets.symmetric(horizontal: 4.0, vertical: 32.0),
               child: RoundedButtonSmall(
                 text: "Kembali",
                 color: ColorLight,
@@ -231,8 +233,8 @@ class _Foto_ProfilState extends State<Foto_Profil> {
         return BackdropFilter(
           filter: ImageFilter.blur(sigmaX: 6, sigmaY: 6),
           child: AlertDialog(
-            title: Text("UPLOAD IMAGE"),
-            content: SingleChildScrollView(
+            title: const Text("UPLOAD IMAGE"),
+            content: const SingleChildScrollView(
               child: ListBody(
                 children: <Widget>[
                   Text("Pilih File Dari Sumber?"),
@@ -241,14 +243,14 @@ class _Foto_ProfilState extends State<Foto_Profil> {
             ),
             actions: <Widget>[
               TextButton(
-                child: Text('CAMERA'),
+                child: const Text('CAMERA'),
                 onPressed: () async {
                   await getImage();
                   Navigator.of(context).pop();
                 },
               ),
               TextButton(
-                child: Text('GALLERY'),
+                child: const Text('GALLERY'),
                 onPressed: () async {
                   await getFile();
                   Navigator.of(context).pop();
@@ -279,7 +281,7 @@ class _Foto_ProfilState extends State<Foto_Profil> {
             ),
             actions: <Widget>[
               TextButton(
-                child: Text('Keluar'),
+                child: const Text('Keluar'),
                 onPressed: () {
                   Navigator.of(context).pop();
                 },

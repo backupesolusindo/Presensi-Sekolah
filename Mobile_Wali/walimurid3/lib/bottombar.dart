@@ -7,7 +7,7 @@ class CustomBottomBar extends StatefulWidget {
   final int currentIndex;
   final Function(int) onTap;
 
-  CustomBottomBar({required this.currentIndex, required this.onTap});
+  const CustomBottomBar({super.key, required this.currentIndex, required this.onTap});
 
   @override
   _CustomBottomBarState createState() => _CustomBottomBarState();
@@ -22,7 +22,7 @@ class _CustomBottomBarState extends State<CustomBottomBar> {
         widget.onTap(index);  // Panggil fungsi onTap dari parent
         _navigateToPage(index);  // Panggil navigasi sesuai index
       },
-      items: [
+      items: const [
         BottomNavigationBarItem(
           icon: Icon(Icons.home),
           label: 'Home',
@@ -45,19 +45,19 @@ class _CustomBottomBarState extends State<CustomBottomBar> {
       case 0:
         Navigator.pushReplacement(
           context,
-          MaterialPageRoute(builder: (context) => HomePage()),  // Navigasi ke Home
+          MaterialPageRoute(builder: (context) => const HomePage()),  // Navigasi ke Home
         );
         break;
       case 1:
         Navigator.pushReplacement(
           context,
-          MaterialPageRoute(builder: (context) => RiwayatPage()),  // Navigasi ke Riwayat
+          MaterialPageRoute(builder: (context) => const RiwayatPage()),  // Navigasi ke Riwayat
         );
         break;
       case 2:
         Navigator.pushReplacement(
           context,
-          MaterialPageRoute(builder: (context) => ProfilePage()),  // Navigasi ke Profile
+          MaterialPageRoute(builder: (context) => const ProfilePage()),  // Navigasi ke Profile
         );
         break;
     }

@@ -13,6 +13,8 @@ import 'package:mobile_presensi_kdtg/widgets/top_bar.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:http/http.dart' as http;
 class ProfilUser extends StatefulWidget {
+  const ProfilUser({super.key});
+
   @override
   _ProfilUserState createState() => _ProfilUserState();
 }
@@ -48,7 +50,7 @@ class _ProfilUserState extends State<ProfilUser> {
 
     if (UUID.isNotEmpty) {
       var res = await http.get(
-        Uri.parse(Core().ApiUrl + "Dash/get_dash/" + UUID),
+        Uri.parse("${Core().ApiUrl}Dash/get_dash/$UUID"),
         headers: {"Accept": "application/json"},
       );
 
@@ -82,7 +84,7 @@ class _ProfilUserState extends State<ProfilUser> {
       body: SingleChildScrollView(
         child: Column(
           children: <Widget>[
-            Container(
+            SizedBox(
               height: 300.0,
               width: size.width,
               child: Stack(
@@ -90,7 +92,7 @@ class _ProfilUserState extends State<ProfilUser> {
                   ClipPath(
                     clipper: MyCustomClipper(),
                     child: Container(
-                      decoration: BoxDecoration(
+                      decoration: const BoxDecoration(
                         image: DecorationImage(
                           image: AssetImage('assets/images/gedung_klinik.jpg'),
                           fit: BoxFit.cover,
@@ -99,7 +101,7 @@ class _ProfilUserState extends State<ProfilUser> {
                     ),
                   ),
                   Align(
-                    alignment: Alignment(0, 1),
+                    alignment: const Alignment(0, 1),
                     child: Column(
                       mainAxisSize: MainAxisSize.min,
                       children: <Widget>[
@@ -107,7 +109,7 @@ class _ProfilUserState extends State<ProfilUser> {
                           onPressed: () {
                             Navigator.push(
                               context,
-                              MaterialPageRoute(builder: (context) => Foto_Profil()),
+                              MaterialPageRoute(builder: (context) => const Foto_Profil()),
                             );
                           },
                           child: CircularProfileAvatar(
@@ -116,10 +118,10 @@ class _ProfilUserState extends State<ProfilUser> {
                             radius: 60.0,
                           ),
                         ),
-                        SizedBox(height: 4.0),
+                        const SizedBox(height: 4.0),
                         Text(
                           NamaPegawai,
-                          style: TextStyle(
+                          style: const TextStyle(
                             fontSize: 12.0,
                             fontWeight: FontWeight.bold,
                           ),
@@ -127,7 +129,7 @@ class _ProfilUserState extends State<ProfilUser> {
                           overflow: TextOverflow.ellipsis,
                           softWrap: true,
                         ),
-                        SizedBox(height: 4.0),
+                        const SizedBox(height: 4.0),
                         Text(
                           NIP,
                           style: TextStyle(
@@ -141,11 +143,11 @@ class _ProfilUserState extends State<ProfilUser> {
                 ],
               ),
             ),
-            SizedBox(height: 16),
+            const SizedBox(height: 16),
             _CartItem(
               "Email",
               Email,
-              Icon(
+              const Icon(
                 Icons.mail_outline_rounded,
                 size: 40.0,
                 color: kPrimaryColor,
@@ -154,7 +156,7 @@ class _ProfilUserState extends State<ProfilUser> {
             _CartItem(
               "Unit",
               Unit,
-              Icon(
+              const Icon(
                 Icons.location_city_rounded,
                 size: 40.0,
                 color: kPrimaryColor,
@@ -162,8 +164,8 @@ class _ProfilUserState extends State<ProfilUser> {
             ),
             _CartItem(
               "Jumlah Presensi Bulan Ini",
-              jmlPre.toString() + " Presensi",
-              Icon(
+              "$jmlPre Presensi",
+              const Icon(
                 Icons.alarm_on,
                 size: 40.0,
                 color: approval_presensi,
@@ -171,8 +173,8 @@ class _ProfilUserState extends State<ProfilUser> {
             ),
             _CartItem(
               "Jumlah Kegiatan Bulan Ini",
-              jmlKegiatan.toString() + " Kegiatan",
-              Icon(
+              "$jmlKegiatan Kegiatan",
+              const Icon(
                 Icons.directions_walk_outlined,
                 size: 40.0,
                 color: approval_kegiatan,
@@ -180,8 +182,8 @@ class _ProfilUserState extends State<ProfilUser> {
             ),
             _CartItem(
               "Jumlah Cuti Bulan Ini",
-              jmlCuti.toString() + " Cuti",
-              Icon(
+              "$jmlCuti Cuti",
+              const Icon(
                 Icons.home_work_rounded,
                 size: 40.0,
                 color: approval_cuti,
@@ -193,10 +195,10 @@ class _ProfilUserState extends State<ProfilUser> {
     );
   }
 
-  Container _CartItem(String Title, String Ket, Icon _icon) {
+  Container _CartItem(String Title, String Ket, Icon icon) {
     return Container(
-      padding: EdgeInsets.symmetric(horizontal: 16.0),
-      margin: EdgeInsets.symmetric(vertical: 4),
+      padding: const EdgeInsets.symmetric(horizontal: 16.0),
+      margin: const EdgeInsets.symmetric(vertical: 4),
       decoration: BoxDecoration(
         color: Colors.white.withOpacity(0.8),
         borderRadius: BorderRadius.circular(12.0),
@@ -204,7 +206,7 @@ class _ProfilUserState extends State<ProfilUser> {
           BoxShadow(
             color: Colors.white.withOpacity(0.8),
             blurRadius: 4,
-            offset: Offset(4, 4), // Shadow position
+            offset: const Offset(4, 4), // Shadow position
           ),
         ],
       ),
@@ -216,17 +218,17 @@ class _ProfilUserState extends State<ProfilUser> {
         child: Row(
           crossAxisAlignment: CrossAxisAlignment.center,
           children: <Widget>[
-            _icon,
-            SizedBox(width: 24.0),
+            icon,
+            const SizedBox(width: 24.0),
             Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               mainAxisSize: MainAxisSize.min,
               children: <Widget>[
                 Text(
                   Ket,
-                  style: TextStyle(fontSize: 16.0, fontWeight: FontWeight.w700),
+                  style: const TextStyle(fontSize: 16.0, fontWeight: FontWeight.w700),
                 ),
-                SizedBox(height: 4.0),
+                const SizedBox(height: 4.0),
                 Text(
                   Title,
                   style: TextStyle(

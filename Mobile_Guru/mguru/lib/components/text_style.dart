@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 
-TextStyle warning = TextStyle(
+TextStyle warning = const TextStyle(
     fontSize: 18,
     color: Colors.red,
 );
 
-TextStyle keterangan = TextStyle(
+TextStyle keterangan = const TextStyle(
     fontSize: 14,
     color: Colors.blue,
 );

@@ -6,6 +6,8 @@ import 'package:google_fonts/google_fonts.dart';
 import '/Utilities/BaseUrl.dart';
 
 class SignupPage extends StatefulWidget {
+  const SignupPage({super.key});
+
   @override
   _SignupPageState createState() => _SignupPageState();
 }
@@ -18,8 +20,8 @@ class _SignupPageState extends State<SignupPage> {
   bool _isLoading = false;
   bool _isPasswordVisible = false;
 
-  Future<bool> isPhoneNumberUsed(String no_hp) async {
-    final url = Uri.parse(UrlApi + '/WaliAPI/check_phone?no_hp=$no_hp');
+  Future<bool> isPhoneNumberUsed(String noHp) async {
+    final url = Uri.parse('$UrlApi/WaliAPI/check_phone?no_hp=$noHp');
 
     try {
       final response = await http.get(url);
@@ -38,25 +40,25 @@ class _SignupPageState extends State<SignupPage> {
   }
 
   Future<void> signup() async {
-    final String no_hp = no_hpController.text.trim();
+    final String noHp = no_hpController.text.trim();
     final String password = passwordController.text.trim();
     final String namaWali = namaController.text.trim();
 
     // Validasi input untuk memastikan tidak ada yang kosong
-    if (namaWali.isEmpty || no_hp.isEmpty || password.isEmpty) {
+    if (namaWali.isEmpty || noHp.isEmpty || password.isEmpty) {
       _showSnackbar('Nama, nomor telepon, dan password tidak boleh kosong',
           isError: true);
       return;
     }
 
     // Cek apakah nomor telepon sudah digunakan
-    final isUsed = await isPhoneNumberUsed(no_hp);
+    final isUsed = await isPhoneNumberUsed(noHp);
     if (isUsed) {
       _showSnackbar('Nomor telepon sudah digunakan', isError: true);
       return;
     }
 
-    final url = Uri.parse(UrlApi + '/WaliAPI/create');
+    final url = Uri.parse('$UrlApi/WaliAPI/create');
     setState(() {
       _isLoading = true;
     });
@@ -66,10 +68,10 @@ class _SignupPageState extends State<SignupPage> {
         url,
         body: {
           'nama_wali': namaWali,
-          'no_hp': no_hp,
+          'no_hp': noHp,
           'password': password,
         },
-      ).timeout(Duration(seconds: 30));
+      ).timeout(const Duration(seconds: 30));
 
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
@@ -101,15 +103,15 @@ class _SignupPageState extends State<SignupPage> {
             isError ? Icons.error_outline : Icons.check_circle,
             color: Colors.white,
           ),
-          SizedBox(width: 10),
+          const SizedBox(width: 10),
           Expanded(child: Text(message)),
         ],
       ),
       backgroundColor: isError ? Colors.redAccent : Colors.green,
       behavior: SnackBarBehavior.floating,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-      margin: EdgeInsets.all(10),
-      duration: Duration(seconds: 3),
+      margin: const EdgeInsets.all(10),
+      duration: const Duration(seconds: 3),
     );
     ScaffoldMessenger.of(context).showSnackBar(snackBar);
   }
@@ -120,7 +122,7 @@ class _SignupPageState extends State<SignupPage> {
       body: Stack(
         children: [
           Container(
-            decoration: BoxDecoration(
+            decoration: const BoxDecoration(
               image: DecorationImage(
                 image: AssetImage('assets/walibg.png'), // Ganti dengan path gambar
                 fit: BoxFit.cover,
@@ -135,40 +137,40 @@ class _SignupPageState extends State<SignupPage> {
                   mainAxisAlignment: MainAxisAlignment.center,
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
-                    SizedBox(height: 60.0),
+                    const SizedBox(height: 60.0),
                     _buildLogo(),
-                    SizedBox(height: 40.0),
+                    const SizedBox(height: 40.0),
                     _buildTitle(),
-                    SizedBox(height: 20.0),
+                    const SizedBox(height: 20.0),
                     _buildTextField(
                       controller: namaController,
                       labelText: 'Nama Wali',
                       icon: Icons.person,
                     ),
-                    SizedBox(height: 20.0),
+                    const SizedBox(height: 20.0),
                     _buildTextField(
                       controller: no_hpController,
                       labelText: 'Nomor Telepon',
                       icon: Icons.phone,
                     ),
-                    SizedBox(height: 20.0),
+                    const SizedBox(height: 20.0),
                     _buildTextField(
                       controller: passwordController,
                       labelText: 'Password',
                       icon: Icons.lock,
                       isPassword: true,
                     ),
-                    SizedBox(height: 30.0),
+                    const SizedBox(height: 30.0),
                     Column(
                       children: <Widget>[
                         _isLoading
                             ? _buildLoadingIndicator()
                             : _buildSignupButton(),
-                        SizedBox(height: 20),
+                        const SizedBox(height: 20),
                         _buildBackToLoginButton(),
                       ],
                     ),
-                    SizedBox(height: 20.0),
+                    const SizedBox(height: 20.0),
                   ],
                 ),
               ),
@@ -190,7 +192,7 @@ class _SignupPageState extends State<SignupPage> {
     return Text(
       'DAFTAR AKUN WALI',
       style: GoogleFonts.poppins(
-        textStyle: TextStyle(
+        textStyle: const TextStyle(
           fontSize: 26.0,
           fontWeight: FontWeight.bold,
           color: Colors.black87,
@@ -210,20 +212,20 @@ class _SignupPageState extends State<SignupPage> {
       controller: controller,
       obscureText: isPassword && !_isPasswordVisible,
       style: GoogleFonts.raleway(
-        textStyle: TextStyle(color: Colors.black87),
+        textStyle: const TextStyle(color: Colors.black87),
       ),
       decoration: InputDecoration(
         labelText: labelText,
         prefixIcon: Icon(icon, color: Colors.black54),
         labelStyle: GoogleFonts.raleway(
-          textStyle: TextStyle(color: Colors.black87),
+          textStyle: const TextStyle(color: Colors.black87),
         ),
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12.0),
         ),
         enabledBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12.0),
-          borderSide: BorderSide(color: Colors.black38),
+          borderSide: const BorderSide(color: Colors.black38),
         ),
         filled: true,
         fillColor: Colors.white.withOpacity(0.8),
@@ -248,7 +250,7 @@ class _SignupPageState extends State<SignupPage> {
     return ElevatedButton(
       onPressed: signup,
       style: ElevatedButton.styleFrom(
-        padding: EdgeInsets.symmetric(vertical: 16.0, horizontal: 24.0),
+        padding: const EdgeInsets.symmetric(vertical: 16.0, horizontal: 24.0),
         backgroundColor: Colors.blueAccent,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(12.0),
@@ -257,7 +259,7 @@ class _SignupPageState extends State<SignupPage> {
       child: Text(
         'Daftar',
         style: GoogleFonts.poppins(
-          textStyle: TextStyle(
+          textStyle: const TextStyle(
             fontSize: 18.0,
             fontWeight: FontWeight.bold,
             color: Colors.white,
@@ -283,7 +285,7 @@ class _SignupPageState extends State<SignupPage> {
   }
 
   Widget _buildLoadingIndicator() {
-    return Center(
+    return const Center(
       child: CircularProgressIndicator(
         color: Colors.blueGrey,
       ),

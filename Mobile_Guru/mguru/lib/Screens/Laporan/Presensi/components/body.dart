@@ -10,6 +10,8 @@ import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 
 class Body extends StatefulWidget {
+  const Body({super.key});
+
   @override
   _Body createState() => _Body();
 }
@@ -34,7 +36,7 @@ class _Body extends State<Body> {
       isLoading = true;
     });
     SharedPreferences prefs = await SharedPreferences.getInstance();
-    var url = Uri.parse(Core().ApiUrl + "RiwayatAbsen/riwayat_harian");
+    var url = Uri.parse("${Core().ApiUrl}RiwayatAbsen/riwayat_harian");
     var response = await http.post(url, body: {
       "uuid": prefs.getString("ID"),
       "status": warnaPilih,
@@ -61,7 +63,7 @@ class _Body extends State<Body> {
         filter: Container(
           child: Column(
             children: <Widget>[
-              SizedBox(height: 8),
+              const SizedBox(height: 8),
               Row(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -77,7 +79,7 @@ class _Body extends State<Body> {
                     IdCon: txtTanggalAkhir,
                   ),
                   Container(
-                    margin: EdgeInsets.only(top: 12, right: 6),
+                    margin: const EdgeInsets.only(top: 12, right: 6),
                     width: size.width * 0.15,
                     decoration: BoxDecoration(
                       color: kPrimaryLightColor,
@@ -87,14 +89,14 @@ class _Body extends State<Body> {
                         onPressed: () {
                           fetchUser();
                         },
-                        child: Icon(
+                        child: const Icon(
                           Icons.filter_alt_rounded,
                           color: kPrimaryColor,
                         )),
                   )
                 ],
               ),
-              SizedBox(height: 16),
+              const SizedBox(height: 16),
               SingleChildScrollView(
                 scrollDirection: Axis.horizontal,
                 child: Row(
@@ -102,7 +104,7 @@ class _Body extends State<Body> {
                     children: <Widget>[
                       Container(
                         margin:
-                            EdgeInsets.symmetric(vertical: 0, horizontal: 8),
+                            const EdgeInsets.symmetric(vertical: 0, horizontal: 8),
                         width: size.width * 0.3,
                         height: size.height * 0.05,
                         child: ClipRRect(
@@ -115,7 +117,7 @@ class _Body extends State<Body> {
                               warnaPilih = "";
                               fetchUser();
                             },
-                            child: Text(
+                            child: const Text(
                               "Semua",
                               style: TextStyle(color: Colors.white),
                             ),
@@ -124,7 +126,7 @@ class _Body extends State<Body> {
                       ),
                       Container(
                         margin:
-                            EdgeInsets.symmetric(vertical: 0, horizontal: 1),
+                            const EdgeInsets.symmetric(vertical: 0, horizontal: 1),
                         child: ClipRRect(
                           borderRadius: BorderRadius.circular(30),
                           child: TextButton(
@@ -137,7 +139,7 @@ class _Body extends State<Body> {
                                 fetchUser();
                               });
                             },
-                            child: Text(
+                            child: const Text(
                               "Diterima",
                               style: TextStyle(color: kPrimaryColor),
                             ),
@@ -146,7 +148,7 @@ class _Body extends State<Body> {
                       ),
                       Container(
                         margin:
-                            EdgeInsets.symmetric(vertical: 0, horizontal: 1),
+                            const EdgeInsets.symmetric(vertical: 0, horizontal: 1),
                         child: ClipRRect(
                           borderRadius: BorderRadius.circular(30),
                           child: TextButton(
@@ -159,7 +161,7 @@ class _Body extends State<Body> {
                                 fetchUser();
                               });
                             },
-                            child: Text(
+                            child: const Text(
                               "Ditolak",
                               style: TextStyle(color: kPrimaryColor),
                             ),
@@ -168,7 +170,7 @@ class _Body extends State<Body> {
                       ),
                       Container(
                         margin:
-                            EdgeInsets.symmetric(vertical: 0, horizontal: 1),
+                            const EdgeInsets.symmetric(vertical: 0, horizontal: 1),
                         child: ClipRRect(
                           borderRadius: BorderRadius.circular(30),
                           child: TextButton(
@@ -181,7 +183,7 @@ class _Body extends State<Body> {
                                 fetchUser();
                               });
                             },
-                            child: Text(
+                            child: const Text(
                               "Menunggu Respon",
                               style: TextStyle(color: kPrimaryColor),
                             ),
@@ -201,12 +203,12 @@ class _Body extends State<Body> {
   Widget getBody() {
     Size size = MediaQuery.of(context).size;
     if (users.contains(null) || isLoading) {
-      return Center(
+      return const Center(
           child: CircularProgressIndicator(
-        valueColor: new AlwaysStoppedAnimation<Color>(kPrimaryColor),
+        valueColor: AlwaysStoppedAnimation<Color>(kPrimaryColor),
       ));
     }
-    if (users.length <= 0) {
+    if (users.isEmpty) {
       return Container(
           child: Image.asset(
         "assets/ilustrasi/laporanpresensi.png",
@@ -225,9 +227,9 @@ class _Body extends State<Body> {
 
   Widget getCard(item) {
     var waktu = item['waktu'];
-    var status_absensi = item['status_absensi'];
+    var statusAbsensi = item['status_absensi'];
     var foto = item['foto'];
-    var waktu_pulang = item['waktu_pulang'];
+    var waktuPulang = item['waktu_pulang'];
     // var waktu_istirahat = item['waktu_istirahat'];
 
     return Container(
@@ -242,7 +244,7 @@ class _Body extends State<Body> {
                   : (item['status_absensi'] == "2")
                       ? Colors.redAccent.withOpacity(0.2)
                       : Colors.deepOrange.withOpacity(0.4),
-              offset: Offset(1.0, 3), //(x,y)
+              offset: const Offset(1.0, 3), //(x,y)
               blurRadius: 5.0,
             ),
           ]),
@@ -261,44 +263,44 @@ class _Body extends State<Body> {
                         fit: BoxFit.cover,
                         image: NetworkImage(Core().Url + foto))),
               ),
-              SizedBox(width: 5),
+              const SizedBox(width: 5),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: <Widget>[
                     Text(
                       waktu,
-                      style: TextStyle(fontSize: 12),
+                      style: const TextStyle(fontSize: 12),
                       overflow: TextOverflow.ellipsis,
                     ),
-                    SizedBox(height: 5),
+                    const SizedBox(height: 5),
                     Row(
                       children: [
-                        Container(
+                        const SizedBox(
                           width: 75,
                           child: Text("Presensi Datang",
-                              style: const TextStyle(fontSize: 10)),
+                              style: TextStyle(fontSize: 10)),
                         ),
                         Expanded(
                           child: Text(
-                            ": " + waktu.toString(),
+                            ": $waktu",
                             style: const TextStyle(fontSize: 10),
                             overflow: TextOverflow.ellipsis,
                           ),
                         )
                       ],
                     ),
-                    SizedBox(height: 5),
+                    const SizedBox(height: 5),
                     Row(
                       children: [
-                        Container(
+                        const SizedBox(
                           width: 75,
                           child: Text("Presensi Pulang",
-                              style: const TextStyle(fontSize: 10)),
+                              style: TextStyle(fontSize: 10)),
                         ),
                         Expanded(
                           child: Text(
-                            ": " + waktu_pulang.toString(),
+                            ": $waktuPulang",
                             style: const TextStyle(fontSize: 10),
                             overflow: TextOverflow.ellipsis,
                           ),
@@ -310,7 +312,7 @@ class _Body extends State<Body> {
                       child: Container(
                         width: 70,
                         height: 25,
-                        margin: EdgeInsets.only(top: 8),
+                        margin: const EdgeInsets.only(top: 8),
                         decoration: BoxDecoration(
                           color: (item['status_absensi'] == "1")
                               ? softblue

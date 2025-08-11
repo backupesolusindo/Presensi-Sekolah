@@ -5,7 +5,7 @@ class CountryDropdown extends StatelessWidget {
   final String country;
   final Function(String) onChanged;
 
-  const CountryDropdown({
+  const CountryDropdown({super.key, 
     required this.countries,
     required this.country,
     required this.onChanged,
@@ -25,6 +25,7 @@ class CountryDropdown extends StatelessWidget {
           value: country,
           items: countries
               .map((e) => DropdownMenuItem(
+                    value: e,
                     child: Row(
                       children: <Widget>[
                         CircleAvatar(
@@ -43,7 +44,6 @@ class CountryDropdown extends StatelessWidget {
                         )
                       ],
                     ),
-                    value: e,
                   ))
               .toList(),
           onChanged: (String? value) {

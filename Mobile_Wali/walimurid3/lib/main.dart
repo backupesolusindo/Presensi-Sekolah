@@ -2,10 +2,12 @@ import 'package:flutter/material.dart';
 import 'login.dart'; // Import the LoginPage
 
 void main() {
-  runApp(MyApp());
+  runApp(const MyApp());
 }
 
 class MyApp extends StatelessWidget {
+  const MyApp({super.key});
+
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
@@ -15,7 +17,7 @@ class MyApp extends StatelessWidget {
         primarySwatch: Colors.blue,
         visualDensity: VisualDensity.adaptivePlatformDensity,
       ),
-      home: LoginPage(), // Set LoginPage as the initial page
+      home: const LoginPage(), // Set LoginPage as the initial page
       // home: DashboardPage(nama_wali: 'Wali Murid', nis_anak: '12345678'),
     );
   }

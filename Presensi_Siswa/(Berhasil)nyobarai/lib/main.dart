@@ -8,11 +8,11 @@ import 'package:google_fonts/google_fonts.dart';
 //   WidgetsFlutterBinding.ensureInitialized();
 //   cameras = await availableCameras();
 void main() {
-  runApp(MyApp());
+  runApp(const MyApp());
 }
 
 class MyApp extends StatelessWidget {
-  const MyApp({Key? key}) : super(key: key);
+  const MyApp({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -24,9 +24,9 @@ class MyApp extends StatelessWidget {
           Theme.of(context).textTheme,
         ),
       ),
-      home: LoginScreen(),
+      home: const LoginScreen(),
       routes: {
-        '/home': (context) => LoginScreen(),
+        '/home': (context) => const LoginScreen(),
       },
     );
   }

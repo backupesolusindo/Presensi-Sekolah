@@ -10,5 +10,5 @@ Future<void> logout(BuildContext context) async {
   await prefs.clear();
 
   // Navigasi ke halaman login
-  Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => LoginPage()));
+  Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => const LoginPage()));
 }

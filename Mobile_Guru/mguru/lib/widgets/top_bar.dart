@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:mobile_presensi_kdtg/Screens/home_screen.dart';
 
 class TopBar extends StatelessWidget {
   const TopBar({
@@ -16,7 +15,7 @@ class TopBar extends StatelessWidget {
             onPressed: () {
               Navigator.pop(context);
             },
-            icon: Icon(
+            icon: const Icon(
               Icons.arrow_back,
               color: Colors.white,
             ),

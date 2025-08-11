@@ -4,6 +4,8 @@ import 'dart:convert';
 import 'DB/DatabaseHelper.dart';
 
 class UserListScreen extends StatefulWidget {
+  const UserListScreen({super.key});
+
   @override
   _UserListScreenState createState() => _UserListScreenState();
 }
@@ -125,14 +127,14 @@ class _UserListScreenState extends State<UserListScreen> {
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
-          title: Text('Kesalahan'),
+          title: const Text('Kesalahan'),
           content: Text(message),
           actions: <Widget>[
             TextButton(
               onPressed: () {
                 Navigator.of(context).pop();
               },
-              child: Text('OK'),
+              child: const Text('OK'),
             ),
           ],
         );
@@ -162,14 +164,14 @@ class _UserListScreenState extends State<UserListScreen> {
     return Scaffold(
       backgroundColor: Colors.grey[100],
       appBar: PreferredSize(
-        preferredSize: Size.fromHeight(kToolbarHeight),
+        preferredSize: const Size.fromHeight(kToolbarHeight),
         child: ClipRRect(
-          borderRadius: BorderRadius.vertical(
+          borderRadius: const BorderRadius.vertical(
             bottom:
                 Radius.circular(16), // Menentukan seberapa tumpul sudut bawah
           ),
           child: AppBar(
-            title: Text(
+            title: const Text(
               'Daftar Murid',
               style: TextStyle(
                   color: Colors.white), // Ubah warna teks menjadi putih
@@ -192,22 +194,22 @@ class _UserListScreenState extends State<UserListScreen> {
                           ),
                           child: TweenAnimationBuilder(
                             tween: Tween<double>(begin: 0, end: 1),
-                            duration: Duration(
+                            duration: const Duration(
                                 seconds: 1), // Durasi untuk satu putaran penuh
                             builder: (context, double value, child) {
                               return CircularProgressIndicator(
                                 strokeWidth:
                                     3, // Membuat garis sedikit lebih tebal
                                 value: value, // Nilai animasi
-                                valueColor: AlwaysStoppedAnimation<Color>(
-                                  const Color.fromARGB(
+                                valueColor: const AlwaysStoppedAnimation<Color>(
+                                  Color.fromARGB(
                                       255, 255, 255, 255), // Warna putih
                                 ),
                               );
                             },
                             onEnd: () {
                               // Memastikan animasi berulang terus
-                              Future.delayed(Duration(milliseconds: 300), () {
+                              Future.delayed(const Duration(milliseconds: 300), () {
                                 // Mengulang animasi setelah jeda
                                 setState(() {});
                               });
@@ -219,9 +221,7 @@ class _UserListScreenState extends State<UserListScreen> {
                   : Padding(
                       padding: const EdgeInsets.only(right: 16.0),
                       child: ElevatedButton(
-                        onPressed: _syncDatabro,
-                        child: Icon(
-                            Icons.refresh), // Ganti teks dengan ikon refresh
+                        onPressed: _syncDatabro, // Ganti teks dengan ikon refresh
                         style: ElevatedButton.styleFrom(
                           backgroundColor:
                               const Color.fromARGB(255, 255, 255, 255),
@@ -229,6 +229,8 @@ class _UserListScreenState extends State<UserListScreen> {
                             borderRadius: BorderRadius.circular(20),
                           ),
                         ),
+                        child: const Icon(
+                            Icons.refresh),
                       ),
                     ),
             ],
@@ -248,9 +250,9 @@ class _UserListScreenState extends State<UserListScreen> {
           Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Text("Urutkan: ",
+              const Text("Urutkan: ",
                   style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
-              SizedBox(width: 10),
+              const SizedBox(width: 10),
               DropdownButton<String>(
                 value: _sortCriteria,
                 onChanged: (String? newValue) {
@@ -267,7 +269,7 @@ class _UserListScreenState extends State<UserListScreen> {
                     ),
                   );
                 }).toList(),
-                icon: Icon(Icons.arrow_drop_down),
+                icon: const Icon(Icons.arrow_drop_down),
               ),
             ],
           ),
@@ -276,11 +278,11 @@ class _UserListScreenState extends State<UserListScreen> {
               future: _users,
               builder: (context, snapshot) {
                 if (snapshot.connectionState == ConnectionState.waiting) {
-                  return Center(child: CircularProgressIndicator());
+                  return const Center(child: CircularProgressIndicator());
                 } else if (snapshot.hasError) {
                   return Center(child: Text('Error: ${snapshot.error}'));
                 } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
-                  return Center(child: Text('No users found.'));
+                  return const Center(child: Text('No users found.'));
                 }
 
                 final users = _sortUsers(snapshot.data!);
@@ -309,23 +311,23 @@ class _UserListScreenState extends State<UserListScreen> {
                               child: Text(
                                 user[DatabaseHelper.columnName][0]
                                     .toUpperCase(),
-                                style: TextStyle(color: Colors.white),
+                                style: const TextStyle(color: Colors.white),
                               ),
                             ),
-                            SizedBox(width: 16),
+                            const SizedBox(width: 16),
                             Expanded(
                               child: Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
                                   Text(
                                     user[DatabaseHelper.columnName],
-                                    style: TextStyle(
+                                    style: const TextStyle(
                                       fontSize: 20,
                                       fontWeight: FontWeight.bold,
                                       color: Colors.black87,
                                     ),
                                   ),
-                                  SizedBox(height: 4),
+                                  const SizedBox(height: 4),
                                   RichText(
                                     text: TextSpan(
                                       style: DefaultTextStyle.of(context).style,
@@ -334,11 +336,11 @@ class _UserListScreenState extends State<UserListScreen> {
                                           text:
                                               'NIS: ${user[DatabaseHelper.columnNIS]}, ',
                                           style:
-                                              TextStyle(color: Colors.black54),
+                                              const TextStyle(color: Colors.black54),
                                         ),
                                         TextSpan(
                                           text: ' $namaKelas',
-                                          style: TextStyle(
+                                          style: const TextStyle(
                                             fontWeight: FontWeight.bold,
                                             color: Colors.blueAccent,
                                           ),
@@ -346,9 +348,9 @@ class _UserListScreenState extends State<UserListScreen> {
                                         TextSpan(
                                           text:
                                               '\nNo HP Ortu: ${user[DatabaseHelper.columnNoHpOrtu]}',
-                                          style: TextStyle(
+                                          style: const TextStyle(
                                             fontWeight: FontWeight.bold,
-                                            color: const Color.fromARGB(
+                                            color: Color.fromARGB(
                                                 255, 255, 145, 0),
                                           ),
                                         ),

@@ -1,7 +1,6 @@
 import 'dart:convert';
 import 'dart:io';
 
-import 'package:flutter/material.dart';
 import 'package:mobile_presensi_kdtg/core.dart';
 import 'package:async/async.dart';
 import 'package:path/path.dart';
@@ -21,12 +20,12 @@ class UploadPost {
 
   static Future<UploadPost?> connectToApi(String uuid, File imageFile) async {
     var stream =
-        new http.ByteStream(DelegatingStream.typed(imageFile.openRead()));
+        http.ByteStream(DelegatingStream.typed(imageFile.openRead()));
     var length = await imageFile.length();
-    var url = Uri.parse(Core().ApiUrl + "Pegawai/update_profil");
+    var url = Uri.parse("${Core().ApiUrl}Pegawai/update_profil");
 
-    var request = new http.MultipartRequest("POST", url);
-    var multipartFile = new http.MultipartFile("image", stream, length,
+    var request = http.MultipartRequest("POST", url);
+    var multipartFile = http.MultipartFile("image", stream, length,
         filename: basename(imageFile.path));
     request.fields['uuid'] = uuid;
     request.files.add(multipartFile);

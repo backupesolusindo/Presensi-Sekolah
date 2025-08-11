@@ -5,7 +5,7 @@ import 'RegistrationScreen.dart';
 import 'UserListScreen.dart';
 
 class HomeScreen extends StatefulWidget {
-  const HomeScreen({Key? key}) : super(key: key);
+  const HomeScreen({super.key});
 
   @override
   State<HomeScreen> createState() => _HomePageState();
@@ -23,7 +23,7 @@ class _HomePageState extends State<HomeScreen> {
         children: [
           // Gambar latar belakang
           Container(
-            decoration: BoxDecoration(
+            decoration: const BoxDecoration(
               image: DecorationImage(
                 image: AssetImage('assets/bg.png'),
                 fit: BoxFit.cover, // Sesuaikan gambar dengan layar
@@ -61,7 +61,7 @@ class _HomePageState extends State<HomeScreen> {
                         }),
                         const SizedBox(height: 20),
                         _buildButton("Murid Terdaftar", () {
-                          _navigateWithLoading(context, UserListScreen());
+                          _navigateWithLoading(context, const UserListScreen());
                         }),
                         const SizedBox(
                             height: 20), // Jarak bawah untuk padding bottom

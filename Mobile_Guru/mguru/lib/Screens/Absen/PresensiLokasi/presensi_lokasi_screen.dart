@@ -22,12 +22,14 @@ import 'package:trust_location/trust_location.dart';
 List<CameraDescription> cameras = [];
 
 class PresensiLokasiScreen extends StatefulWidget {
+  const PresensiLokasiScreen({super.key});
+
   @override
   _PresensiLokasiScreenState createState() => _PresensiLokasiScreenState();
 }
 
 class _PresensiLokasiScreenState extends State<PresensiLokasiScreen> {
-  final AbsenPost absenPost = new AbsenPost();
+  final AbsenPost absenPost = AbsenPost();
 
   late GoogleMapController _controller;
   double la_polije = -8.1594718;
@@ -83,7 +85,7 @@ class _PresensiLokasiScreenState extends State<PresensiLokasiScreen> {
 
   Future<XFile?> takePicture() async {
     final CameraController cameraController = controller;
-    if (cameraController == null || !cameraController.value.isInitialized) {
+    if (!cameraController.value.isInitialized) {
       return null;
     }
 
@@ -123,7 +125,7 @@ class _PresensiLokasiScreenState extends State<PresensiLokasiScreen> {
   void onTakePictureButtonPressed() {
     Future<XFile?> takePicture() async {
       final CameraController cameraController = controller;
-      if (cameraController == null || !cameraController.value.isInitialized) {
+      if (!cameraController.value.isInitialized) {
         return null;
       }
 
@@ -201,53 +203,51 @@ class _PresensiLokasiScreenState extends State<PresensiLokasiScreen> {
       GoogleMap(
         myLocationEnabled: true,
         initialCameraPosition: CameraPosition(
-          target: new LatLng(la, lo),
+          target: LatLng(la, lo),
           zoom: 16.0,
         ),
-        markers: Set<Marker>.of(
-          [
+        markers: <Marker>{
             Marker(
-              markerId: MarkerId('marker_1'),
+              markerId: const MarkerId('marker_1'),
               position: LatLng(la, lo),
               consumeTapEvents: true,
               infoWindow: InfoWindow(
                 title: 'Lokasi Anda',
-                snippet: "Jarak : " + Jarak.toInt().toString() + " M",
+                snippet: "Jarak : ${Jarak.toInt()} M",
               ),
               onTap: () {
                 print("Marker tapped");
               },
             ),
-          ],
-        ),
+          },
         mapType: MapType.hybrid,
-        polygons: Set<Polygon>.of([
+        polygons: <Polygon>{
           Polygon(
-              polygonId: PolygonId("Area Polije"),
+              polygonId: const PolygonId("Area Polije"),
               points: const <LatLng>[
-                const LatLng(-8.159848, 113.720521),
-                const LatLng(-8.161228, 113.723176),
-                const LatLng(-8.160425, 113.723687),
-                const LatLng(-8.161215, 113.725171),
-                const LatLng(-8.154612, 113.725997),
-                const LatLng(-8.153624, 113.723426),
+                LatLng(-8.159848, 113.720521),
+                LatLng(-8.161228, 113.723176),
+                LatLng(-8.160425, 113.723687),
+                LatLng(-8.161215, 113.725171),
+                LatLng(-8.154612, 113.725997),
+                LatLng(-8.153624, 113.723426),
               ],
               strokeWidth: 2,
               strokeColor: Colors.blue,
               fillColor: Colors.blue.withOpacity(0.1))
-        ]),
+        },
         onTap: (location) => print('onTap: $location'),
         onCameraMove: (cameraUpdate) => print('onCameraMove: $cameraUpdate'),
         compassEnabled: true,
         onMapCreated: (GoogleMapController controller) {
           _controller = controller;
-          Future.delayed(Duration(seconds: 2)).then(
+          Future.delayed(const Duration(seconds: 2)).then(
             (_) {
               controller.animateCamera(
                 CameraUpdate.newCameraPosition(
                   CameraPosition(
                     bearing: 0,
-                    target: new LatLng(la, lo),
+                    target: LatLng(la, lo),
                     tilt: 30.0,
                     zoom: 18,
                   ),
@@ -264,7 +264,7 @@ class _PresensiLokasiScreenState extends State<PresensiLokasiScreen> {
           bottom: 12,
           width: size.width * 0.85,
           child: Container(
-            margin: EdgeInsets.only(left: 10.0, right: 10.0),
+            margin: const EdgeInsets.only(left: 10.0, right: 10.0),
             child: Card(
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(10.0),
@@ -278,25 +278,25 @@ class _PresensiLokasiScreenState extends State<PresensiLokasiScreen> {
                       Column(children: [
                         (_image == null)
                             ? Container(
-                                margin: EdgeInsets.only(
+                                margin: const EdgeInsets.only(
                                     left: 8.0, right: 8.0, top: 8.0),
                                 height: 59,
                                 width: 59,
                                 decoration: BoxDecoration(
                                   borderRadius: BorderRadius.circular(50),
-                                  image: DecorationImage(
+                                  image: const DecorationImage(
                                     image: AssetImage(
                                         'assets/images/user_image.png'),
                                   ),
                                 ),
                               )
                             : Padding(
-                                padding: EdgeInsets.only(
+                                padding: const EdgeInsets.only(
                                     left: 8.0, right: 8.0, top: 8.0),
                                 child:
                                     Image.file(_image, width: 80, height: 120)),
                         Padding(
-                          padding: EdgeInsets.only(left: 4.0, right: 4.0),
+                          padding: const EdgeInsets.only(left: 4.0, right: 4.0),
                           child: TextButton(
                             onPressed: () {
                               if (bacakamera) {
@@ -304,9 +304,8 @@ class _PresensiLokasiScreenState extends State<PresensiLokasiScreen> {
                               } else {
                                 getCameraEx();
                               }
-                              ;
                             },
-                            child: Text(
+                            child: const Text(
                               "Ambil Foto",
                               style: TextStyle(fontSize: 11),
                             ),
@@ -314,40 +313,38 @@ class _PresensiLokasiScreenState extends State<PresensiLokasiScreen> {
                         )
                       ]),
                       Padding(
-                        padding: EdgeInsets.only(bottom: 5, top: 8, right: 0),
+                        padding: const EdgeInsets.only(bottom: 5, top: 8, right: 0),
                         child: Column(
                           children: <Widget>[
-                            Text("Nama Lengkap"),
+                            const Text("Nama Lengkap"),
                             Text(
                               Nama,
-                              style: TextStyle(
+                              style: const TextStyle(
                                   fontSize: 14,
                                   fontWeight: FontWeight.w500,
                                   color: Colors.blue),
                             ),
-                            SizedBox(
+                            const SizedBox(
                               height: 4,
                             ),
-                            Text("NIP"),
+                            const Text("NIP"),
                             Text(
                               NIP,
                               style:
-                                  TextStyle(fontSize: 12, color: Colors.blue),
+                                  const TextStyle(fontSize: 12, color: Colors.blue),
                             ),
                             Text(
-                              "Jarak Kantor : " +
-                                  Jarak.toInt().toString() +
-                                  " Meter",
+                              "Jarak Kantor : ${Jarak.toInt()} Meter",
                               style: TextStyle(
                                   fontSize: 11,
                                   color: Jarak.toInt() < radius
                                       ? CSuccess
                                       : CDanger),
                             ),
-                            SizedBox(
+                            const SizedBox(
                               height: 8,
                             ),
-                            if (statusLoading == 1) CircularProgressIndicator(),
+                            if (statusLoading == 1) const CircularProgressIndicator(),
                             if (statusLoading == 0)
                               RoundedButtonSmall(
                                 text: "PRESENSI LOKASI",
@@ -355,18 +352,34 @@ class _PresensiLokasiScreenState extends State<PresensiLokasiScreen> {
                                     ? kPrimaryColor
                                     : ColorLight,
                                 press: () async {
-                                  bool _isMockLocation =
+                                  bool isMockLocation =
                                       await TrustLocation.isMockLocation;
                                   SharedPreferences prefs =
                                       await SharedPreferences.getInstance();
                                   if (prefs.getInt("status_spesial") == 1) {
-                                    if (_image == null) {
-                                      _showMyDialog("Absensi Lokasi",
-                                          "Anda Belum Mengambil Foto. Mohon Ambil Foto Terlebih Dahulu !");
+                                    PresensiLokasiPost.connectToApi(
+                                            prefs.getString("ID")!,
+                                            la.toString(),
+                                            lo.toString(),
+                                            _image)
+                                        .then((value) {
+                                      if (value!.status_kode == 200) {
+                                        Navigator.of(context).pop();
+                                        Navigator.push(
+                                          context,
+                                          MaterialPageRoute(
+                                            builder: (context) {
+                                              return const DashboardScreen();
+                                            },
+                                          ),
+                                        );
+                                      }
                                       setState(() {
                                         statusLoading = 0;
                                       });
-                                    } else {
+                                    });
+                                                                    } else {
+                                    if (Jarak.toInt() < radius) {
                                       PresensiLokasiPost.connectToApi(
                                               prefs.getString("ID")!,
                                               la.toString(),
@@ -379,7 +392,7 @@ class _PresensiLokasiScreenState extends State<PresensiLokasiScreen> {
                                             context,
                                             MaterialPageRoute(
                                               builder: (context) {
-                                                return DashboardScreen();
+                                                return const DashboardScreen();
                                               },
                                             ),
                                           );
@@ -388,39 +401,7 @@ class _PresensiLokasiScreenState extends State<PresensiLokasiScreen> {
                                           statusLoading = 0;
                                         });
                                       });
-                                    }
-                                  } else {
-                                    if (Jarak.toInt() < radius) {
-                                      if (_image == null) {
-                                        _showMyDialog("Absensi Lokasi",
-                                            "Anda Belum Mengambil Foto. Mohon Ambil Foto Terlebih Dahulu !");
-                                        setState(() {
-                                          statusLoading = 0;
-                                        });
-                                      } else {
-                                        PresensiLokasiPost.connectToApi(
-                                                prefs.getString("ID")!,
-                                                la.toString(),
-                                                lo.toString(),
-                                                _image)
-                                            .then((value) {
-                                          if (value!.status_kode == 200) {
-                                            Navigator.of(context).pop();
-                                            Navigator.push(
-                                              context,
-                                              MaterialPageRoute(
-                                                builder: (context) {
-                                                  return DashboardScreen();
-                                                },
-                                              ),
-                                            );
-                                          }
-                                          setState(() {
-                                            statusLoading = 0;
-                                          });
-                                        });
-                                      }
-                                    } else {
+                                                                        } else {
                                       _showMyDialog("Absensi Lokasi",
                                           "Lokasi Anda Terlalu Jauh");
                                       setState(() {
@@ -442,7 +423,7 @@ class _PresensiLokasiScreenState extends State<PresensiLokasiScreen> {
       Positioned(
           bottom: size.height * 0.15,
           right: 8,
-          child: Container(
+          child: SizedBox(
             width: 50,
             child: FloatingActionButton(
               onPressed: () {
@@ -451,7 +432,7 @@ class _PresensiLokasiScreenState extends State<PresensiLokasiScreen> {
                   CameraUpdate.newCameraPosition(
                     CameraPosition(
                       bearing: 0,
-                      target: new LatLng(la, lo),
+                      target: LatLng(la, lo),
                       tilt: 30.0,
                       zoom: 18,
                     ),
@@ -461,8 +442,8 @@ class _PresensiLokasiScreenState extends State<PresensiLokasiScreen> {
                     .getVisibleRegion()
                     .then((bounds) => print("bounds: ${bounds.toString()}"));
               },
-              child: const Icon(Icons.my_location),
               backgroundColor: kPrimaryColor,
+              child: const Icon(Icons.my_location),
             ),
           ))
     ]));
@@ -486,7 +467,7 @@ class _PresensiLokasiScreenState extends State<PresensiLokasiScreen> {
             ),
             actions: <Widget>[
               TextButton(
-                child: Text('Keluar'),
+                child: const Text('Keluar'),
                 onPressed: () {
                   Navigator.of(context).pop();
                 },
@@ -506,8 +487,8 @@ class _PresensiLokasiScreenState extends State<PresensiLokasiScreen> {
         return BackdropFilter(
           filter: ImageFilter.blur(sigmaX: 6, sigmaY: 6),
           child: AlertDialog(
-            title: Text("FAKE GPS"),
-            content: SingleChildScrollView(
+            title: const Text("FAKE GPS"),
+            content: const SingleChildScrollView(
               child: ListBody(
                 children: <Widget>[
                   Text("HARAP UNINSTALL FAKE GPS ANDA !!!"),
@@ -516,7 +497,7 @@ class _PresensiLokasiScreenState extends State<PresensiLokasiScreen> {
             ),
             actions: <Widget>[
               TextButton(
-                child: Text('Keluar'),
+                child: const Text('Keluar'),
                 onPressed: () {
                   exit(0);
                 },
@@ -536,8 +517,8 @@ class _PresensiLokasiScreenState extends State<PresensiLokasiScreen> {
         return BackdropFilter(
           filter: ImageFilter.blur(sigmaX: 6, sigmaY: 6),
           child: AlertDialog(
-            title: Text("PERIZINAN AKSES LOKASI"),
-            content: SingleChildScrollView(
+            title: const Text("PERIZINAN AKSES LOKASI"),
+            content: const SingleChildScrollView(
               child: ListBody(
                 children: <Widget>[
                   Text(
@@ -547,7 +528,7 @@ class _PresensiLokasiScreenState extends State<PresensiLokasiScreen> {
             ),
             actions: <Widget>[
               TextButton(
-                child: Text('OK'),
+                child: const Text('OK'),
                 onPressed: () async {
                   SharedPreferences prefs =
                       await SharedPreferences.getInstance();
@@ -571,11 +552,11 @@ class _PresensiLokasiScreenState extends State<PresensiLokasiScreen> {
         return BackdropFilter(
           filter: ImageFilter.blur(sigmaX: 6, sigmaY: 6),
           child: AlertDialog(
-            contentPadding: EdgeInsets.all(0),
+            contentPadding: const EdgeInsets.all(0),
             content: Container(
               // height: size.height * 0.6,
-              margin: EdgeInsets.all(0),
-              padding: EdgeInsets.all(0),
+              margin: const EdgeInsets.all(0),
+              padding: const EdgeInsets.all(0),
               child: CameraPreview(controller),
             ),
             actions: <Widget>[
@@ -587,7 +568,7 @@ class _PresensiLokasiScreenState extends State<PresensiLokasiScreen> {
                 child: Image.asset("assets/icons/camera.png", height: 50),
               ),
               TextButton(
-                child: Text('Kembali', style: TextStyle(color: CDanger)),
+                child: const Text('Kembali', style: TextStyle(color: CDanger)),
                 onPressed: () async {
                   Navigator.of(context).pop();
                 },

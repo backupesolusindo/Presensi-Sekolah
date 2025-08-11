@@ -5,6 +5,8 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'home.dart'; // Import halaman Home
 
 class EditPasswordPage extends StatefulWidget {
+  const EditPasswordPage({super.key});
+
   @override
   _EditPasswordPageState createState() => _EditPasswordPageState();
 }
@@ -48,11 +50,11 @@ class _EditPasswordPageState extends State<EditPasswordPage> {
 
         if (response.statusCode == 200 && data['success'] == true) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Password berhasil diubah')),
+          const SnackBar(content: Text('Password berhasil diubah')),
         );
         
         Navigator.of(context).pushAndRemoveUntil(
-          MaterialPageRoute(builder: (context) => HomePage()),
+          MaterialPageRoute(builder: (context) => const HomePage()),
           (Route<dynamic> route) => false,
         );
       } else {
@@ -79,11 +81,11 @@ class _EditPasswordPageState extends State<EditPasswordPage> {
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
-        title: Text('Edit Password', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
-        iconTheme: IconThemeData(color: Colors.white),
+        title: const Text('Edit Password', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+        iconTheme: const IconThemeData(color: Colors.white),
       ),
       body: Container(
-        decoration: BoxDecoration(
+        decoration: const BoxDecoration(
           image: DecorationImage(
             image: AssetImage('assets/walibg.png'),
             fit: BoxFit.cover,
@@ -107,16 +109,16 @@ class _EditPasswordPageState extends State<EditPasswordPage> {
                       child: Column(
                         mainAxisSize: MainAxisSize.min,
                         children: [
-                          Text(
+                          const Text(
                             'Ubah Password',
                             style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: Colors.blue),
                           ),
-                          SizedBox(height: 24),
+                          const SizedBox(height: 24),
                           TextFormField(
                             controller: _newPasswordController,
                             decoration: InputDecoration(
                               labelText: 'Password Baru',
-                              prefixIcon: Icon(Icons.lock_outline),
+                              prefixIcon: const Icon(Icons.lock_outline),
                               border: OutlineInputBorder(
                                 borderRadius: BorderRadius.circular(12),
                               ),
@@ -129,12 +131,12 @@ class _EditPasswordPageState extends State<EditPasswordPage> {
                               return null;
                             },
                           ),
-                          SizedBox(height: 16),
+                          const SizedBox(height: 16),
                           TextFormField(
                             controller: _confirmPasswordController,
                             decoration: InputDecoration(
                               labelText: 'Konfirmasi Password Baru',
-                              prefixIcon: Icon(Icons.lock_outline),
+                              prefixIcon: const Icon(Icons.lock_outline),
                               border: OutlineInputBorder(
                                 borderRadius: BorderRadius.circular(12),
                               ),
@@ -147,19 +149,19 @@ class _EditPasswordPageState extends State<EditPasswordPage> {
                               return null;
                             },
                           ),
-                          SizedBox(height: 24),
+                          const SizedBox(height: 24),
                           ElevatedButton(
                             onPressed: _isLoading ? null : _updatePassword,
-                            child: _isLoading
-                                ? CircularProgressIndicator(color: Colors.white)
-                                : Text('Simpan', style: TextStyle(fontSize: 16)),
                             style: ElevatedButton.styleFrom(
                               backgroundColor: Colors.blue,
-                              padding: EdgeInsets.symmetric(horizontal: 32, vertical: 12),
+                              padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 12),
                               shape: RoundedRectangleBorder(
                                 borderRadius: BorderRadius.circular(12),
                               ),
                             ),
+                            child: _isLoading
+                                ? const CircularProgressIndicator(color: Colors.white)
+                                : const Text('Simpan', style: TextStyle(fontSize: 16)),
                           ),
                         ],
                       ),

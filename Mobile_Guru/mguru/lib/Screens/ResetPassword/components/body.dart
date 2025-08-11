@@ -6,6 +6,8 @@ import 'package:mobile_presensi_kdtg/components/rounded_password_field.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class Body extends StatefulWidget {
+  const Body({super.key});
+
   @override
   _Body createState() => _Body();
 }

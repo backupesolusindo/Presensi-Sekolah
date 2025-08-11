@@ -12,7 +12,7 @@ class Recognizer {
   static const int WIDTH = 112;
   static const int HEIGHT = 112;
   final dbHelper = DatabaseHelper.instance; // Instance database helper
-  Map<String, Recognition> registered = Map();
+  Map<String, Recognition> registered = {};
 
   // Nama model
   String get modelName => 'assets/mobile_face_net.tflite';

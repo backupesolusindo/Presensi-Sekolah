@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:mobile_presensi_kdtg/Screens/Laporan/Kegiatan/components/body.dart';
 
 class LaporanKegiatanScreen extends StatelessWidget {
+  const LaporanKegiatanScreen({super.key});
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -13,7 +15,7 @@ class LaporanKegiatanScreen extends StatelessWidget {
           ),
         ),
       ),
-      body: Body(),
+      body: const Body(),
     );
   }
 }

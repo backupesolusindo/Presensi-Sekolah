@@ -50,7 +50,7 @@ class _DataMuridPageState extends State<DataMuridPage> {
 
   Future<void> _fetchStudents() async {
     var url = Uri.parse(
-        Core().ApiUrl + "ApiSiswa/Siswa/getSiswabykelas/${widget.idKelas}");
+        "${Core().ApiUrl}ApiSiswa/Siswa/getSiswabykelas/${widget.idKelas}");
 
     try {
       final response = await http.get(url);
@@ -121,7 +121,7 @@ class _DataMuridPageState extends State<DataMuridPage> {
                 CircleAvatar(
                   radius: 30, // Radius for the icon
                   backgroundColor: Colors.blue[200],
-                  child: Icon(Icons.person,
+                  child: const Icon(Icons.person,
                       size: 30, color: Colors.white), // Icon size
                 ),
                 const SizedBox(
@@ -146,8 +146,8 @@ class _DataMuridPageState extends State<DataMuridPage> {
                           const SizedBox(width: 20), // Spacing between label and value
                           Expanded(
                             child: Text(
-                              '${student.name}', // Display student's name
-                              style: TextStyle(
+                              student.name, // Display student's name
+                              style: const TextStyle(
                                 fontSize: 16,
                                 color: Colors.black,
                               ),
@@ -170,8 +170,8 @@ class _DataMuridPageState extends State<DataMuridPage> {
                           const SizedBox(width: 38), // Spacing between label and value
                           Expanded(
                             child: Text(
-                              '${student.nis}',
-                              style: TextStyle(
+                              student.nis,
+                              style: const TextStyle(
                                 fontSize: 16,
                                 color: Colors.black, // Darker grey for better readability
                               ),
@@ -195,8 +195,8 @@ class _DataMuridPageState extends State<DataMuridPage> {
                             const SizedBox(width: 26), // Spacing between label and value
                             Expanded(
                               child: Text(
-                                '${student.namaKelas.split(' ').last}', // Display only the class part (e.g., "7A")
-                                style: TextStyle(
+                                student.namaKelas.split(' ').last, // Display only the class part (e.g., "7A")
+                                style: const TextStyle(
                                   fontSize: 16,
                                   color: Colors.black, // Darker grey for better readability
                                 ),
@@ -232,8 +232,8 @@ class _DataMuridPageState extends State<DataMuridPage> {
 
   Widget _buildStudentTile(Student student) {
   return Container(
-    margin: EdgeInsets.symmetric(horizontal: 8, vertical: 8), // Lebih kecil
-    padding: EdgeInsets.all(0), // Lebih kecil
+    margin: const EdgeInsets.symmetric(horizontal: 8, vertical: 8), // Lebih kecil
+    padding: const EdgeInsets.all(0), // Lebih kecil
     decoration: BoxDecoration(
       color: Colors.white,
       borderRadius: BorderRadius.circular(8),
@@ -242,14 +242,14 @@ class _DataMuridPageState extends State<DataMuridPage> {
           color: Colors.grey.shade300,
           spreadRadius: 1, // Lebih kecil
           blurRadius: 6,   // Lebih kecil
-          offset: Offset(0, 3), // Lebih kecil
+          offset: const Offset(0, 3), // Lebih kecil
         ),
       ],
     ),
     child: ListTile(
       title: Text(
         student.name,
-        style: TextStyle(
+        style: const TextStyle(
           fontSize: 14, // Ukuran font lebih kecil
           color: Colors.black,
         ),
@@ -264,7 +264,7 @@ class _DataMuridPageState extends State<DataMuridPage> {
       leading: CircleAvatar(
         radius: 20,  // Ukuran avatar lebih kecil
         backgroundColor: Colors.blue[100],
-        child: Icon(Icons.person, color: Colors.blue, size: 20), // Ikon lebih kecil
+        child: const Icon(Icons.person, color: Colors.blue, size: 20), // Ikon lebih kecil
       ),
       onTap: () {
         _showStudentDetails(student);
@@ -281,7 +281,7 @@ class _DataMuridPageState extends State<DataMuridPage> {
         children: [
           // Loading indicator or student list
           _isLoading
-              ? Center(child: CircularProgressIndicator())
+              ? const Center(child: CircularProgressIndicator())
               : SingleChildScrollView(
                   padding: const EdgeInsets.only(
                       top: 20), // Space for the search field
@@ -297,38 +297,38 @@ class _DataMuridPageState extends State<DataMuridPage> {
                           },
                           decoration: InputDecoration(
                             hintText: 'Cari Berdasarkan Nama atau NIS',
-                            hintStyle: TextStyle(
+                            hintStyle: const TextStyle(
                               color: Colors.blueGrey,
                               fontSize: 12,  // Ukuran font lebih kecil
                             ),
                             border: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(8),
-                              borderSide: BorderSide(
+                              borderSide: const BorderSide(
                                 color: Colors.blue,
                                 width: 1,
                               ),
                             ),
                             focusedBorder: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(8),
-                              borderSide: BorderSide(
+                              borderSide: const BorderSide(
                                 color: Colors.blueAccent,
                                 width: 2,
                               ),
                             ),
                             enabledBorder: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(8),
-                              borderSide: BorderSide(
+                              borderSide: const BorderSide(
                                 color: Colors.blue,
                                 width: 1,
                               ),
                             ),
-                            prefixIcon: Icon(
+                            prefixIcon: const Icon(
                               Icons.search,
                               color: Colors.blue,
                               size: 20,  // Ukuran ikon lebih kecil
                             ),
                             suffixIcon: IconButton(
-                              icon: Icon(
+                              icon: const Icon(
                                 Icons.clear,
                                 color: Colors.blue,
                                 size: 20,  // Ukuran ikon lebih kecil
@@ -349,7 +349,7 @@ class _DataMuridPageState extends State<DataMuridPage> {
                         child: ListView.builder(
                           itemCount: _filteredStudents.length,
                           shrinkWrap: true,
-                          physics: NeverScrollableScrollPhysics(),
+                          physics: const NeverScrollableScrollPhysics(),
                           itemBuilder: (context, index) {
                             return _buildStudentTile(_filteredStudents[index]);
                           },

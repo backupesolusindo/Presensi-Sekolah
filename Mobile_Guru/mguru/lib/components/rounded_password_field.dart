@@ -26,7 +26,7 @@ class _RoundedPasswordField extends State<RoundedPasswordField> {
           keyboardType: TextInputType.visiblePassword,
           decoration: InputDecoration(
             hintText: widget.hintText,
-            icon: Icon(
+            icon: const Icon(
               Icons.lock,
               color: kPrimaryColor,
             ),

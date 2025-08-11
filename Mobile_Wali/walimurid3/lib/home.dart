@@ -11,6 +11,8 @@ import 'bottombar.dart';
 import 'riwayat.dart';
 
 class HomePage extends StatefulWidget {
+  const HomePage({super.key});
+
   @override
   _HomePageState createState() => _HomePageState();
 }
@@ -36,7 +38,7 @@ class _HomePageState extends State<HomePage> {
   Future<void> _initializeLocale() async {
     await initializeDateFormatting('id_ID', null);
     _updateTime();
-    _timer = Timer.periodic(Duration(seconds: 1), (Timer t) {
+    _timer = Timer.periodic(const Duration(seconds: 1), (Timer t) {
       _updateTime();
     });
   }
@@ -117,7 +119,7 @@ class _HomePageState extends State<HomePage> {
     if (index == 1) {
       Navigator.push(
         context,
-        MaterialPageRoute(builder: (context) => RiwayatPage()),
+        MaterialPageRoute(builder: (context) => const RiwayatPage()),
       );
     }
   }
@@ -128,7 +130,7 @@ class _HomePageState extends State<HomePage> {
       body: Stack(
         children: [
           Container(
-            decoration: BoxDecoration(
+            decoration: const BoxDecoration(
               image: DecorationImage(
                 image: AssetImage('assets/walibg.png'),
                 fit: BoxFit.cover,
@@ -142,35 +144,35 @@ class _HomePageState extends State<HomePage> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   _buildProfileCard(),
-                  SizedBox(height: 16),
+                  const SizedBox(height: 16),
                   _buildDropdownSiswa(),
-                  SizedBox(height: 16),
+                  const SizedBox(height: 16),
                   // Membuat Row untuk Card Waktu dan Date
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       _buildInfoCard(
-                          '$_currentTime', Icons.access_time, Colors.white),
+                          _currentTime, Icons.access_time, Colors.white),
                       _buildInfoCard(
-                          '$_currentDate', Icons.calendar_today, Colors.white),
+                          _currentDate, Icons.calendar_today, Colors.white),
                     ],
                   ),
-                  SizedBox(height: 16),
-                  Text(
+                  const SizedBox(height: 16),
+                  const Text(
                     'Menu :',
                     style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
                   ),
-                  SizedBox(height: 8),
+                  const SizedBox(height: 8),
                   _buildMenuPresensi(),
-                  SizedBox(height: 16),
-                  Text(
+                  const SizedBox(height: 16),
+                  const Text(
                     'Fungsi Aplikasi :',
                     style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
                   ),
-                  SizedBox(height: 8),
+                  const SizedBox(height: 8),
                   _buildPresenceStatusCard(
                       'Aplikasi ini bisa Ibu/Bapak gunakan untuk memantau Presensi anak anda'),
-                  SizedBox(height: 16),
+                  const SizedBox(height: 16),
                 ],
               ),
             ),
@@ -187,7 +189,7 @@ class _HomePageState extends State<HomePage> {
   Widget _buildProfileCard() {
     return Column(
       children: [
-        SizedBox(height: 40),
+        const SizedBox(height: 40),
         Card(
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(15.0),
@@ -203,18 +205,18 @@ class _HomePageState extends State<HomePage> {
                   height: 60, // Tinggi gambar
                   decoration: BoxDecoration(
                     borderRadius: BorderRadius.circular(12), // Sudut membulat
-                    image: DecorationImage(
+                    image: const DecorationImage(
                       image: AssetImage('assets/logoSMP.png'), // Ganti dengan gambar profil
                       fit: BoxFit.fill, // Mengisi area tanpa mempertahankan proporsi
                     ),
                   ),
                 ),
-                SizedBox(width: 16),
+                const SizedBox(width: 16),
                 Flexible(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(
+                      const Text(
                         'Selamat Datang :',
                         style: TextStyle(
                           fontSize: 18,
@@ -224,7 +226,7 @@ class _HomePageState extends State<HomePage> {
                       ),
                       Text(
                         namaWali,
-                        style: TextStyle(
+                        style: const TextStyle(
                           fontSize: 16,
                           fontWeight: FontWeight.bold,
                           color: Colors.black,
@@ -256,14 +258,14 @@ class _HomePageState extends State<HomePage> {
         padding: const EdgeInsets.all(16.0),
         child: Row(
           children: [
-            Icon(Icons.face, color: Colors.blueAccent),
-            SizedBox(width: 8),
+            const Icon(Icons.face, color: Colors.blueAccent),
+            const SizedBox(width: 8),
             Expanded(
               child: siswaList.isEmpty
-                  ? Text('Loading...')
+                  ? const Text('Loading...')
                   : DropdownButton<String>(
                       value: selectedSiswa,
-                      hint: Text('Pilih Siswa'),
+                      hint: const Text('Pilih Siswa'),
                       isExpanded: true,
                       items: siswaList.map((siswa) {
                         return DropdownMenuItem<String>(
@@ -301,7 +303,7 @@ class _HomePageState extends State<HomePage> {
         child: Column(
           children: [
             Icon(icon, size: 30, color: Colors.blueAccent),
-            SizedBox(height: 8),
+            const SizedBox(height: 8),
             Text(text, textAlign: TextAlign.center),
           ],
         ),
@@ -327,7 +329,7 @@ class _HomePageState extends State<HomePage> {
               () {
                 Navigator.push(
                   context,
-                  MaterialPageRoute(builder: (context) => RegistrationScreen()),
+                  MaterialPageRoute(builder: (context) => const RegistrationScreen()),
                 );
               },
             ),
@@ -338,7 +340,7 @@ class _HomePageState extends State<HomePage> {
               () {
                 Navigator.push(
                   context,
-                  MaterialPageRoute(builder: (context) => EditPasswordPage()),
+                  MaterialPageRoute(builder: (context) => const EditPasswordPage()),
                 );
               },
             ),
@@ -360,11 +362,11 @@ class _HomePageState extends State<HomePage> {
               backgroundColor: Colors.blueAccent,
               child: Icon(icon, color: Colors.white, size: 18),
             ),
-            SizedBox(height: 8),
+            const SizedBox(height: 8),
             Text(
               label,
               textAlign: TextAlign.center,
-              style: TextStyle(
+              style: const TextStyle(
                 fontSize: 12,
                 fontWeight: FontWeight.bold,
                 color: Colors.black,
@@ -383,7 +385,7 @@ class _HomePageState extends State<HomePage> {
       child: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Center(
-          child: Text(status, style: TextStyle(fontSize: 16)),
+          child: Text(status, style: const TextStyle(fontSize: 16)),
         ),
       ),
     );

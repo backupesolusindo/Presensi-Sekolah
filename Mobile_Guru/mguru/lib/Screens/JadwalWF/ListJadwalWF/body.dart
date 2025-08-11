@@ -21,6 +21,8 @@ import 'package:flutter_svg/svg.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class Body extends StatefulWidget {
+  const Body({super.key});
+
   @override
   _Body createState() => _Body();
 }
@@ -47,7 +49,7 @@ class _Body extends State<Body> {
   List dataTahun = []; //edited line
   Future<String> getTanggal() async {
     print("getJenis");
-    var res = await http.get(Uri.parse(Core().ApiUrl + "JadwalWF/getTanggal"),
+    var res = await http.get(Uri.parse("${Core().ApiUrl}JadwalWF/getTanggal"),
         headers: {"Accept": "application/json"});
     var resBody = json.decode(res.body);
     setState(() {
@@ -63,7 +65,7 @@ class _Body extends State<Body> {
       isLoading = true;
     });
     SharedPreferences prefs = await SharedPreferences.getInstance();
-    var url = Uri.parse(Core().ApiUrl + "JadwalWF/getJadwal");
+    var url = Uri.parse("${Core().ApiUrl}JadwalWF/getJadwal");
     var response = await http.post(url, body: {
       "uuid": prefs.getString("ID"),
       "tahun": _SelecTahun,
@@ -102,31 +104,31 @@ class _Body extends State<Body> {
         filter: Container(
           child: Column(
             children: <Widget>[
-              SizedBox(height: 32),
+              const SizedBox(height: 32),
               Row(
                 crossAxisAlignment: CrossAxisAlignment.center,
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  Container(
+                  SizedBox(
                     width: size.width * 0.35,
                     child: Column(
                       children: [
-                        Container(
+                        SizedBox(
                           width: size.width * 0.45,
-                          child: Text("Pilih Tahun"),
+                          child: const Text("Pilih Tahun"),
                         ),
                         DropdownButton(
-                          hint: Text("Pilih Tahun : "),
+                          hint: const Text("Pilih Tahun : "),
                           dropdownColor: Colors.white,
-                          icon: Icon(Icons.arrow_drop_down),
+                          icon: const Icon(Icons.arrow_drop_down),
                           iconSize: 24,
                           isExpanded: true,
-                          underline: SizedBox(),
-                          style: TextStyle(color: Colors.black, fontSize: 16),
+                          underline: const SizedBox(),
+                          style: const TextStyle(color: Colors.black, fontSize: 16),
                           items: dataTahun.map((item) {
-                            return new DropdownMenuItem(
-                              child: new Text(item['tahun']),
+                            return DropdownMenuItem(
                               value: item['tahun'].toString(),
+                              child: Text(item['tahun']),
                             );
                           }).toList(),
                           onChanged: (newVal) {
@@ -139,27 +141,27 @@ class _Body extends State<Body> {
                       ],
                     ),
                   ),
-                  SizedBox(width: 32),
-                  Container(
+                  const SizedBox(width: 32),
+                  SizedBox(
                     width: size.width * 0.35,
                     child: Column(
                       children: [
-                        Container(
+                        SizedBox(
                           width: size.width * 0.45,
-                          child: Text("Pilih Bulan"),
+                          child: const Text("Pilih Bulan"),
                         ),
                         DropdownButton(
-                          hint: Text("Pilih Bulan : "),
+                          hint: const Text("Pilih Bulan : "),
                           dropdownColor: Colors.white,
-                          icon: Icon(Icons.arrow_drop_down),
+                          icon: const Icon(Icons.arrow_drop_down),
                           iconSize: 24,
                           isExpanded: true,
-                          underline: SizedBox(),
-                          style: TextStyle(color: Colors.black, fontSize: 16),
+                          underline: const SizedBox(),
+                          style: const TextStyle(color: Colors.black, fontSize: 16),
                           items: dataBulan.map((item) {
-                            return new DropdownMenuItem(
-                              child: new Text(item['bulan']),
+                            return DropdownMenuItem(
                               value: item['kode'].toString(),
+                              child: Text(item['bulan']),
                             );
                           }).toList(),
                           onChanged: (newVal) {
@@ -173,7 +175,7 @@ class _Body extends State<Body> {
                     ),
                   ),
                   Container(
-                    margin: EdgeInsets.only(top: 12, right: 6),
+                    margin: const EdgeInsets.only(top: 12, right: 6),
                     width: size.width * 0.15,
                     decoration: BoxDecoration(
                       color: kPrimaryLightColor,
@@ -183,7 +185,7 @@ class _Body extends State<Body> {
                         onPressed: () {
                           fetchJadwal();
                         },
-                        child: Icon(
+                        child: const Icon(
                           Icons.filter_alt_rounded,
                           color: kPrimaryColor,
                         )),
@@ -192,12 +194,12 @@ class _Body extends State<Body> {
               ),
               Container(
                   width: size.width,
-                  margin: EdgeInsets.symmetric(vertical: 8, horizontal: 16),
-                  padding: EdgeInsets.all(16),
+                  margin: const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
+                  padding: const EdgeInsets.all(16),
                   decoration: BoxDecoration(
                       color: Colors.white,
                       borderRadius: BorderRadius.circular(10.0),
-                      boxShadow: [
+                      boxShadow: const [
                         BoxShadow(
                           color: softblue,
                           offset: Offset(1.0, 3), //(x,y)
@@ -208,8 +210,8 @@ class _Body extends State<Body> {
                     crossAxisAlignment: CrossAxisAlignment.center,
                     mainAxisAlignment: MainAxisAlignment.start,
                     children: [
-                      Text("Status Persetujuan :"),
-                      SizedBox(height: 4),
+                      const Text("Status Persetujuan :"),
+                      const SizedBox(height: 4),
                       Text(status_approval,
                           style: TextStyle(
                               color: color,
@@ -229,12 +231,12 @@ class _Body extends State<Body> {
   Widget getBody() {
     Size size = MediaQuery.of(context).size;
     if (jadwal.contains(null) || isLoading) {
-      return Center(
+      return const Center(
           child: CircularProgressIndicator(
-        valueColor: new AlwaysStoppedAnimation<Color>(kPrimaryColor),
+        valueColor: AlwaysStoppedAnimation<Color>(kPrimaryColor),
       ));
     }
-    if (jadwal.length <= 0) {
+    if (jadwal.isEmpty) {
       return Container(
           child: Image.asset(
         "assets/icons/jadwal_kerja.png",
@@ -242,7 +244,7 @@ class _Body extends State<Body> {
       ));
     } else {
       return GridView.builder(
-          gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+          gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
               crossAxisCount: 7, mainAxisSpacing: 16, crossAxisSpacing: 4),
           itemCount: jadwal.length,
           itemBuilder: (context, index) {
@@ -267,7 +269,7 @@ class _Body extends State<Body> {
                       : (item["kode_jenis"] == "2")
                           ? CSuccess
                           : softblue,
-              offset: Offset(1.0, 3), //(x,y)
+              offset: const Offset(1.0, 3), //(x,y)
               blurRadius: 5.0,
             ),
           ]),
@@ -284,16 +286,16 @@ class _Body extends State<Body> {
           children: <Widget>[
             Text(
               item["jenis_kerja"],
-              style: TextStyle(fontSize: 8, fontWeight: FontWeight.w700),
+              style: const TextStyle(fontSize: 8, fontWeight: FontWeight.w700),
             ),
-            SizedBox(height: 2),
+            const SizedBox(height: 2),
             Text(
               item["tanggal"].toString(),
-              style: TextStyle(fontSize: 14, fontWeight: FontWeight.w800),
+              style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w800),
             ),
             Text(
               item["hari"],
-              style: TextStyle(fontSize: 10, fontWeight: FontWeight.w400),
+              style: const TextStyle(fontSize: 10, fontWeight: FontWeight.w400),
             ),
           ],
         ),
@@ -309,19 +311,17 @@ class _Body extends State<Body> {
         return BackdropFilter(
           filter: ImageFilter.blur(sigmaX: 6, sigmaY: 6),
           child: AlertDialog(
-            title: Text("Approval Kegiatan"),
+            title: const Text("Approval Kegiatan"),
             content: SingleChildScrollView(
               child: ListBody(
                 children: <Widget>[
-                  Text("Pilih Jadwal Kerja Anda Pada Tanggal : " +
-                      Tanggal +
-                      "?"),
+                  Text("Pilih Jadwal Kerja Anda Pada Tanggal : $Tanggal?"),
                 ],
               ),
             ),
             actions: <Widget>[
               TextButton(
-                child: Text('WFH'),
+                child: const Text('WFH'),
                 onPressed: () {
                   JadwalWFPost.connectToApi(Tanggal, UUID, "2")
                       .then((value) {});
@@ -332,7 +332,7 @@ class _Body extends State<Body> {
                 },
               ),
               TextButton(
-                child: Text('WFO'),
+                child: const Text('WFO'),
                 onPressed: () {
                   JadwalWFPost.connectToApi(Tanggal, UUID, "1")
                       .then((value) {});

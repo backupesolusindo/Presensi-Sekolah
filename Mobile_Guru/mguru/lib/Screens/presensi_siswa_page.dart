@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'dart:convert';
 import 'package:http/http.dart' as http;
-import 'riwayat_siswa_page.dart';
 import 'data_murid_page.dart';
 import 'package:mobile_presensi_kdtg/core.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -98,7 +97,7 @@ class _PresensiSiswaPageState extends State<PresensiSiswaPage> {
 
   Future<void> _fetchStudents() async {
     var url = Uri.parse(
-        Core().ApiUrl + "ApiSiswa/Siswa/getSiswabykelas/${widget.idKelas}");
+        "${Core().ApiUrl}ApiSiswa/Siswa/getSiswabykelas/${widget.idKelas}");
 
     print("Fetching students from URL: $url"); // Log the URL being fetched
 
@@ -160,7 +159,7 @@ class _PresensiSiswaPageState extends State<PresensiSiswaPage> {
                   semanticLabel: 'Error Icon', // Accessibility
                 ),
                 const SizedBox(height: 20), // Space between icon and text
-                Text(
+                const Text(
                   'Error',
                   style: TextStyle(
                     fontSize: 24, // Title font size
@@ -203,7 +202,7 @@ class _PresensiSiswaPageState extends State<PresensiSiswaPage> {
       appBar: AppBar(
         title: Text(
           _selectedIndex == 0 ? 'Presensi Siswa' : 'Data Murid', // Title changes based on selected page
-          style: TextStyle(
+          style: const TextStyle(
             fontWeight: FontWeight.bold,
             color: Colors.white,
           ),
@@ -230,7 +229,7 @@ class _PresensiSiswaPageState extends State<PresensiSiswaPage> {
           // ),
           // Main content
           _isLoading
-              ? Center(
+              ? const Center(
                   child: CircularProgressIndicator(),
                 )
               : _getSelectedPage(),
@@ -282,11 +281,11 @@ class _PresensiSiswaPageState extends State<PresensiSiswaPage> {
             spreadRadius: 2, // Controls how much the shadow spreads
             blurRadius: 8, // Higher value for smooth shadow
             offset:
-                Offset(0, 4), // Offset for vertical shadow, adjust as needed
+                const Offset(0, 4), // Offset for vertical shadow, adjust as needed
           ),
         ],
       ),
-      margin: EdgeInsets.symmetric(horizontal: 8, vertical: 16),
+      margin: const EdgeInsets.symmetric(horizontal: 8, vertical: 16),
       child: Padding(
         padding: const EdgeInsets.symmetric(
             horizontal: 12.0, vertical: 8.0), // Reduced padding
@@ -344,7 +343,6 @@ class _PresensiSiswaPageState extends State<PresensiSiswaPage> {
             // Submit Button
             ElevatedButton(
               onPressed: _submitAttendance,
-              child: const Text('Submit'),
               style: ElevatedButton.styleFrom(
                 padding: const EdgeInsets.symmetric(
                     horizontal: 16, vertical: 8), // Reduced padding
@@ -360,6 +358,7 @@ class _PresensiSiswaPageState extends State<PresensiSiswaPage> {
                 ),
                 elevation: 2, // Reduced elevation for the button
               ),
+              child: const Text('Submit'),
             ),
           ],
         ),
@@ -369,14 +368,14 @@ class _PresensiSiswaPageState extends State<PresensiSiswaPage> {
 
   Widget _buildStudentGrid() {
     if (_isLoading) {
-      return Center(child: CircularProgressIndicator());
+      return const Center(child: CircularProgressIndicator());
     }
 
     return GridView.builder(
       padding: EdgeInsets.zero,
       shrinkWrap: true, // GridView akan menyusut sesuai isi
       physics:
-          NeverScrollableScrollPhysics(), // Disable scroll GridView karena sudah dalam SingleChildScrollView
+          const NeverScrollableScrollPhysics(), // Disable scroll GridView karena sudah dalam SingleChildScrollView
       gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
         crossAxisCount: 3,
         childAspectRatio: 0.7,
@@ -396,7 +395,7 @@ class _PresensiSiswaPageState extends State<PresensiSiswaPage> {
             color: Colors.grey.shade300, // Soft grey shadow with transparency
             spreadRadius: 2, // Controls how much the shadow spreads
             blurRadius: 8, // Higher value for smooth shadow
-            offset: Offset(0, 4), // Offset for vertical shadow
+            offset: const Offset(0, 4), // Offset for vertical shadow
           ),
         ],
       ),
@@ -453,7 +452,7 @@ class _PresensiSiswaPageState extends State<PresensiSiswaPage> {
                   height: 20, // Fixed height for circular checkbox
                   alignment: Alignment.center, // Center the icon
                   child: _hadirList[index]
-                      ? Icon(
+                      ? const Icon(
                           Icons.check,
                           color: Colors.white, // Check icon color
                           size: 18, // Adjust the icon size for better fit
@@ -474,11 +473,6 @@ class _PresensiSiswaPageState extends State<PresensiSiswaPage> {
     // Get NIP from SharedPreferences
     String? NIP = prefs.getString("NIP");
     print("Attempting to retrieve NIP from SharedPreferences...");
-
-    if (NIP == null) {
-      print("NIP not found in SharedPreferences");
-      return; // Handle the case as needed
-    }
 
     print("Retrieved NIP: $NIP");
     List<Map<String, dynamic>> attendanceData = [];
@@ -519,7 +513,7 @@ class _PresensiSiswaPageState extends State<PresensiSiswaPage> {
     print("Presensi Data to be sent: ${jsonEncode(presensiData)}");
 
     var url = Uri.parse(
-        Core().ApiUrl + "ApiPresensi/ApiPresensi/storePresensiGdanS/");
+        "${Core().ApiUrl}ApiPresensi/ApiPresensi/storePresensiGdanS/");
     print("API URL: $url");
 
     try {
@@ -566,7 +560,7 @@ class _PresensiSiswaPageState extends State<PresensiSiswaPage> {
                   size: 60, // Icon size
                 ),
                 const SizedBox(height: 20), // Space between icon and text
-                Text(
+                const Text(
                   'Success',
                   style: TextStyle(
                     fontSize: 24, // Title font size
@@ -614,7 +608,7 @@ class _PresensiSiswaPageState extends State<PresensiSiswaPage> {
             spreadRadius: 2, // Controls how much the shadow spreads
             blurRadius: 8, // Higher value for smooth shadow
             offset:
-                Offset(0, 4), // Offset for vertical shadow, adjust as needed
+                const Offset(0, 4), // Offset for vertical shadow, adjust as needed
           ),
         ],
       ),
@@ -671,11 +665,11 @@ class _PresensiSiswaPageState extends State<PresensiSiswaPage> {
                           isGuruHadir == 1 ? 0 : 1; // Switch between 0 and 1
                     });
                   },
-                  child: Row(
+                  child: const Row(
                     children: [
                       Icon(Icons.person,
                           color: Colors.green), // Icon for teacher
-                      const SizedBox(width: 8), // Space between icon and text
+                      SizedBox(width: 8), // Space between icon and text
                       Text(
                         'Presensi Guru:',
                         style: TextStyle(
@@ -708,7 +702,7 @@ class _PresensiSiswaPageState extends State<PresensiSiswaPage> {
                     height: 24, // Slightly larger for easier interaction
                     alignment: Alignment.center, // Center the icon
                     child: isGuruHadir == 1
-                        ? Icon(
+                        ? const Icon(
                             Icons.check,
                             color: Colors.white, // Check icon color
                             size: 16, // Adjust the icon size for better fit

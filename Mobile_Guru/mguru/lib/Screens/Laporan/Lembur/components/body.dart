@@ -13,6 +13,8 @@ import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 
 class Body extends StatefulWidget {
+  const Body({super.key});
+
   @override
   _Body createState() => _Body();
 }
@@ -38,7 +40,7 @@ class _Body extends State<Body> {
       isLoading = true;
     });
     SharedPreferences prefs = await SharedPreferences.getInstance();
-    var url = Uri.parse(Core().ApiUrl + "RiwayatAbsen/laporan_lembur");
+    var url = Uri.parse("${Core().ApiUrl}RiwayatAbsen/laporan_lembur");
     var response = await http.post(url, body: {
       "uuid": prefs.getString("ID"),
       "status": warnaPilih,
@@ -80,7 +82,7 @@ class _Body extends State<Body> {
                     IdCon: txtTanggalAkhir,
                   ),
                   Container(
-                    margin: EdgeInsets.only(top: 12, right: 6),
+                    margin: const EdgeInsets.only(top: 12, right: 6),
                     width: size.width * 0.15,
                     decoration: BoxDecoration(
                       color: kPrimaryLightColor,
@@ -90,14 +92,14 @@ class _Body extends State<Body> {
                         onPressed: () {
                           fetchUser();
                         },
-                        child: Icon(
+                        child: const Icon(
                           Icons.filter_alt_rounded,
                           color: kPrimaryColor,
                         )),
                   )
                 ],
               ),
-              SizedBox(height: 16),
+              const SizedBox(height: 16),
               SingleChildScrollView(
                 scrollDirection: Axis.horizontal,
                 child: Row(
@@ -105,7 +107,7 @@ class _Body extends State<Body> {
                     children: <Widget>[
                       Container(
                         margin:
-                            EdgeInsets.symmetric(vertical: 0, horizontal: 8),
+                            const EdgeInsets.symmetric(vertical: 0, horizontal: 8),
                         width: size.width * 0.3,
                         height: size.height * 0.05,
                         child: ClipRRect(
@@ -117,7 +119,7 @@ class _Body extends State<Body> {
                               warnaPilih = "";
                               fetchUser();
                             },
-                            child: Text(
+                            child: const Text(
                               "Semua",
                               style: TextStyle(color: Colors.white),
                             ),
@@ -126,7 +128,7 @@ class _Body extends State<Body> {
                       ),
                       Container(
                         margin:
-                            EdgeInsets.symmetric(vertical: 0, horizontal: 1),
+                            const EdgeInsets.symmetric(vertical: 0, horizontal: 1),
                         child: ClipRRect(
                           borderRadius: BorderRadius.circular(30),
                           child: TextButton(
@@ -138,7 +140,7 @@ class _Body extends State<Body> {
                                 fetchUser();
                               });
                             },
-                            child: Text(
+                            child: const Text(
                               "Diterima",
                               style: TextStyle(color: kPrimaryColor),
                             ),
@@ -147,7 +149,7 @@ class _Body extends State<Body> {
                       ),
                       Container(
                         margin:
-                            EdgeInsets.symmetric(vertical: 0, horizontal: 1),
+                            const EdgeInsets.symmetric(vertical: 0, horizontal: 1),
                         child: ClipRRect(
                           borderRadius: BorderRadius.circular(30),
                           child: TextButton(
@@ -160,7 +162,7 @@ class _Body extends State<Body> {
                                 fetchUser();
                               });
                             },
-                            child: Text(
+                            child: const Text(
                               "Ditolak",
                               style: TextStyle(color: kPrimaryColor),
                             ),
@@ -169,7 +171,7 @@ class _Body extends State<Body> {
                       ),
                       Container(
                         margin:
-                            EdgeInsets.symmetric(vertical: 0, horizontal: 1),
+                            const EdgeInsets.symmetric(vertical: 0, horizontal: 1),
                         child: ClipRRect(
                           borderRadius: BorderRadius.circular(30),
                           child: TextButton(
@@ -182,7 +184,7 @@ class _Body extends State<Body> {
                                 fetchUser();
                               });
                             },
-                            child: Text(
+                            child: const Text(
                               "Menunggu Respon",
                               style: TextStyle(color: kPrimaryColor),
                             ),
@@ -202,12 +204,12 @@ class _Body extends State<Body> {
   Widget getBody() {
     Size size = MediaQuery.of(context).size;
     if (users.contains(null) || isLoading) {
-      return Center(
+      return const Center(
           child: CircularProgressIndicator(
-        valueColor: new AlwaysStoppedAnimation<Color>(kPrimaryColor),
+        valueColor: AlwaysStoppedAnimation<Color>(kPrimaryColor),
       ));
     }
-    if (users.length <= 0) {
+    if (users.isEmpty) {
       return Container(
           child: Image.asset(
         "assets/ilustrasi/laporankegiatan.png",
@@ -238,7 +240,7 @@ class _Body extends State<Body> {
                   : (item['status_aproval'] == "2")
                       ? Colors.redAccent.withOpacity(0.2)
                       : Colors.deepOrange.withOpacity(0.4),
-              offset: Offset(1.0, 3), //(x,y)
+              offset: const Offset(1.0, 3), //(x,y)
               blurRadius: 5.0,
             ),
           ]),
@@ -252,7 +254,7 @@ class _Body extends State<Body> {
                 Column(children: [
                   // (_image == null) ?
                   Container(
-                    margin: EdgeInsets.only(right: 8.0, top: 8.0),
+                    margin: const EdgeInsets.only(right: 8.0, top: 8.0),
                     height: 60,
                     width: 60,
                     decoration: BoxDecoration(
@@ -261,7 +263,7 @@ class _Body extends State<Body> {
                           image: NetworkImage(Core().Url + item["foto"])),
                     ),
                   ),
-                  SizedBox(
+                  const SizedBox(
                     height: 10,
                   ),
                   // Row(
@@ -284,7 +286,7 @@ class _Body extends State<Body> {
                 ]),
                 Padding(
                   padding:
-                      EdgeInsets.only(left: 25, bottom: 5, top: 15, right: 0),
+                      const EdgeInsets.only(left: 25, bottom: 5, top: 15, right: 0),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: <Widget>[
@@ -293,16 +295,16 @@ class _Body extends State<Body> {
                               color: kPrimaryColor,
                               fontSize: 14,
                               fontWeight: FontWeight.w800)),
-                      SizedBox(
+                      const SizedBox(
                         height: 4,
                       ),
                       Row(
                         children: <Widget>[
-                          Container(
+                          SizedBox(
                               width: size.width * 0.21,
-                              child: Text("Unit",
-                                  style: const TextStyle(fontSize: 12))),
-                          Container(
+                              child: const Text("Unit",
+                                  style: TextStyle(fontSize: 12))),
+                          SizedBox(
                               width: size.width * 0.37,
                               child: Text(": " + item['lembur']['nama_unit'],
                                   style: const TextStyle(fontSize: 12)))
@@ -310,11 +312,11 @@ class _Body extends State<Body> {
                       ),
                       Row(
                         children: <Widget>[
-                          Container(
+                          SizedBox(
                               width: size.width * 0.21,
-                              child: Text("Tanggal",
-                                  style: const TextStyle(fontSize: 12))),
-                          Container(
+                              child: const Text("Tanggal",
+                                  style: TextStyle(fontSize: 12))),
+                          SizedBox(
                               width: size.width * 0.37,
                               child: Text(": " + item['tgl_presensi'],
                                   style: const TextStyle(fontSize: 12)))
@@ -322,11 +324,11 @@ class _Body extends State<Body> {
                       ),
                       Row(
                         children: <Widget>[
-                          Container(
+                          SizedBox(
                               width: size.width * 0.21,
-                              child: Text("Jam Mulai",
-                                  style: const TextStyle(fontSize: 12))),
-                          Container(
+                              child: const Text("Jam Mulai",
+                                  style: TextStyle(fontSize: 12))),
+                          SizedBox(
                               width: size.width * 0.37,
                               child: Text(": " + item['jam_presensi'],
                                   style: const TextStyle(fontSize: 12)))
@@ -335,11 +337,11 @@ class _Body extends State<Body> {
                       if (item['jam_presensi_selesai'] != null)
                         Row(
                           children: <Widget>[
-                            Container(
+                            SizedBox(
                                 width: size.width * 0.21,
-                                child: Text("Jam Selesai",
-                                    style: const TextStyle(fontSize: 12))),
-                            Container(
+                                child: const Text("Jam Selesai",
+                                    style: TextStyle(fontSize: 12))),
+                            SizedBox(
                                 width: size.width * 0.37,
                                 child: Text(": " + item['jam_presensi_selesai'],
                                     style: const TextStyle(fontSize: 12)))
@@ -348,11 +350,11 @@ class _Body extends State<Body> {
                       if (item['jam_presensi_selesai'] != null)
                         Row(
                           children: <Widget>[
-                            Container(
+                            SizedBox(
                                 width: size.width * 0.21,
-                                child: Text("Total Jam",
-                                    style: const TextStyle(fontSize: 12))),
-                            Container(
+                                child: const Text("Total Jam",
+                                    style: TextStyle(fontSize: 12))),
+                            SizedBox(
                                 width: size.width * 0.37,
                                 child: Text(": " + item['total_jam'],
                                     style: const TextStyle(fontSize: 12)))
@@ -361,23 +363,23 @@ class _Body extends State<Body> {
                       if (item['jam_presensi_selesai'] == null)
                         Row(
                           children: <Widget>[
-                            Container(
+                            SizedBox(
                                 width: size.width * 0.21,
-                                child: Text("Jam Selesai",
-                                    style: const TextStyle(fontSize: 12))),
-                            Container(
+                                child: const Text("Jam Selesai",
+                                    style: TextStyle(fontSize: 12))),
+                            SizedBox(
                                 width: size.width * 0.37,
-                                child: Text(": Belum Presensi",
-                                    style: const TextStyle(fontSize: 12)))
+                                child: const Text(": Belum Presensi",
+                                    style: TextStyle(fontSize: 12)))
                           ],
                         ),
-                      SizedBox(
+                      const SizedBox(
                         height: 8,
                       ),
                       Container(
                         width: 90.0,
                         height: 35.0,
-                        margin: EdgeInsets.only(left: 140),
+                        margin: const EdgeInsets.only(left: 140),
                         decoration: BoxDecoration(
                           color: (item['status_aproval'] == "1")
                               ? softblue
@@ -409,7 +411,7 @@ class _Body extends State<Body> {
                 ),
               ],
             ),
-            SizedBox(height: 16)
+            const SizedBox(height: 16)
           ],
         ),
       ),

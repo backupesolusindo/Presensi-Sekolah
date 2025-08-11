@@ -1,7 +1,6 @@
 import 'dart:convert';
 import 'dart:io';
 import 'dart:math';
-import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:image/image.dart' as img;
 import 'package:google_mlkit_face_detection/google_mlkit_face_detection.dart';
@@ -12,7 +11,7 @@ import 'ML/Recognition.dart';
 import 'ML/Recognizer.dart';
 
 class RecognitionScreen extends StatefulWidget {
-  const RecognitionScreen({Key? key}) : super(key: key);
+  const RecognitionScreen({super.key});
 
   @override
   State<RecognitionScreen> createState() => _RecognitionScreenState();
@@ -121,13 +120,13 @@ class _RecognitionScreenState extends State<RecognitionScreen> {
           builder: (ctx) => AlertDialog(
             shape:
                 RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-            title: Column(
+            title: const Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                const Icon(Icons.error_outline,
+                Icon(Icons.error_outline,
                     color: Colors.red, size: 80), // Ikon X merah besar
-                const SizedBox(height: 10),
-                const Text(
+                SizedBox(height: 10),
+                Text(
                   "Wajah Tidak Terdeteksi",
                   style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
                   textAlign: TextAlign.center,
@@ -270,7 +269,7 @@ class _RecognitionScreenState extends State<RecognitionScreen> {
         print("Wajah dikenali: $recognizedName");
 
         // Lanjutkan dengan proses absen
-        final url =
+        const url =
             'https://presensi-smp1.esolusindo.com/Api/ApiGerbang/Gerbang/uploadAbsen';
 
         final response = await http.post(
@@ -325,10 +324,10 @@ class _RecognitionScreenState extends State<RecognitionScreen> {
       title: Row(
         children: [
           Icon(icon, color: iconColor),
-          SizedBox(width: 10),
+          const SizedBox(width: 10),
           Text(
             title,
-            style: TextStyle(
+            style: const TextStyle(
               color: Colors.black,
               fontWeight: FontWeight.bold,
             ),
@@ -337,7 +336,7 @@ class _RecognitionScreenState extends State<RecognitionScreen> {
       ),
       content: Text(
         message,
-        style: TextStyle(
+        style: const TextStyle(
           color: Colors.black54,
         ),
       ),
@@ -361,14 +360,14 @@ class _RecognitionScreenState extends State<RecognitionScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: PreferredSize(
-        preferredSize: Size.fromHeight(kToolbarHeight),
+        preferredSize: const Size.fromHeight(kToolbarHeight),
         child: ClipRRect(
-          borderRadius: BorderRadius.vertical(
+          borderRadius: const BorderRadius.vertical(
             bottom:
                 Radius.circular(16), // Menentukan seberapa tumpul sudut bawah
           ),
           child: AppBar(
-            title: Text(
+            title: const Text(
               'Presensi Wajah',
               style: TextStyle(
                   color: Colors.white), // Ubah warna teks menjadi putih
@@ -476,7 +475,7 @@ class _RecognitionScreenState extends State<RecognitionScreen> {
                 ),
               ),
             ),
-          SizedBox(height: 20),
+          const SizedBox(height: 20),
           if (showPreview)
             Row(
               mainAxisAlignment:
@@ -490,25 +489,25 @@ class _RecognitionScreenState extends State<RecognitionScreen> {
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(20),
                     ),
-                    padding: EdgeInsets.symmetric(
+                    padding: const EdgeInsets.symmetric(
                         horizontal: 20,
                         vertical:
                             12), // Tambahkan padding untuk menyesuaikan ukuran tombol
                   ),
-                  child: Row(
+                  child: const Row(
                     mainAxisSize: MainAxisSize
                         .min, // Sesuaikan ukuran tombol dengan konten
                     children: [
                       Icon(Icons.camera_alt), // Ikon kamera
-                      const SizedBox(width: 8), // Jarak antara ikon dan teks
-                      const Text('Ambil Gambar'),
+                      SizedBox(width: 8), // Jarak antara ikon dan teks
+                      Text('Ambil Gambar'),
                     ],
                   ),
                 ),
 
                 const SizedBox(width: 10), // Jarak antara dua tombol
                 IconButton(
-                  icon: Icon(Icons.cameraswitch),
+                  icon: const Icon(Icons.cameraswitch),
                   onPressed: () async {
                     setState(() {
                       isFrontCamera =
@@ -531,32 +530,32 @@ class _RecognitionScreenState extends State<RecognitionScreen> {
                       showPreview = true; // Kembali ke tampilan preview kamera
                     });
                   },
-                  child: const Text('Ambil Ulang'),
                   style: ElevatedButton.styleFrom(
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(15),
                     ),
-                    padding: EdgeInsets.symmetric(horizontal: 20, vertical: 0),
+                    padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 0),
                   ),
+                  child: const Text('Ambil Ulang'),
                 ),
-                SizedBox(width: 20), // Spasi di antara tombol
+                const SizedBox(width: 20), // Spasi di antara tombol
                 ElevatedButton(
                   onPressed: () async {
                     await verifyAttendance(); // Mengirim data untuk verifikasi absen
                   },
-                  child: const Text('Verifikasi Kehadiran'),
                   style: ElevatedButton.styleFrom(
                     foregroundColor: Colors.white,
                     backgroundColor: Colors.green, // Teks berwarna putih
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(15),
                     ),
-                    padding: EdgeInsets.symmetric(horizontal: 20, vertical: 0),
+                    padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 0),
                   ),
+                  child: const Text('Verifikasi Kehadiran'),
                 ),
               ],
             ),
-          SizedBox(height: 20),
+          const SizedBox(height: 20),
         ],
       ),
     );
@@ -618,7 +617,7 @@ class FacePainter extends CustomPainter {
   // Custom method to draw text with background
   void _drawTextWithBackground(Canvas canvas, String text, double x, double y) {
     TextSpan span = TextSpan(
-      style: TextStyle(
+      style: const TextStyle(
           color: Colors.black, fontSize: 30, fontWeight: FontWeight.bold),
       text: text,
     );

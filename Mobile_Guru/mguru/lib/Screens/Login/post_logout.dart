@@ -1,6 +1,5 @@
 import 'dart:convert';
 
-import 'package:flutter/material.dart';
 import 'package:mobile_presensi_kdtg/core.dart';
 import 'package:http/http.dart' as http;
 
@@ -26,7 +25,7 @@ class PostLogout {
   }
 
   static Future<PostLogout?> connectToApi(String uuid) async {
-    var url = Uri.parse(Core().ApiUrl + "Login/aksi_logout");
+    var url = Uri.parse("${Core().ApiUrl}Login/aksi_logout");
     var apiResult = await http.post(url, body: {
       "uuid": uuid,
     });

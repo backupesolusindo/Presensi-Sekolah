@@ -1,17 +1,16 @@
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
-import 'package:mobile_presensi_kdtg/config/styles.dart';
 
 class CovidBarChart extends StatelessWidget {
   final List<double> covidCases;
 
-  const CovidBarChart({required this.covidCases});
+  const CovidBarChart({super.key, required this.covidCases});
 
   @override
   Widget build(BuildContext context) {
     return Container(
       height: 350.0,
-      decoration: BoxDecoration(
+      decoration: const BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.only(
           topLeft: Radius.circular(20.0),
@@ -23,15 +22,15 @@ class CovidBarChart extends StatelessWidget {
           Container(
             padding: const EdgeInsets.all(20.0),
             alignment: Alignment.centerLeft,
-            child: Text(
+            child: const Text(
               'Daily New Cases',
-              style: const TextStyle(
+              style: TextStyle(
                 fontSize: 22.0,
                 fontWeight: FontWeight.bold,
               ),
             ),
           ),
-          Container(
+          SizedBox(
             width: MediaQuery.of(context).size.width * 0.85,
             height: MediaQuery.of(context).size.width * 0.6,
             child: BarChart(
@@ -83,7 +82,7 @@ class CovidBarChart extends StatelessWidget {
                 gridData: FlGridData(
                   show: true,
                   checkToShowHorizontalLine: (value) => value % 3 == 0,
-                  getDrawingHorizontalLine: (value) => FlLine(
+                  getDrawingHorizontalLine: (value) => const FlLine(
                     color: Colors.black12,
                     strokeWidth: 1.0,
                     dashArray: [5],

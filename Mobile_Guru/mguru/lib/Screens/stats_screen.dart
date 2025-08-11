@@ -7,6 +7,8 @@ import 'package:mobile_presensi_kdtg/data/data.dart';
 import 'package:mobile_presensi_kdtg/widgets/widgets.dart';
 
 class StatsScreen extends StatefulWidget {
+  const StatsScreen({super.key});
+
   @override
   _StatsScreenState createState() => _StatsScreenState();
 }
@@ -28,11 +30,11 @@ class _StatsScreenState extends State<StatsScreen> {
               ),
             ),
             CustomScrollView(
-              physics: ClampingScrollPhysics(),
+              physics: const ClampingScrollPhysics(),
               slivers: <Widget>[
                 _buildHeader(),
-                SliverPadding(
-                  padding: const EdgeInsets.symmetric(horizontal: 10.0),
+                const SliverPadding(
+                  padding: EdgeInsets.symmetric(horizontal: 10.0),
                   sliver: SliverToBoxAdapter(
                     child: StatsGrid(), // Replace with your actual StatsGrid widget
                   ),
@@ -65,12 +67,12 @@ class _StatsScreenState extends State<StatsScreen> {
             spreadRadius: 2, // Controls how much the shadow spreads
             blurRadius: 8, // Higher value for smooth shadow
             offset:
-                Offset(0, 4), // Offset for vertical shadow, adjust as needed
+                const Offset(0, 4), // Offset for vertical shadow, adjust as needed
           ),
         ],
       ),
-          child: Padding(
-            padding: const EdgeInsets.all(16.0),
+          child: const Padding(
+            padding: EdgeInsets.all(16.0),
             child: Text(
               'Statistik Presensi',
               style: TextStyle(

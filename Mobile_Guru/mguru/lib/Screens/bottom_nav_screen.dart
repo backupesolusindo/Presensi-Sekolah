@@ -3,17 +3,19 @@ import 'package:mobile_presensi_kdtg/Screens/Profil/profil_user.dart';
 import 'package:mobile_presensi_kdtg/screens/screens.dart';
 
 class BottomNavScreen extends StatefulWidget {
+  const BottomNavScreen({super.key});
+
   @override
   _BottomNavScreenState createState() => _BottomNavScreenState();
 }
 
 class _BottomNavScreenState extends State<BottomNavScreen> {
   final List _screens = [
-    HomeScreen(),
-    StatsScreen(),
-    ProfilUser(),
-    Scaffold(),
-    Scaffold(),
+    const HomeScreen(),
+    const StatsScreen(),
+    const ProfilUser(),
+    const Scaffold(),
+    const Scaffold(),
   ];
   int _currentIndex = 0;
 

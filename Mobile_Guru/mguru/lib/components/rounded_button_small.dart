@@ -21,7 +21,7 @@ class RoundedButtonSmall extends StatelessWidget {
     return TextButton(
       onPressed: press as void Function()?,
       child: Container(
-        padding: EdgeInsets.symmetric(vertical: 10, horizontal: 10),
+        padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 10),
         width: width,
         alignment: Alignment.center,
         decoration: BoxDecoration(
@@ -31,7 +31,7 @@ class RoundedButtonSmall extends StatelessWidget {
             BoxShadow(
               color: color,
               blurRadius: 4,
-              offset: Offset(2, 4), // Shadow position
+              offset: const Offset(2, 4), // Shadow position
             ),
           ],
         ),

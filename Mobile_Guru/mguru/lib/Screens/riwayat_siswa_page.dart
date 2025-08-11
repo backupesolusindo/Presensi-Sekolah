@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 
 class RiwayatSiswaPage extends StatefulWidget {
+  const RiwayatSiswaPage({super.key});
+
   @override
   _RiwayatSiswaPageState createState() => _RiwayatSiswaPageState();
 }
@@ -18,7 +20,7 @@ class _RiwayatSiswaPageState extends State<RiwayatSiswaPage> {
 
   Future<void> _fetchData() async {
     // Simulating a network call with a delay
-    await Future.delayed(Duration(seconds: 1));
+    await Future.delayed(const Duration(seconds: 1));
     setState(() {
       _isLoading = false; // Set loading to false after fetching data
     });
@@ -33,7 +35,7 @@ class _RiwayatSiswaPageState extends State<RiwayatSiswaPage> {
           children: [
             // Background image with overlay
             Container(
-              decoration: BoxDecoration(
+              decoration: const BoxDecoration(
                 image: DecorationImage(
                   image: AssetImage(
                       'assets/images/WaliRename.png'), // Ensure the image path is correct
@@ -69,7 +71,7 @@ class _RiwayatSiswaPageState extends State<RiwayatSiswaPage> {
                           borderRadius: BorderRadius.circular(
                               15), // Ensures the corners are rounded
                         ),
-                        child: Text(
+                        child: const Text(
                           'Riwayat Presensi Siswa',
                           style: TextStyle(
                             fontSize: 16, // Increased font size
@@ -80,10 +82,10 @@ class _RiwayatSiswaPageState extends State<RiwayatSiswaPage> {
                       ),
                     ),
                   ),
-                  SizedBox(height: 10),
+                  const SizedBox(height: 10),
                   // Filter buttons with cleaner layout
                   Container(
-                    padding: EdgeInsets.symmetric(vertical: 8.0),
+                    padding: const EdgeInsets.symmetric(vertical: 8.0),
                     child: Wrap(
                       spacing: 12.0, // Space between buttons horizontally
                       runSpacing: 12.0, // Space between rows of buttons
@@ -119,10 +121,10 @@ class _RiwayatSiswaPageState extends State<RiwayatSiswaPage> {
                       ],
                     ),
                   ),
-                  SizedBox(height: 10),
+                  const SizedBox(height: 10),
 
                   // Loading Indicator
-                  if (_isLoading) Center(child: CircularProgressIndicator()),
+                  if (_isLoading) const Center(child: CircularProgressIndicator()),
                   if (!_isLoading)
                     // Attendance history list
                     Expanded(
@@ -140,7 +142,7 @@ class _RiwayatSiswaPageState extends State<RiwayatSiswaPage> {
                           // Apply the filter logic to show only relevant records
                           if (selectedFilter != 'Semua' &&
                               selectedFilter != status) {
-                            return SizedBox
+                            return const SizedBox
                                 .shrink(); // Hide entries not matching the filter
                           }
 
@@ -172,29 +174,29 @@ class _RiwayatSiswaPageState extends State<RiwayatSiswaPage> {
                                           color: Colors.grey[800],
                                         ),
                                       ),
-                                      Divider(color: Colors.grey),
-                                      SizedBox(height: 8),
+                                      const Divider(color: Colors.grey),
+                                      const SizedBox(height: 8),
                                       Column(
                                         crossAxisAlignment:
                                             CrossAxisAlignment.start,
                                         children: [
                                           Text(
                                             'Nama Murid: Siswa ${index + 1}', // Student name example
-                                            style: TextStyle(
+                                            style: const TextStyle(
                                               fontSize: 14,
                                               fontWeight: FontWeight.bold,
                                               color: Colors.black,
                                             ),
                                           ),
-                                          SizedBox(height: 4),
-                                          Text(
+                                          const SizedBox(height: 4),
+                                          const Text(
                                             'Kelas: 10A',
                                             style: TextStyle(
                                               fontSize: 14,
                                               color: Colors.black,
                                             ),
                                           ),
-                                          SizedBox(height: 8),
+                                          const SizedBox(height: 8),
                                           Row(
                                             mainAxisAlignment:
                                                 MainAxisAlignment.spaceBetween,
@@ -249,7 +251,7 @@ class FilterButton extends StatelessWidget {
   final bool isSelected;
   final VoidCallback onTap;
 
-  const FilterButton({
+  const FilterButton({super.key, 
     required this.label,
     required this.isSelected,
     required this.onTap,
@@ -260,7 +262,7 @@ class FilterButton extends StatelessWidget {
     return GestureDetector(
       onTap: onTap,
       child: Container(
-        padding: EdgeInsets.symmetric(vertical: 10.0, horizontal: 20.0),
+        padding: const EdgeInsets.symmetric(vertical: 10.0, horizontal: 20.0),
         decoration: BoxDecoration(
           color: isSelected ? Colors.blue : Colors.grey[300],
           borderRadius: BorderRadius.circular(8.0),
@@ -270,7 +272,7 @@ class FilterButton extends StatelessWidget {
                     color: Colors.black.withOpacity(0.3), // Shadow color
                     spreadRadius: 1,
                     blurRadius: 5,
-                    offset: Offset(0, 2), // Position of the shadow
+                    offset: const Offset(0, 2), // Position of the shadow
                   ),
                 ]
               : [], // No shadow for unselected buttons

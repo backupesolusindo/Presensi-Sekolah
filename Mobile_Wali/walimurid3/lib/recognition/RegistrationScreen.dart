@@ -12,7 +12,7 @@ import 'package:lottie/lottie.dart';
 import 'package:http/http.dart' as http;
 
 class RegistrationScreen extends StatefulWidget {
-  const RegistrationScreen({Key? key}) : super(key: key);
+  const RegistrationScreen({super.key});
 
   @override
   State<RegistrationScreen> createState() => _RegistrationScreenState();
@@ -115,12 +115,12 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
       context: context,
       builder: (ctx) => AlertDialog(
         title: const Text("Success", textAlign: TextAlign.center),
-        content: Column(
+        content: const Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            const Icon(Icons.check_circle, color: Colors.green, size: 100),
-            const SizedBox(height: 20),
-            const Text("Berhasil Sinkronisasi", textAlign: TextAlign.center),
+            Icon(Icons.check_circle, color: Colors.green, size: 100),
+            SizedBox(height: 20),
+            Text("Berhasil Sinkronisasi", textAlign: TextAlign.center),
           ],
         ),
         actions: [
@@ -147,14 +147,14 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
-          title: Text('Kesalahan'),
+          title: const Text('Kesalahan'),
           content: Text(message),
           actions: <Widget>[
             TextButton(
               onPressed: () {
                 Navigator.of(context).pop();
               },
-              child: Text('OK'),
+              child: const Text('OK'),
             ),
           ],
         );
@@ -262,12 +262,12 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
       context: context,
       builder: (ctx) => AlertDialog(
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-        title: Column(
+        title: const Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            const Icon(Icons.error_outline, color: Colors.red, size: 80),
-            const SizedBox(height: 10),
-            const Text(
+            Icon(Icons.error_outline, color: Colors.red, size: 80),
+            SizedBox(height: 10),
+            Text(
               "Wajah Tidak Terdeteksi",
               style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
               textAlign: TextAlign.center,
@@ -436,12 +436,12 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
       context: context,
       builder: (ctx) => AlertDialog(
         title: const Text("Success", textAlign: TextAlign.center),
-        content: Column(
+        content: const Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            const Icon(Icons.check_circle, color: Colors.green, size: 100),
-            const SizedBox(height: 20),
-            const Text("Berhasil Mendaftar", textAlign: TextAlign.center),
+            Icon(Icons.check_circle, color: Colors.green, size: 100),
+            SizedBox(height: 20),
+            Text("Berhasil Mendaftar", textAlign: TextAlign.center),
           ],
         ),
         actions: [
@@ -486,14 +486,14 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
 
     return Scaffold(
       appBar: PreferredSize(
-        preferredSize: Size.fromHeight(kToolbarHeight),
+        preferredSize: const Size.fromHeight(kToolbarHeight),
         child: ClipRRect(
-          borderRadius: BorderRadius.vertical(
+          borderRadius: const BorderRadius.vertical(
             bottom:
                 Radius.circular(16), // Menentukan seberapa tumpul sudut bawah
           ),
           child: AppBar(
-            title: Text(
+            title: const Text(
               'Registrasi Wajah',
               style: TextStyle(
                   color: Colors.white), // Ubah warna teks menjadi putih
@@ -585,18 +585,18 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
                             ElevatedButton(
                               onPressed: captureImage,
                               style: ElevatedButton.styleFrom(
-                                padding: EdgeInsets.symmetric(
+                                padding: const EdgeInsets.symmetric(
                                     horizontal: 20,
                                     vertical: 12), // Menambah padding
                               ),
-                              child: Row(
+                              child: const Row(
                                 mainAxisSize: MainAxisSize
                                     .min, // Agar ukuran sesuai dengan konten
                                 children: [
                                   Icon(Icons.camera_alt), // Ikon kamera
-                                  const SizedBox(
+                                  SizedBox(
                                       width: 8), // Jarak antara ikon dan teks
-                                  const Text("Ambil Gambar"),
+                                  Text("Ambil Gambar"),
                                 ],
                               ),
                             ),
@@ -604,7 +604,7 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
                             const SizedBox(
                                 width: 10), // Jarak antara dua tombol
                             IconButton(
-                              icon: Icon(Icons.cameraswitch),
+                              icon: const Icon(Icons.cameraswitch),
                               onPressed: () async {
                                 setState(() {
                                   isFrontCamera =
@@ -626,8 +626,8 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
                               _image = null; // Reset gambar
                             });
                           },
-                          icon: Icon(Icons.camera_alt), // Tambahkan ikon kamera
-                          label: Text("Ambil Ulang"), // Teks pada tombol
+                          icon: const Icon(Icons.camera_alt), // Tambahkan ikon kamera
+                          label: const Text("Ambil Ulang"), // Teks pada tombol
                         ),
 
                       const SizedBox(

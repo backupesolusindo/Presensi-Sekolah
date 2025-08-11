@@ -42,14 +42,14 @@ class _RoundedDateField extends State<RoundedDateField> {
           },
           decoration: InputDecoration(
             hintText: widget.hintText,
-            icon: Icon(
+            icon: const Icon(
               Icons.date_range,
               color: kPrimaryColor,
             ),
           ),
           validator: (String? value) {
             if (value == null || value.isEmpty) {
-              return widget.hintText + " Harus Diisi";
+              return "${widget.hintText} Harus Diisi";
             }
             return null;
           }),

@@ -54,10 +54,12 @@ Future<void> main() async {
     sound: true,
   );
 
-  runApp(MyApp());
+  runApp(const MyApp());
 }
 
 class MyApp extends StatelessWidget {
+  const MyApp({super.key});
+
   // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
@@ -68,12 +70,14 @@ class MyApp extends StatelessWidget {
         primaryColor: kPrimaryColor,
         scaffoldBackgroundColor: Colors.white,
       ),
-      home: MyHomePage(),
+      home: const MyHomePage(),
     );
   }
 }
 
 class MyHomePage extends StatefulWidget {
+  const MyHomePage({super.key});
+
   @override
   _MyHomePageState createState() => _MyHomePageState();
 }
@@ -88,7 +92,7 @@ class _MyHomePageState extends State<MyHomePage> {
     super.initState();
 
     var initializationSettingsAndroid =
-        AndroidInitializationSettings('@mipmap/ic_launcher');
+        const AndroidInitializationSettings('@mipmap/ic_launcher');
     var initializationSetting =
         InitializationSettings(android: initializationSettingsAndroid);
 
@@ -96,7 +100,7 @@ class _MyHomePageState extends State<MyHomePage> {
     FirebaseMessaging.onMessage.listen((RemoteMessage message) {
       RemoteNotification notification = message.notification!;
       AndroidNotification? android = message.notification?.android;
-      if (notification != null && android != null) {
+      if (android != null) {
         flutterLocalNotificationsPlugin.show(
             notification.hashCode,
             notification.title,
@@ -121,12 +125,12 @@ class _MyHomePageState extends State<MyHomePage> {
   getToken() async {
     String? token = await FirebaseMessaging.instance.getToken();
     SharedPreferences prefs = await SharedPreferences.getInstance();
-    prefs.setString("token", token!);
-    print("Token : " + token);
+    prefs.setString("token", token);
+    print("Token : $token");
   }
 
   Future<void> _getMockLocation() async {
-    Timer(Duration(seconds: 2), () => _Cek_Login());
+    Timer(const Duration(seconds: 2), () => _Cek_Login());
     // bool _mocklocation = await TrustLocation.isMockLocation;
     // print(_mocklocation);
     // if (_mocklocation == true) {
@@ -153,12 +157,12 @@ class _MyHomePageState extends State<MyHomePage> {
       Navigator.push(
           context,
           PageTransition(
-              type: PageTransitionType.fade, child: DashboardScreen()));
+              type: PageTransitionType.fade, child: const DashboardScreen()));
     } else {
       print("StatusLogin : Logout");
       Navigator.pop(context);
       Navigator.push(context,
-          PageTransition(type: PageTransitionType.fade, child: LoginScreen()));
+          PageTransition(type: PageTransitionType.fade, child: const LoginScreen()));
     }
   }
 
@@ -170,7 +174,7 @@ class _MyHomePageState extends State<MyHomePage> {
           primaryColor: kPrimaryColor,
           scaffoldBackgroundColor: Colors.white,
           visualDensity: VisualDensity.adaptivePlatformDensity),
-      home: WelcomeScreen(),
+      home: const WelcomeScreen(),
     );
   }
 
@@ -182,8 +186,8 @@ class _MyHomePageState extends State<MyHomePage> {
         return BackdropFilter(
           filter: ImageFilter.blur(sigmaX: 6, sigmaY: 6),
           child: AlertDialog(
-            title: Text("FAKE GPS"),
-            content: SingleChildScrollView(
+            title: const Text("FAKE GPS"),
+            content: const SingleChildScrollView(
               child: ListBody(
                 children: <Widget>[
                   Text("HARAP UNINSTALL FAKE GPS ANDA !!!"),
@@ -192,7 +196,7 @@ class _MyHomePageState extends State<MyHomePage> {
             ),
             actions: <Widget>[
               TextButton(
-                child: Text('Keluar'),
+                child: const Text('Keluar'),
                 onPressed: () {
                   Navigator.of(context).pop();
                 },
