@@ -5,7 +5,7 @@ publish_to: "none"
 version: 1.0.0+1
 
 environment:
-  sdk: ^3.5.1 # Change this line to match your current SDK version
+  sdk: ^3.5.1
 
 dependencies:
   flutter:
@@ -37,7 +37,7 @@ flutter:
   uses-material-design: true
 
   # Menambahkan aset gambar
-assets:
+  assets:
     - assets/
     - assets/logopoltek.png
     - assets/mobile_face_net.tflite
@@ -45,27 +45,12 @@ assets:
     - assets/gambarmuka.png
     - assets/walibg.png
     - assets/biru.png
-
-  # Jika Anda memiliki aset lain, tambahkan di sini
-  # - images/a_dot_ham.jpeg
-
-  # Bagian untuk font khusus bisa ditambahkan di sini jika diperlukan
-  # fonts:
-  #   - family: Schyler
-  #     fonts:
-  #       - asset: fonts/Schyler-Regular.ttf
-  #       - asset: fonts/Schyler-Italic.ttf
-  #         style: italic
-  #   - family: Trajan Pro
-  #     fonts:
-  #       - asset: fonts/TrajanPro.ttf
-  #       - asset: fonts/TrajanPro_Bold.ttf
-  #         weight: 700
+    - assets/iconhp.png
 
 flutter_launcher_icons:
   android: true
   ios: true
   image_path: "assets/iconhp.png"
-  adaptive_icon_background: "#ffffff" # Warna background
+  adaptive_icon_background: "#ffffff"
   adaptive_icon_foreground: "assets/iconhp.png"
-  adaptive_icon_padding: true # Menambahkan padding otomatis
+  adaptive_icon_padding: true

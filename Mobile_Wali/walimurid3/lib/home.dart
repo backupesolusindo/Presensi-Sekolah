@@ -73,7 +73,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
 
   Future<void> _fetchSiswaData() async {
     final url = Uri.parse(
-        'https://presensi-smp1.esolusindo.com/Api/ApiSiswa/Siswa/getSiswabyHp/$noHp');
+        'https://presensi-smp1.esolusindo.com/Api/ApiSiswa/Siswa');
     try {
       final response = await http.get(url);
       if (response.statusCode == 200) {
@@ -281,8 +281,15 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
             child: ClipRRect(
               borderRadius: BorderRadius.circular(20),
               child: Image.asset(
-                'assets/logoSMP.png',
+                'assets/logo.png',
                 fit: BoxFit.cover,
+                errorBuilder: (context, error, stackTrace) {
+                  return const Icon(
+                    Icons.account_circle,
+                    color: Colors.white,
+                    size: 32,
+                  );
+                },
               ),
             ),
           ),
