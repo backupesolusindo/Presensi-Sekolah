@@ -143,7 +143,7 @@ class _MyHomePageState extends State<MyHomePage> {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Presensi Polije',
+      title: 'Presensi Siswa',
       theme: ThemeData(
         primaryColor: kPrimaryColor,
         scaffoldBackgroundColor: Colors.white,
