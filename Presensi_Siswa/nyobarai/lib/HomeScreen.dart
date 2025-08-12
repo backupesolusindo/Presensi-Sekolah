@@ -26,7 +26,7 @@ class _HomeScreenState extends State<HomeScreen> {
   Future<void> _fetchRfidHistory() async {
     try {
       final response = await http.get(
-        Uri.parse('https://presensi-smp1.esolusindo.com/Api/ApiGerbang/Gerbang'),
+        Uri.parse('https://presensi-smp1.esolusindo.com/Api/ApiAbsen/history'),
         headers: {'Content-Type': 'application/json'},
       );
 
@@ -51,9 +51,6 @@ class _HomeScreenState extends State<HomeScreen> {
 
   @override
   Widget build(BuildContext context) {
-    double screenWidth = MediaQuery.of(context).size.width;
-    double screenHeight = MediaQuery.of(context).size.height;
-
     return Scaffold(
       body: Stack(
         children: [
@@ -96,7 +93,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     physics: const AlwaysScrollableScrollPhysics(),
                     child: Column(
                       children: [
-                        // Header Section
+                        // Header
                         Container(
                           width: double.infinity,
                           padding: const EdgeInsets.fromLTRB(20, 60, 20, 30),
@@ -113,7 +110,6 @@ class _HomeScreenState extends State<HomeScreen> {
                           ),
                           child: Column(
                             children: [
-                              // Logo
                               Container(
                                 padding: const EdgeInsets.all(10),
                                 decoration: BoxDecoration(
@@ -127,7 +123,6 @@ class _HomeScreenState extends State<HomeScreen> {
                                 ),
                               ),
                               const SizedBox(height: 15),
-                              // Title
                               const Text(
                                 "Sistem Presensi",
                                 style: TextStyle(
@@ -150,37 +145,31 @@ class _HomeScreenState extends State<HomeScreen> {
 
                         const SizedBox(height: 30),
 
-                        // Main Buttons Section
+                        // Main Buttons
                         Padding(
                           padding: const EdgeInsets.symmetric(horizontal: 20),
-                          child: Column(
+                          child: Row(
                             children: [
-                              Row(
-                                children: [
-                                  // Face Recognition Button
-                                  Expanded(
-                                    child: _buildMainButton(
-                                      title: "Presensi\nWajah",
-                                      icon: Icons.face,
-                                      color: Colors.blue[600]!,
-                                      onPressed: () {
-                                        _navigateWithLoading(context, const RecognitionScreen());
-                                      },
-                                    ),
-                                  ),
-                                  const SizedBox(width: 15),
-                                  // Student List Button
-                                  Expanded(
-                                    child: _buildMainButton(
-                                      title: "Daftar\nSiswa",
-                                      icon: Icons.people,
-                                      color: Colors.green[600]!,
-                                      onPressed: () {
-                                        _navigateWithLoading(context, const UserListScreen());
-                                      },
-                                    ),
-                                  ),
-                                ],
+                              Expanded(
+                                child: _buildMainButton(
+                                  title: "Presensi\nWajah",
+                                  icon: Icons.face,
+                                  color: Colors.blue[600]!,
+                                  onPressed: () {
+                                    _navigateWithLoading(context, const RecognitionScreen());
+                                  },
+                                ),
+                              ),
+                              const SizedBox(width: 15),
+                              Expanded(
+                                child: _buildMainButton(
+                                  title: "Daftar\nSiswa",
+                                  icon: Icons.people,
+                                  color: Colors.green[600]!,
+                                  onPressed: () {
+                                    _navigateWithLoading(context, const UserListScreen());
+                                  },
+                                ),
                               ),
                             ],
                           ),
@@ -188,7 +177,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
                         const SizedBox(height: 30),
 
-                        // RFID History Section
+                        // RFID History
                         Padding(
                           padding: const EdgeInsets.symmetric(horizontal: 20),
                           child: Column(
@@ -233,7 +222,7 @@ class _HomeScreenState extends State<HomeScreen> {
     required Color color,
     required VoidCallback onPressed,
   }) {
-    return Container(
+    return SizedBox(
       height: 120,
       child: ElevatedButton(
         onPressed: onPressed,
@@ -241,7 +230,6 @@ class _HomeScreenState extends State<HomeScreen> {
           backgroundColor: color,
           foregroundColor: Colors.white,
           elevation: 8,
-          shadowColor: color.withOpacity(0.3),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(20),
           ),
@@ -268,7 +256,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
   Widget _buildRfidHistorySection() {
     if (_isLoadingRfid) {
-      return Container(
+      return SizedBox(
         height: 200,
         child: Center(
           child: CircularProgressIndicator(
@@ -330,24 +318,21 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Widget _buildRfidHistoryItem(dynamic item, bool isLast) {
-    // Sesuaikan dengan struktur data API Anda
-    String nama = item['nama'] ?? item['name'] ?? 'Unknown';
-    String waktu = item['waktu'] ?? item['time'] ?? item['timestamp'] ?? 'Unknown';
-    String status = item['status'] ?? item['type'] ?? 'Unknown';
+    String nama = item['nama'] ?? 'Unknown';
+    String waktu = item['waktu'] ?? 'Unknown';
+    String status = item['status'] ?? 'Unknown';
     
     IconData statusIcon;
     Color statusColor;
     
     switch (status.toLowerCase()) {
+      case 'hadir':
       case 'masuk':
-      case 'in':
-      case 'entry':
         statusIcon = Icons.login;
         statusColor = Colors.green;
         break;
+      case 'pulang':
       case 'keluar':
-      case 'out':
-      case 'exit':
         statusIcon = Icons.logout;
         statusColor = Colors.orange;
         break;

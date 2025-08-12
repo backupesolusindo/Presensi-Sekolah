@@ -73,7 +73,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
 
   Future<void> _fetchSiswaData() async {
     final url = Uri.parse(
-        'https://presensi-smp1.esolusindo.com/Api/ApiSiswa/Siswa');
+        'https://presensi-smp1.esolusindo.com/Api/ApiRFID/ApiAbsen/');
     try {
       final response = await http.get(url);
       if (response.statusCode == 200) {
