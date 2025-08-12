@@ -13,7 +13,7 @@ class ProfilePage extends StatefulWidget {
   _ProfilePageState createState() => _ProfilePageState();
 }
 
-class _ProfilePageState extends State<ProfilePage> {
+class _ProfilePageState extends State<ProfilePage> with TickerProviderStateMixin {
   int _currentIndex = 2;
   String namaWali = "Loading...";
   String noHp = "Loading...";
@@ -22,11 +22,27 @@ class _ProfilePageState extends State<ProfilePage> {
   String namaSiswa = "Loading...";
   List<dynamic> siswaList = [];
   String? selectedSiswa;
+  late AnimationController _animationController;
+  late Animation<double> _slideAnimation;
 
   @override
   void initState() {
     super.initState();
     _fetchData();
+    _animationController = AnimationController(
+      duration: const Duration(milliseconds: 800),
+      vsync: this,
+    );
+    _slideAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
+      CurvedAnimation(parent: _animationController, curve: Curves.easeOutCubic),
+    );
+    _animationController.forward();
+  }
+
+  @override
+  void dispose() {
+    _animationController.dispose();
+    super.dispose();
   }
 
   Future<void> _fetchData() async {
@@ -104,172 +120,243 @@ class _ProfilePageState extends State<ProfilePage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: Stack(
-        children: [
-          ClipPath(
-            clipper: CustomSemiCircleClipper(),
-            child: Container(
-              height: MediaQuery.of(context).size.height * 0.3,
-              decoration: const BoxDecoration(
-                color: Color(0xFF03A9F4),
-              ),
-            ),
-          ),
-          SingleChildScrollView(
-            child: Column(
-              children: [
-                const SizedBox(height: 100),
-                _buildProfileCard(),
-                const SizedBox(height: 50),
-                _buildNamaCard(),
-                const SizedBox(height: 7),
-                _buildNisCard(),
-                const SizedBox(height: 7),
-                _buildKelasCard(),
-                const SizedBox(height: 70),
-                _buildLogoutButton(),
-                const SizedBox(height: 20),
-              ],
-            ),
-          ),
-        ],
-      ),
-      bottomNavigationBar: CustomBottomBar(
-        currentIndex: _currentIndex,
-        onTap: _onItemTapped,
-      ),
-    );
-  }
-
-  Widget _buildProfileCard() {
-    return LayoutBuilder(
-      builder: (context, constraints) {
-        final cardWidth = constraints.maxWidth * 0.8;
-        return Center(
-          child: SizedBox(
-            width: cardWidth,
-            child: Card(
-              color: Colors.white,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(12),
-              ),
-              elevation: 6,
+      backgroundColor: const Color(0xFF2E3B70),
+      body: SlideTransition(
+        position: Tween<Offset>(
+          begin: const Offset(0, 0.3),
+          end: Offset.zero,
+        ).animate(_slideAnimation),
+        child: FadeTransition(
+          opacity: _slideAnimation,
+          child: SafeArea(
+            child: SingleChildScrollView(
+              physics: const BouncingScrollPhysics(),
               child: Padding(
                 padding: const EdgeInsets.all(20.0),
                 child: Column(
-                  mainAxisSize: MainAxisSize.min,
                   children: [
-                    Container(
-                      width: 80,
-                      height: 100,
-                      decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(12),
-                        image: const DecorationImage(
-                          image: AssetImage('assets/logoSMP.png'),
-                          fit: BoxFit.fill,
-                        ),
-                      ),
-                    ),
-                    const SizedBox(height: 16),
-                    Text(
-                      namaWali,
-                      style: const TextStyle(
-                        fontSize: 24,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.black87,
-                      ),
-                      textAlign: TextAlign.center,
-                    ),
-                    const SizedBox(height: 8),
-                    Text(
-                      noHp,
-                      style: TextStyle(
-                        color: Colors.grey[700],
-                        fontSize: 16,
-                      ),
-                      textAlign: TextAlign.center,
-                    ),
+                    _buildHeader(),
+                    const SizedBox(height: 32),
+                    _buildProfileCard(),
+                    const SizedBox(height: 24),
+                    _buildInfoSection(),
+                    const SizedBox(height: 32),
+                    _buildLogoutButton(),
+                    const SizedBox(height: 20),
                   ],
                 ),
               ),
             ),
           ),
-        );
-      },
-    );
-  }
-
-  Widget _buildNamaCard() {
-    return Card(
-      color: Colors.white,
-      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 0),
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(12),
-        side: const BorderSide(color: Colors.black, width: 1),
-      ),
-      elevation: 6,
-      shadowColor: Colors.black26,
-      child: Padding(
-        padding: const EdgeInsets.all(0.0),
-        child: Column(
-          children: [
-            _buildInfoRow(Icons.person, namaSiswa, 'nama siswa'),
-          ],
         ),
       ),
+      bottomNavigationBar: _buildModernBottomNav(),
     );
   }
 
-  Widget _buildNisCard() {
-    return Card(
-      color: Colors.white,
-      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 0),
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(12),
-        side: const BorderSide(color: Colors.black, width: 1),
+  Widget _buildHeader() {
+    return Container(
+      padding: const EdgeInsets.symmetric(vertical: 10),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          IconButton(
+            onPressed: () => Navigator.pop(context),
+            icon: const Icon(
+              Icons.arrow_back_ios,
+              color: Colors.white,
+              size: 24,
+            ),
+          ),
+          const Text(
+            'Profile',
+            style: TextStyle(
+              fontSize: 20,
+              fontWeight: FontWeight.bold,
+              color: Colors.white,
+            ),
+          ),
+          Container(
+            padding: const EdgeInsets.all(8),
+            decoration: BoxDecoration(
+              color: Colors.white.withOpacity(0.15),
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: const Icon(
+              Icons.more_horiz,
+              color: Colors.white,
+              size: 24,
+            ),
+          ),
+        ],
       ),
-      elevation: 6,
-      shadowColor: Colors.black26,
-      child: Padding(
-        padding: const EdgeInsets.all(0.0),
-        child: Column(
-          children: [
-            _buildInfoRow(Icons.credit_card, nis, 'nis siswa'),
+    );
+  }
+
+  Widget _buildProfileCard() {
+    return Container(
+      padding: const EdgeInsets.all(32),
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [
+            Colors.white,
+            Colors.white.withOpacity(0.95),
           ],
         ),
+        borderRadius: BorderRadius.circular(32),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.1),
+            blurRadius: 30,
+            offset: const Offset(0, 15),
+          ),
+        ],
+      ),
+      child: Column(
+        children: [
+          Container(
+            width: 100,
+            height: 100,
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(28),
+              gradient: const LinearGradient(
+                colors: [Color(0xFF6B73FF), Color(0xFF000DFF)],
+              ),
+              boxShadow: [
+                BoxShadow(
+                  color: const Color(0xFF6B73FF).withOpacity(0.4),
+                  blurRadius: 20,
+                  offset: const Offset(0, 8),
+                ),
+              ],
+            ),
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(28),
+              child: Image.asset(
+                'assets/logoSMP.png',
+                fit: BoxFit.cover,
+              ),
+            ),
+          ),
+          const SizedBox(height: 20),
+          Text(
+            namaWali,
+            style: const TextStyle(
+              fontSize: 24,
+              fontWeight: FontWeight.bold,
+              color: Color(0xFF1A1D29),
+            ),
+            textAlign: TextAlign.center,
+          ),
+          const SizedBox(height: 8),
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+            decoration: BoxDecoration(
+              color: const Color(0xFF6B73FF).withOpacity(0.1),
+              borderRadius: BorderRadius.circular(20),
+            ),
+            child: Text(
+              noHp,
+              style: const TextStyle(
+                color: Color(0xFF6B73FF),
+                fontSize: 14,
+                fontWeight: FontWeight.w600,
+              ),
+              textAlign: TextAlign.center,
+            ),
+          ),
+        ],
       ),
     );
   }
 
-  Widget _buildKelasCard() {
-    return Card(
-      color: Colors.white,
-      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 0),
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(12),
-        side: const BorderSide(color: Colors.black, width: 1),
-      ),
-      elevation: 6,
-      shadowColor: Colors.black26,
-      child: Padding(
-        padding: const EdgeInsets.all(0.0),
-        child: Column(
-          children: [
-            _buildInfoRow(Icons.class_, kelas, 'kelas saat ini'),
-          ],
+  Widget _buildInfoSection() {
+    return Column(
+      children: [
+        _buildInfoCard(
+          icon: Icons.person_outline,
+          title: 'Nama Siswa',
+          value: namaSiswa,
+          color: const Color(0xFF6B73FF),
         ),
-      ),
+        const SizedBox(height: 16),
+        _buildInfoCard(
+          icon: Icons.badge_outlined,
+          title: 'NIS Siswa',
+          value: nis,
+          color: const Color(0xFF000DFF),
+        ),
+        const SizedBox(height: 16),
+        _buildInfoCard(
+          icon: Icons.class_outlined,
+          title: 'Kelas Saat Ini',
+          value: kelas,
+          color: const Color(0xFF9C27B0),
+        ),
+      ],
     );
   }
 
-  Widget _buildInfoRow(IconData icon, String title, String subtitle) {
-    return ListTile(
-      leading: Icon(icon, color: Colors.blueAccent),
-      title: Text(
-        title,
-        style: const TextStyle(fontWeight: FontWeight.bold),
+  Widget _buildInfoCard({
+    required IconData icon,
+    required String title,
+    required String value,
+    required Color color,
+  }) {
+    return Container(
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(24),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.05),
+            blurRadius: 15,
+            offset: const Offset(0, 5),
+          ),
+        ],
       ),
-      subtitle: Text(subtitle),
+      child: Row(
+        children: [
+          Container(
+            padding: const EdgeInsets.all(12),
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                colors: [color, color.withOpacity(0.8)],
+              ),
+              borderRadius: BorderRadius.circular(16),
+            ),
+            child: Icon(icon, color: Colors.white, size: 20),
+          ),
+          const SizedBox(width: 16),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  title,
+                  style: TextStyle(
+                    fontSize: 12,
+                    color: Colors.grey[600],
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  value,
+                  style: const TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                    color: Color(0xFF1A1D29),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
     );
   }
 
@@ -278,25 +365,58 @@ class _ProfilePageState extends State<ProfilePage> {
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
-          title: const Text('Konfirmasi Logout'),
-          content: const Text('Apakah Anda yakin ingin logout?'),
+          backgroundColor: Colors.white,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(20),
+          ),
+          title: const Text(
+            'Konfirmasi Logout',
+            style: TextStyle(
+              fontWeight: FontWeight.bold,
+              color: Color(0xFF1A1D29),
+            ),
+          ),
+          content: const Text(
+            'Apakah Anda yakin ingin logout?',
+            style: TextStyle(color: Color(0xFF6B7280)),
+          ),
           actions: <Widget>[
             TextButton(
-              child: const Text('Batal'),
+              child: const Text(
+                'Batal',
+                style: TextStyle(
+                  color: Color(0xFF6B7280),
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
               onPressed: () {
                 Navigator.of(context).pop();
               },
             ),
-            TextButton(
-              child: const Text('Logout'),
-              onPressed: () async {
-                final prefs = await SharedPreferences.getInstance();
-                await prefs.clear();
-                Navigator.pushReplacement(
-                  context,
-                  MaterialPageRoute(builder: (context) => const LoginPage()),
-                );
-              },
+            Container(
+              decoration: BoxDecoration(
+                gradient: const LinearGradient(
+                  colors: [Color(0xFFFF5252), Color(0xFFD32F2F)],
+                ),
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: TextButton(
+                child: const Text(
+                  'Logout',
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+                onPressed: () async {
+                  final prefs = await SharedPreferences.getInstance();
+                  await prefs.clear();
+                  Navigator.pushReplacement(
+                    context,
+                    MaterialPageRoute(builder: (context) => const LoginPage()),
+                  );
+                },
+              ),
             ),
           ],
         );
@@ -305,57 +425,95 @@ class _ProfilePageState extends State<ProfilePage> {
   }
 
   Widget _buildLogoutButton() {
-    return Card(
-      margin: const EdgeInsets.symmetric(horizontal: 16),
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(12),
+    return Container(
+      width: double.infinity,
+      decoration: BoxDecoration(
+        gradient: const LinearGradient(
+          colors: [Color(0xFFFF5252), Color(0xFFD32F2F)],
+        ),
+        borderRadius: BorderRadius.circular(24),
+        boxShadow: [
+          BoxShadow(
+            color: const Color(0xFFFF5252).withOpacity(0.3),
+            blurRadius: 15,
+            offset: const Offset(0, 8),
+          ),
+        ],
       ),
-      elevation: 6,
-      shadowColor: Colors.black26,
-      color: const Color(0xFFFF5252),
-      child: InkWell(
-        onTap: () {
-          _showLogoutConfirmation(context);
-        },
-        child: const Padding(
-          padding: EdgeInsets.symmetric(vertical: 16),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Icon(Icons.logout, color: Colors.white),
-              SizedBox(width: 8),
-              Text(
-                'Logout',
-                style: TextStyle(
-                  color: Colors.white,
-                  fontWeight: FontWeight.bold,
-                  fontSize: 16,
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          onTap: () {
+            _showLogoutConfirmation(context);
+          },
+          borderRadius: BorderRadius.circular(24),
+          child: const Padding(
+            padding: EdgeInsets.symmetric(vertical: 18),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(Icons.logout, color: Colors.white, size: 20),
+                SizedBox(width: 12),
+                Text(
+                  'Logout',
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontWeight: FontWeight.bold,
+                    fontSize: 16,
+                  ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
         ),
       ),
     );
   }
-}
 
-class CustomSemiCircleClipper extends CustomClipper<Path> {
-  @override
-  Path getClip(Size size) {
-    var path = Path();
-    path.lineTo(0, size.height * 0.85);
-    path.quadraticBezierTo(
-      size.width / 2,
-      size.height * 1.1,
-      size.width,
-      size.height * 0.85,
+  Widget _buildModernBottomNav() {
+    return Container(
+      margin: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        gradient: const LinearGradient(
+          colors: [Color(0xFF6B73FF), Color(0xFF000DFF)],
+        ),
+        borderRadius: BorderRadius.circular(28),
+        boxShadow: [
+          BoxShadow(
+            color: const Color(0xFF6B73FF).withOpacity(0.3),
+            blurRadius: 20,
+            offset: const Offset(0, 10),
+          ),
+        ],
+      ),
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(28),
+        child: BottomNavigationBar(
+          currentIndex: _currentIndex,
+          onTap: _onItemTapped,
+          backgroundColor: Colors.transparent,
+          elevation: 0,
+          selectedItemColor: Colors.white,
+          unselectedItemColor: Colors.white.withOpacity(0.6),
+          selectedLabelStyle: const TextStyle(fontWeight: FontWeight.w600),
+          unselectedLabelStyle: const TextStyle(fontWeight: FontWeight.w500),
+          type: BottomNavigationBarType.fixed,
+          items: const [
+            BottomNavigationBarItem(
+              icon: Icon(Icons.home_rounded),
+              label: 'Beranda',
+            ),
+            BottomNavigationBarItem(
+              icon: Icon(Icons.history_rounded),
+              label: 'Riwayat',
+            ),
+            BottomNavigationBarItem(
+              icon: Icon(Icons.person_rounded),
+              label: 'Profil',
+            ),
+          ],
+        ),
+      ),
     );
-    path.lineTo(size.width, 0);
-    path.close();
-    return path;
   }
-
-  @override
-  bool shouldReclip(CustomClipper<Path> oldClipper) => false;
 }

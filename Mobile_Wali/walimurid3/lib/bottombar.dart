@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import 'home.dart';  // Import halaman Home
-import 'profile.dart';  // Import halaman Profile
-import 'riwayat.dart';  // Import halaman Riwayat
+import 'home.dart';
+import 'profile.dart';
+import 'riwayat.dart';
 
 class CustomBottomBar extends StatefulWidget {
   final int currentIndex;
@@ -16,48 +16,73 @@ class CustomBottomBar extends StatefulWidget {
 class _CustomBottomBarState extends State<CustomBottomBar> {
   @override
   Widget build(BuildContext context) {
-    return BottomNavigationBar(
-      currentIndex: widget.currentIndex,
-      onTap: (index) {
-        widget.onTap(index);  // Panggil fungsi onTap dari parent
-        _navigateToPage(index);  // Panggil navigasi sesuai index
-      },
-      items: const [
-        BottomNavigationBarItem(
-          icon: Icon(Icons.home),
-          label: 'Home',
+    return Container(
+      margin: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        gradient: const LinearGradient(
+          colors: [Color(0xFF6B73FF), Color(0xFF000DFF)],
         ),
-        BottomNavigationBarItem(
-          icon: Icon(Icons.history),
-          label: 'Riwayat',
+        borderRadius: BorderRadius.circular(28),
+        boxShadow: [
+          BoxShadow(
+            color: const Color(0xFF6B73FF).withOpacity(0.3),
+            blurRadius: 20,
+            offset: const Offset(0, 10),
+          ),
+        ],
+      ),
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(28),
+        child: BottomNavigationBar(
+          currentIndex: widget.currentIndex,
+          onTap: (index) {
+            widget.onTap(index);
+            _navigateToPage(index);
+          },
+          backgroundColor: Colors.transparent,
+          elevation: 0,
+          selectedItemColor: Colors.white,
+          unselectedItemColor: Colors.white.withOpacity(0.6),
+          selectedLabelStyle: const TextStyle(fontWeight: FontWeight.w600),
+          unselectedLabelStyle: const TextStyle(fontWeight: FontWeight.w500),
+          type: BottomNavigationBarType.fixed,
+          items: const [
+            BottomNavigationBarItem(
+              icon: Icon(Icons.home_rounded),
+              label: 'Beranda',
+            ),
+            BottomNavigationBarItem(
+              icon: Icon(Icons.history_rounded),
+              label: 'Riwayat',
+            ),
+            BottomNavigationBarItem(
+              icon: Icon(Icons.person_rounded),
+              label: 'Profil',
+            ),
+          ],
         ),
-        BottomNavigationBarItem(
-          icon: Icon(Icons.person),
-          label: 'Profile',
-        ),
-      ],
+      ),
     );
   }
 
-  // Fungsi navigasi untuk berpindah halaman
   void _navigateToPage(int index) {
     switch (index) {
       case 0:
         Navigator.pushReplacement(
           context,
-          MaterialPageRoute(builder: (context) => const HomePage()),  // Navigasi ke Home
+          MaterialPageRoute(builder: (context) => const HomePage()),
         );
         break;
       case 1:
         Navigator.pushReplacement(
           context,
-          MaterialPageRoute(builder: (context) => const RiwayatPage()),  // Navigasi ke Riwayat
+          MaterialPageRoute(builder: (context) => const RiwayatPage()),
         );
         break;
       case 2:
         Navigator.pushReplacement(
           context,
-          MaterialPageRoute(builder: (context) => const ProfilePage()),  // Navigasi ke Profile
+          MaterialPageRoute(builder: (context) => const ProfilePage()),
         );
         break;
     }
