@@ -132,46 +132,36 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: Container(
-        decoration: const BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-            colors: [
-              Color(0xFF4A90E2),
-              Color(0xFF007AFF),
-              Color(0xFF5AC8FA),
-            ],
-          ),
-        ),
-        child: SafeArea(
-          child: FadeTransition(
-            opacity: _fadeAnimation,
-            child: SingleChildScrollView(
-              physics: const BouncingScrollPhysics(),
-              child: Padding(
-                padding: const EdgeInsets.all(20.0),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    _buildModernHeader(),
-                    const SizedBox(height: 24),
-                    _buildProfileCard(),
-                    const SizedBox(height: 20),
-                    _buildDropdownSiswa(),
-                    const SizedBox(height: 20),
-                    _buildTimeCards(),
-                    const SizedBox(height: 24),
-                    _buildSectionTitle('Menu Utama', Icons.dashboard),
-                    const SizedBox(height: 16),
-                    _buildModernMenuGrid(),
-                    const SizedBox(height: 24),
-                    _buildSectionTitle('Informasi', Icons.info_outline),
-                    const SizedBox(height: 16),
-                    _buildInfoCard(),
-                    const SizedBox(height: 20),
-                  ],
-                ),
+      backgroundColor: const Color(0xFF2E3B70),
+      body: SafeArea(
+        child: FadeTransition(
+          opacity: _fadeAnimation,
+          child: SingleChildScrollView(
+            physics: const BouncingScrollPhysics(),
+            child: Padding(
+              padding: const EdgeInsets.all(20.0),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  _buildModernHeader(),
+                  const SizedBox(height: 24),
+                  _buildSearchBar(),
+                  const SizedBox(height: 24),
+                  _buildProfileCard(),
+                  const SizedBox(height: 20),
+                  _buildDropdownSiswa(),
+                  const SizedBox(height: 20),
+                  _buildTimeCards(),
+                  const SizedBox(height: 24),
+                  _buildSectionTitle('Menu Utama', Icons.dashboard),
+                  const SizedBox(height: 16),
+                  _buildModernMenuGrid(),
+                  const SizedBox(height: 24),
+                  _buildSectionTitle('Presensi Terbaru', Icons.access_time),
+                  const SizedBox(height: 16),
+                  _buildRecentAttendance(),
+                  const SizedBox(height: 20),
+                ],
               ),
             ),
           ),
@@ -187,35 +177,31 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
+          Row(
             children: [
-              Text(
-                'Selamat Datang! 👋',
-                style: TextStyle(
-                  fontSize: 24,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.white.withOpacity(0.9),
-                ),
+              const Text(
+                '📍 ',
+                style: TextStyle(fontSize: 16),
               ),
               Text(
-                'Pantau kehadiran anak dengan mudah',
+                'Jakarta, ID',
                 style: TextStyle(
                   fontSize: 14,
-                  color: Colors.white.withOpacity(0.7),
+                  color: Colors.white.withOpacity(0.8),
+                  fontWeight: FontWeight.w500,
                 ),
               ),
             ],
           ),
           Container(
-            padding: const EdgeInsets.all(12),
+            padding: const EdgeInsets.all(8),
             decoration: BoxDecoration(
               color: Colors.white.withOpacity(0.2),
-              borderRadius: BorderRadius.circular(15),
+              borderRadius: BorderRadius.circular(20),
               border: Border.all(color: Colors.white.withOpacity(0.3)),
             ),
             child: const Icon(
-              Icons.notifications_outlined,
+              Icons.person_outline,
               color: Colors.white,
               size: 24,
             ),
@@ -225,9 +211,37 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
     );
   }
 
+  Widget _buildSearchBar() {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+      decoration: BoxDecoration(
+        color: Colors.white.withOpacity(0.15),
+        borderRadius: BorderRadius.circular(25),
+        border: Border.all(color: Colors.white.withOpacity(0.2)),
+      ),
+      child: Row(
+        children: [
+          Icon(
+            Icons.search,
+            color: Colors.white.withOpacity(0.7),
+            size: 20,
+          ),
+          const SizedBox(width: 12),
+          Text(
+            'Cari informasi presensi...',
+            style: TextStyle(
+              color: Colors.white.withOpacity(0.7),
+              fontSize: 14,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
   Widget _buildProfileCard() {
     return Container(
-      padding: const EdgeInsets.all(20),
+      padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
         gradient: LinearGradient(
           begin: Alignment.topLeft,
@@ -237,7 +251,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
             Colors.white.withOpacity(0.95),
           ],
         ),
-        borderRadius: BorderRadius.circular(20),
+        borderRadius: BorderRadius.circular(28),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withOpacity(0.1),
@@ -249,16 +263,16 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
       child: Row(
         children: [
           Container(
-            width: 70,
-            height: 70,
+            width: 60,
+            height: 60,
             decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(20),
               gradient: const LinearGradient(
-                colors: [Color(0xFF4A90E2), Color(0xFF007AFF)],
+                colors: [Color(0xFF6B73FF), Color(0xFF000DFF)],
               ),
               boxShadow: [
                 BoxShadow(
-                  color: const Color(0xFF4A90E2).withOpacity(0.3),
+                  color: const Color(0xFF6B73FF).withOpacity(0.3),
                   blurRadius: 10,
                   offset: const Offset(0, 5),
                 ),
@@ -272,7 +286,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
               ),
             ),
           ),
-          const SizedBox(width: 20),
+          const SizedBox(width: 16),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -280,28 +294,32 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                 Text(
                   namaWali,
                   style: const TextStyle(
-                    fontSize: 20,
+                    fontSize: 18,
                     fontWeight: FontWeight.bold,
-                    color: Color(0xFF2D3748),
+                    color: Color(0xFF1A1D29),
                   ),
                 ),
                 const SizedBox(height: 4),
-                Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
-                  decoration: BoxDecoration(
-                    color: const Color(0xFF4A90E2).withOpacity(0.1),
-                    borderRadius: BorderRadius.circular(20),
-                  ),
-                  child: Text(
-                    noHp,
-                    style: const TextStyle(
-                      fontSize: 12,
-                      color: Color(0xFF4A90E2),
-                      fontWeight: FontWeight.w600,
-                    ),
+                Text(
+                  noHp,
+                  style: TextStyle(
+                    fontSize: 14,
+                    color: Colors.grey[600],
                   ),
                 ),
               ],
+            ),
+          ),
+          Container(
+            padding: const EdgeInsets.all(8),
+            decoration: BoxDecoration(
+              color: const Color(0xFF6B73FF).withOpacity(0.1),
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: const Icon(
+              Icons.verified_user,
+              color: Color(0xFF6B73FF),
+              size: 20,
             ),
           ),
         ],
@@ -314,7 +332,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(20),
+        borderRadius: BorderRadius.circular(24),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withOpacity(0.05),
@@ -323,61 +341,67 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
           ),
         ],
       ),
-      child: Row(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Container(
-            padding: const EdgeInsets.all(12),
-            decoration: BoxDecoration(
-              gradient: const LinearGradient(
-                colors: [Color(0xFF4A90E2), Color(0xFF007AFF)],
+          Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  gradient: const LinearGradient(
+                    colors: [Color(0xFF6B73FF), Color(0xFF000DFF)],
+                  ),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: const Icon(Icons.person, color: Colors.white, size: 16),
               ),
-              borderRadius: BorderRadius.circular(15),
-            ),
-            child: const Icon(Icons.person, color: Colors.white, size: 20),
+              const SizedBox(width: 12),
+              const Text(
+                'Pilih Siswa',
+                style: TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.bold,
+                  color: Color(0xFF1A1D29),
+                ),
+              ),
+            ],
           ),
-          const SizedBox(width: 16),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const Text(
-                  'Pilih Siswa',
-                  style: TextStyle(
-                    fontSize: 12,
-                    color: Color(0xFF718096),
-                    fontWeight: FontWeight.w500,
+          const SizedBox(height: 12),
+          siswaList.isEmpty
+              ? const Text('Memuat data...')
+              : Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 16),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFF8F9FA),
+                    borderRadius: BorderRadius.circular(16),
+                    border: Border.all(color: const Color(0xFFE9ECEF)),
+                  ),
+                  child: DropdownButton<String>(
+                    value: selectedSiswa,
+                    hint: const Text('Pilih Siswa'),
+                    isExpanded: true,
+                    underline: Container(),
+                    icon: const Icon(Icons.keyboard_arrow_down, color: Color(0xFF6B73FF)),
+                    style: const TextStyle(
+                      fontSize: 14,
+                      fontWeight: FontWeight.w500,
+                      color: Color(0xFF1A1D29),
+                    ),
+                    items: siswaList.map((siswa) {
+                      return DropdownMenuItem<String>(
+                        value: siswa['nama'],
+                        child: Text(siswa['nama']),
+                      );
+                    }).toList(),
+                    onChanged: (value) {
+                      setState(() {
+                        selectedSiswa = value;
+                        _saveSelectedSiswa(selectedSiswa!);
+                      });
+                    },
                   ),
                 ),
-                const SizedBox(height: 4),
-                siswaList.isEmpty
-                    ? const Text('Memuat data...')
-                    : DropdownButton<String>(
-                        value: selectedSiswa,
-                        hint: const Text('Pilih Siswa'),
-                        isExpanded: true,
-                        underline: Container(),
-                        icon: const Icon(Icons.keyboard_arrow_down, color: Color(0xFF4A90E2)),
-                        style: const TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.w600,
-                          color: Color(0xFF2D3748),
-                        ),
-                        items: siswaList.map((siswa) {
-                          return DropdownMenuItem<String>(
-                            value: siswa['nama'],
-                            child: Text(siswa['nama']),
-                          );
-                        }).toList(),
-                        onChanged: (value) {
-                          setState(() {
-                            selectedSiswa = value;
-                            _saveSelectedSiswa(selectedSiswa!);
-                          });
-                        },
-                      ),
-              ],
-            ),
-          ),
         ],
       ),
     );
@@ -391,7 +415,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
             _currentTime,
             'Waktu Sekarang',
             Icons.access_time_rounded,
-            const Color(0xFF4A90E2),
+            const Color(0xFF6B73FF),
           ),
         ),
         const SizedBox(width: 16),
@@ -400,7 +424,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
             _currentDate.split(',')[0],
             _currentDate.split(',')[1].trim(),
             Icons.calendar_today_rounded,
-            const Color(0xFF007AFF),
+            const Color(0xFF000DFF),
           ),
         ),
       ],
@@ -409,14 +433,14 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
 
   Widget _buildModernInfoCard(String title, String subtitle, IconData icon, Color color) {
     return Container(
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
         gradient: LinearGradient(
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
           colors: [color, color.withOpacity(0.8)],
         ),
-        borderRadius: BorderRadius.circular(20),
+        borderRadius: BorderRadius.circular(24),
         boxShadow: [
           BoxShadow(
             color: color.withOpacity(0.3),
@@ -459,8 +483,8 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
         Container(
           padding: const EdgeInsets.all(8),
           decoration: BoxDecoration(
-            color: Colors.white.withOpacity(0.2),
-            borderRadius: BorderRadius.circular(10),
+            color: Colors.white.withOpacity(0.15),
+            borderRadius: BorderRadius.circular(12),
           ),
           child: Icon(icon, color: Colors.white, size: 20),
         ),
@@ -468,7 +492,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
         Text(
           title,
           style: const TextStyle(
-            fontSize: 20,
+            fontSize: 18,
             fontWeight: FontWeight.bold,
             color: Colors.white,
           ),
@@ -479,10 +503,10 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
 
   Widget _buildModernMenuGrid() {
     return Container(
-      padding: const EdgeInsets.all(20),
+      padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(25),
+        borderRadius: BorderRadius.circular(28),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withOpacity(0.08),
@@ -497,7 +521,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
             child: _buildModernMenuButton(
               Icons.face_retouching_natural,
               'Daftarkan\nWajah Anak',
-              const Color(0xFF4A90E2),
+              const Color(0xFF6B73FF),
               () {
                 Navigator.push(
                   context,
@@ -516,7 +540,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
             child: _buildModernMenuButton(
               Icons.lock_outline_rounded,
               'Edit\nPassword',
-              const Color(0xFF007AFF),
+              const Color(0xFF000DFF),
               () {
                 Navigator.push(
                   context,
@@ -533,7 +557,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
   Widget _buildModernMenuButton(IconData icon, String label, Color color, Function onTap) {
     return InkWell(
       onTap: () => onTap(),
-      borderRadius: BorderRadius.circular(15),
+      borderRadius: BorderRadius.circular(20),
       child: Container(
         padding: const EdgeInsets.symmetric(vertical: 16),
         child: Column(
@@ -563,7 +587,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
               style: const TextStyle(
                 fontSize: 13,
                 fontWeight: FontWeight.w600,
-                color: Color(0xFF2D3748),
+                color: Color(0xFF1A1D29),
                 height: 1.2,
               ),
             ),
@@ -573,19 +597,12 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
     );
   }
 
-  Widget _buildInfoCard() {
+  Widget _buildRecentAttendance() {
     return Container(
       padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
-        gradient: LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: [
-            Colors.white,
-            Colors.white.withOpacity(0.95),
-          ],
-        ),
-        borderRadius: BorderRadius.circular(25),
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(28),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withOpacity(0.08),
@@ -598,36 +615,70 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Container(
-                padding: const EdgeInsets.all(12),
-                decoration: BoxDecoration(
-                  gradient: const LinearGradient(
-                    colors: [Color(0xFF4A90E2), Color(0xFF007AFF)],
-                  ),
-                  borderRadius: BorderRadius.circular(15),
-                ),
-                child: const Icon(Icons.info_outline, color: Colors.white, size: 20),
-              ),
-              const SizedBox(width: 16),
               const Text(
-                'Tentang Aplikasi',
+                'Presensi Hari Ini',
                 style: TextStyle(
-                  fontSize: 18,
+                  fontSize: 16,
                   fontWeight: FontWeight.bold,
-                  color: Color(0xFF2D3748),
+                  color: Color(0xFF1A1D29),
+                ),
+              ),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                decoration: BoxDecoration(
+                  color: const Color(0xFF28A745).withOpacity(0.1),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: const Text(
+                  'Hadir',
+                  style: TextStyle(
+                    fontSize: 12,
+                    fontWeight: FontWeight.w600,
+                    color: Color(0xFF28A745),
+                  ),
                 ),
               ),
             ],
           ),
           const SizedBox(height: 16),
-          Text(
-            'Aplikasi ini memungkinkan Ibu/Bapak untuk memantau kehadiran anak dengan mudah dan real-time. Dapatkan notifikasi langsung ketika anak tiba di sekolah.',
-            style: TextStyle(
-              fontSize: 15,
-              color: const Color(0xFF4A5568),
-              height: 1.5,
-            ),
+          Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  color: const Color(0xFF6B73FF).withOpacity(0.1),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: const Icon(
+                  Icons.schedule,
+                  color: Color(0xFF6B73FF),
+                  size: 16,
+                ),
+              ),
+              const SizedBox(width: 12),
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Text(
+                    'Masuk: 07:30',
+                    style: TextStyle(
+                      fontSize: 14,
+                      fontWeight: FontWeight.w600,
+                      color: Color(0xFF1A1D29),
+                    ),
+                  ),
+                  Text(
+                    'SMP Negeri 1 Jakarta',
+                    style: TextStyle(
+                      fontSize: 12,
+                      color: Colors.grey[600],
+                    ),
+                  ),
+                ],
+              ),
+            ],
           ),
         ],
       ),
@@ -639,19 +690,19 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
       margin: const EdgeInsets.all(20),
       decoration: BoxDecoration(
         gradient: const LinearGradient(
-          colors: [Color(0xFF4A90E2), Color(0xFF007AFF)],
+          colors: [Color(0xFF6B73FF), Color(0xFF000DFF)],
         ),
-        borderRadius: BorderRadius.circular(25),
+        borderRadius: BorderRadius.circular(28),
         boxShadow: [
           BoxShadow(
-            color: const Color(0xFF4A90E2).withOpacity(0.3),
+            color: const Color(0xFF6B73FF).withOpacity(0.3),
             blurRadius: 20,
             offset: const Offset(0, 10),
           ),
         ],
       ),
       child: ClipRRect(
-        borderRadius: BorderRadius.circular(25),
+        borderRadius: BorderRadius.circular(28),
         child: BottomNavigationBar(
           currentIndex: _currentIndex,
           onTap: _onItemTapped,
