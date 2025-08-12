@@ -497,7 +497,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
             child: _buildModernMenuButton(
               Icons.face_retouching_natural,
               'Daftarkan\nWajah Anak',
-              const Color(0xFF667eea),
+              const Color(0xFF4A90E2),
               () {
                 Navigator.push(
                   context,
@@ -516,7 +516,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
             child: _buildModernMenuButton(
               Icons.lock_outline_rounded,
               'Edit\nPassword',
-              const Color(0xFF764ba2),
+              const Color(0xFF007AFF),
               () {
                 Navigator.push(
                   context,
@@ -603,7 +603,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                 padding: const EdgeInsets.all(12),
                 decoration: BoxDecoration(
                   gradient: const LinearGradient(
-                    colors: [Color(0xFF667eea), Color(0xFF764ba2)],
+                    colors: [Color(0xFF4A90E2), Color(0xFF007AFF)],
                   ),
                   borderRadius: BorderRadius.circular(15),
                 ),
@@ -639,12 +639,12 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
       margin: const EdgeInsets.all(20),
       decoration: BoxDecoration(
         gradient: const LinearGradient(
-          colors: [Color(0xFF667eea), Color(0xFF764ba2)],
+          colors: [Color(0xFF4A90E2), Color(0xFF007AFF)],
         ),
         borderRadius: BorderRadius.circular(25),
         boxShadow: [
           BoxShadow(
-            color: const Color(0xFF667eea).withOpacity(0.3),
+            color: const Color(0xFF4A90E2).withOpacity(0.3),
             blurRadius: 20,
             offset: const Offset(0, 10),
           ),

@@ -11,7 +11,6 @@ import 'package:mobile_presensi_kdtg/Screens/Absen/Istirahat/absen_selesai_istir
 import 'package:mobile_presensi_kdtg/Screens/Absen/PresensiLokasi/presensi_lokasi_screen.dart';
 import 'package:mobile_presensi_kdtg/Screens/Absen/WorkFrom/absen_selesai_wf_screen.dart';
 import 'package:mobile_presensi_kdtg/Screens/Absen/WorkFrom/absen_wf_screen.dart';
-import 'package:mobile_presensi_kdtg/Screens/Absen/absen_screen.dart';
 import 'package:mobile_presensi_kdtg/Screens/JadwalWF/list_jadwalwf_screen.dart';
 import 'package:mobile_presensi_kdtg/Screens/Kegiatan/ListKegiatan_screen.dart';
 import 'package:mobile_presensi_kdtg/Screens/Laporan/Kegiatan/Laporan_Kegiatan_screen.dart';

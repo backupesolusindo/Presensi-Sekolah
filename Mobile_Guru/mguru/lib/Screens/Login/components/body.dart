@@ -1,16 +1,11 @@
-import 'package:circular_profile_avatar/circular_profile_avatar.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
-import 'package:mobile_presensi_kdtg/Screens/Absen/absen_screen.dart';
 import 'package:mobile_presensi_kdtg/Screens/Login/components/background.dart';
 import 'package:mobile_presensi_kdtg/Screens/Login/post_login.dart';
 import 'package:mobile_presensi_kdtg/Screens/dashboard_screen.dart';
-import 'package:mobile_presensi_kdtg/Screens/screens.dart';
-import 'package:mobile_presensi_kdtg/components/already_have_an_account_acheck.dart';
 import 'package:mobile_presensi_kdtg/components/rounded_button.dart';
 import 'package:mobile_presensi_kdtg/components/rounded_input_field.dart';
 import 'package:mobile_presensi_kdtg/components/rounded_password_field.dart';
-import 'package:flutter_svg/svg.dart';
 import 'package:page_transition/page_transition.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:trust_location/trust_location.dart';

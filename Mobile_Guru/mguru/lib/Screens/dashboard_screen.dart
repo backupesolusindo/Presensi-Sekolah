@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:mobile_presensi_kdtg/Screens/Welcome/components/body.dart';
 import 'package:mobile_presensi_kdtg/Screens/bottom_nav_screen.dart';
 
 import '../constants.dart';

@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:lottie/lottie.dart';
 import 'RecognitionScreen.dart';
-import 'RegistrationScreen.dart';
 import 'UserListScreen.dart';
 
 class HomeScreen extends StatefulWidget {

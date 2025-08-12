@@ -2,8 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:mobile_presensi_kdtg/Screens/Login/login_screen.dart';
 import 'package:mobile_presensi_kdtg/Screens/Welcome/components/background.dart';
 import 'package:mobile_presensi_kdtg/components/rounded_button.dart';
-import 'package:mobile_presensi_kdtg/constants.dart';
-import 'package:flutter_svg/svg.dart';
 
 class Body extends StatefulWidget {
   const Body({super.key});

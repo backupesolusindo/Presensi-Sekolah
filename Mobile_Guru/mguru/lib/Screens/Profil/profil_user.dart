@@ -3,13 +3,10 @@ import 'dart:convert';
 
 import 'package:circular_profile_avatar/circular_profile_avatar.dart';
 import 'package:flutter/material.dart';
-import 'package:mobile_presensi_kdtg/Screens/Login/login_screen.dart';
-import 'package:mobile_presensi_kdtg/Screens/Login/post_logout.dart';
 import 'package:mobile_presensi_kdtg/Screens/Profil/foto_profil.dart';
 import 'package:mobile_presensi_kdtg/constants.dart';
 import 'package:mobile_presensi_kdtg/core.dart';
 import 'package:mobile_presensi_kdtg/utils/custom_clipper.dart';
-import 'package:mobile_presensi_kdtg/widgets/top_bar.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:http/http.dart' as http;
 class ProfilUser extends StatefulWidget {

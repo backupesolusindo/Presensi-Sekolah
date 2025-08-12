@@ -1,13 +1,7 @@
 import 'dart:async';
-import 'dart:io';
 import 'dart:ui';
 import 'package:camera/camera.dart';
-import 'package:date_format/date_format.dart';
 import 'package:flutter/material.dart';
-import 'package:mobile_presensi_kdtg/Screens/Camera/components/background.dart';
-import 'package:mobile_presensi_kdtg/core.dart';
-import 'dart:convert';
-import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:mobile_presensi_kdtg/components/rounded_button.dart';
 

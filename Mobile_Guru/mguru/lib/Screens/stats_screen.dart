@@ -1,9 +1,5 @@
-import 'package:bubble_tab_indicator/bubble_tab_indicator.dart';
 import 'package:flutter/material.dart';
-import 'package:mobile_presensi_kdtg/config/palette.dart';
-import 'package:mobile_presensi_kdtg/config/styles.dart';
 import 'package:mobile_presensi_kdtg/constants.dart';
-import 'package:mobile_presensi_kdtg/data/data.dart';
 import 'package:mobile_presensi_kdtg/widgets/widgets.dart';
 
 class StatsScreen extends StatefulWidget {
