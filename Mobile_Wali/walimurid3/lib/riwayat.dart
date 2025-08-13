@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'dart:convert';
 import 'home.dart';
-import 'bottombar.dart';
 import 'profile.dart';
 
 class RiwayatPage extends StatefulWidget {

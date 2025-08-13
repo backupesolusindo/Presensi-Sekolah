@@ -7,7 +7,6 @@ import 'package:intl/intl.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'editpassword.dart';
 import 'recognition/RegistrationScreen.dart';
-import 'bottombar.dart';
 import 'riwayat.dart';
 
 class HomePage extends StatefulWidget {
