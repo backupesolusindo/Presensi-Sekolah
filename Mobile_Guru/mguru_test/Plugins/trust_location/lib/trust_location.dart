@@ -3,9 +3,9 @@ import 'dart:async';
 import 'package:flutter/services.dart';
 
 class TrustLocation {
-  static const MethodChannel _channel = const MethodChannel('trust_location');
+  static const MethodChannel _channel = MethodChannel('trust_location');
   static var changeController =
-      new StreamController<LatLongPosition>.broadcast();
+      StreamController<LatLongPosition>.broadcast();
   static Timer? getLocationTimer;
 
   /// start get location with repeating by timer
@@ -27,7 +27,7 @@ class TrustLocation {
       position = await TrustLocation.getLatLong;
       isMockLocation = await TrustLocation.isMockLocation;
       changeController
-          .add(new LatLongPosition(position[0], position[1], isMockLocation));
+          .add(LatLongPosition(position[0], position[1], isMockLocation));
     } on PlatformException catch (e) {
       print('PlatformException: $e');
     }
