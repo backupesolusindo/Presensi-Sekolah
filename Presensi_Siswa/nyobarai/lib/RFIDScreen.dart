@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:presensiSiswa/models/rfid_recod.dart';
-import 'services/rfid_service.dart';
+import 'package:presensiSiswa/services/rfid_service.dart';
 
 class RFIDScreen extends StatefulWidget {
   const RFIDScreen({super.key});
