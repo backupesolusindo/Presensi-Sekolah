@@ -5,6 +5,44 @@ import 'package:http/http.dart' as http;
 import 'home.dart';
 import 'profile.dart';
 
+class ApiErrorHandler {
+  static String getErrorMessage(dynamic error) {
+    if (error.toString().contains('TimeoutException')) {
+      return 'Koneksi timeout. Periksa koneksi internet Anda.';
+    } else if (error.toString().contains('SocketException')) {
+      return 'Tidak dapat terhubung ke server. Periksa koneksi internet.';
+    } else if (error.toString().contains('FormatException')) {
+      return 'Format data tidak valid dari server.';
+    } else if (error.toString().contains('Server error: 404')) {
+      return 'Endpoint API tidak ditemukan.';
+    } else if (error.toString().contains('Server error: 500')) {
+      return 'Server sedang mengalami masalah.';
+    } else {
+      return 'Terjadi kesalahan: ${error.toString()}';
+    }
+  }
+
+  static void showErrorSnackBar(BuildContext context, String message) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(message),
+        backgroundColor: const Color(0xFFF44336),
+        behavior: SnackBarBehavior.floating,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(10),
+        ),
+        action: SnackBarAction(
+          label: 'OK',
+          textColor: Colors.white,
+          onPressed: () {
+            ScaffoldMessenger.of(context).hideCurrentSnackBar();
+          },
+        ),
+      ),
+    );
+  }
+}
+
 class RiwayatPage extends StatefulWidget {
   const RiwayatPage({super.key});
 
@@ -32,12 +70,10 @@ class _RiwayatPageState extends State<RiwayatPage> with TickerProviderStateMixin
   static const Color warningOrange = Color(0xFFFF9800);
   static const Color dangerRed = Color(0xFFF44336);
 
-  // API Configuration - sesuai dengan server Anda
-  static const String baseUrl = 'https://presensi-smp1.esolusindo.com/Api/ApiMobile/ApiAbsen';
-
   @override
   void initState() {
     super.initState();
+    _ensureConsistentData();
     _fetchRiwayat();
     _animationController = AnimationController(
       duration: const Duration(milliseconds: 1000),
@@ -47,6 +83,25 @@ class _RiwayatPageState extends State<RiwayatPage> with TickerProviderStateMixin
       CurvedAnimation(parent: _animationController, curve: Curves.easeOutCubic),
     );
     _animationController.forward();
+  }
+
+  Future<void> _ensureConsistentData() async {
+    final prefs = await SharedPreferences.getInstance();
+    
+    // Pastikan konsistensi data nomor HP
+    String? noHp = prefs.getString('no_hp');
+    String? noHpOrtu = prefs.getString('no_hp_ortu');
+    
+    if (noHp != null && noHpOrtu == null) {
+      await prefs.setString('no_hp_ortu', noHp);
+    } else if (noHpOrtu != null && noHp == null) {
+      await prefs.setString('no_hp', noHpOrtu);
+    }
+    
+    // Debug log
+    print('no_hp: ${prefs.getString('no_hp')}');
+    print('no_hp_ortu: ${prefs.getString('no_hp_ortu')}');
+    print('nama_wali: ${prefs.getString('nama_wali')}');
   }
 
   @override
@@ -63,7 +118,7 @@ class _RiwayatPageState extends State<RiwayatPage> with TickerProviderStateMixin
 
     try {
       final prefs = await SharedPreferences.getInstance();
-      String? noHpOrtu = prefs.getString('no_hp_ortu');
+      String? noHpOrtu = prefs.getString('no_hp_ortu') ?? prefs.getString('no_hp');
 
       if (noHpOrtu == null || noHpOrtu.isEmpty) {
         setState(() {
@@ -75,9 +130,9 @@ class _RiwayatPageState extends State<RiwayatPage> with TickerProviderStateMixin
 
       print('Fetching data for phone: $noHpOrtu'); // Debug log
 
-      // Call API untuk mengambil data absensi berdasarkan no HP orang tua
+      // PERBAIKAN: URL API yang konsisten
       final response = await http.get(
-        Uri.parse('$baseUrl/ApiAbsen/bynohp/$noHpOrtu'),
+        Uri.parse('https://presensi-smp1.esolusindo.com/Api/ApiMobile/ApiAbsen/ByNoHp/$noHpOrtu'),
         headers: {
           'Content-Type': 'application/json',
           'Accept': 'application/json',
@@ -111,16 +166,20 @@ class _RiwayatPageState extends State<RiwayatPage> with TickerProviderStateMixin
       print('Error fetching riwayat: $e');
       setState(() {
         isLoading = false;
-        errorMessage = 'Gagal mengambil data: ${e.toString()}';
+        errorMessage = ApiErrorHandler.getErrorMessage(e);
       });
+      ApiErrorHandler.showErrorSnackBar(context, errorMessage);
     }
   }
 
   // Test API Connection - untuk debugging
   Future<void> _testApiConnection() async {
     try {
+      final prefs = await SharedPreferences.getInstance();
+      String? noHpOrtu = prefs.getString('no_hp_ortu') ?? prefs.getString('no_hp');
+      
       final response = await http.get(
-        Uri.parse('$baseUrl/ApiAbsen/bynohp/0855555'),
+        Uri.parse('https://presensi-smp1.esolusindo.com/Api/ApiMobile/ApiAbsen/ByNoHp/${noHpOrtu ?? "0855555"}'),
         headers: {
           'Content-Type': 'application/json',
           'Accept': 'application/json',
@@ -186,6 +245,15 @@ class _RiwayatPageState extends State<RiwayatPage> with TickerProviderStateMixin
         MaterialPageRoute(builder: (context) => const ProfilePage()),
       );
     }
+  }
+
+  // Handler untuk back button - PERBAIKAN
+  void _handleBackButton() {
+    // Kembali ke HomePage alih-alih Navigator.pop()
+    Navigator.pushReplacement(
+      context,
+      MaterialPageRoute(builder: (context) => const HomePage()),
+    );
   }
 
   Color _getStatusColor(String status) {
@@ -299,7 +367,7 @@ class _RiwayatPageState extends State<RiwayatPage> with TickerProviderStateMixin
               color: dangerRed.withOpacity(0.1),
               borderRadius: BorderRadius.circular(24),
             ),
-            child: Icon(
+            child: const Icon(
               Icons.error_outline,
               size: 64,
               color: dangerRed,
@@ -367,7 +435,7 @@ class _RiwayatPageState extends State<RiwayatPage> with TickerProviderStateMixin
   Widget _buildEnhancedHeader() {
     return Container(
       padding: const EdgeInsets.fromLTRB(20, 20, 20, 30),
-      decoration: BoxDecoration(
+      decoration: const BoxDecoration(
         gradient: LinearGradient(
           begin: Alignment.topCenter,
           end: Alignment.bottomCenter,
@@ -389,7 +457,7 @@ class _RiwayatPageState extends State<RiwayatPage> with TickerProviderStateMixin
                   borderRadius: BorderRadius.circular(12),
                 ),
                 child: IconButton(
-                  onPressed: () => Navigator.pop(context),
+                  onPressed: _handleBackButton, // PERBAIKAN: gunakan handler khusus
                   icon: const Icon(
                     Icons.arrow_back_ios,
                     color: Colors.white,
@@ -499,7 +567,7 @@ class _RiwayatPageState extends State<RiwayatPage> with TickerProviderStateMixin
           const SizedBox(height: 12),
           Text(
             value,
-            style: TextStyle(
+            style: const TextStyle(
               fontSize: 18,
               fontWeight: FontWeight.bold,
               color: textPrimary,
@@ -508,7 +576,7 @@ class _RiwayatPageState extends State<RiwayatPage> with TickerProviderStateMixin
           const SizedBox(height: 4),
           Text(
             title,
-            style: TextStyle(
+            style: const TextStyle(
               fontSize: 12,
               color: textSecondary,
               fontWeight: FontWeight.w500,
@@ -543,7 +611,7 @@ class _RiwayatPageState extends State<RiwayatPage> with TickerProviderStateMixin
                 ),
                 child: Text(
                   '${riwayatList.length} Data',
-                  style: TextStyle(
+                  style: const TextStyle(
                     fontSize: 12,
                     fontWeight: FontWeight.w600,
                     color: primaryBlue,
@@ -598,7 +666,7 @@ class _RiwayatPageState extends State<RiwayatPage> with TickerProviderStateMixin
             showDialog(
               context: context,
               builder: (context) => AlertDialog(
-                title: Text('Detail Presensi'),
+                title: const Text('Detail Presensi'),
                 content: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   mainAxisSize: MainAxisSize.min,
@@ -615,7 +683,7 @@ class _RiwayatPageState extends State<RiwayatPage> with TickerProviderStateMixin
                 actions: [
                   TextButton(
                     onPressed: () => Navigator.pop(context),
-                    child: Text('Tutup'),
+                    child: const Text('Tutup'),
                   ),
                 ],
               ),
@@ -759,7 +827,7 @@ class _RiwayatPageState extends State<RiwayatPage> with TickerProviderStateMixin
               color: primaryBlue.withOpacity(0.1),
               borderRadius: BorderRadius.circular(24),
             ),
-            child: Icon(
+            child: const Icon(
               Icons.history,
               size: 64,
               color: primaryBlue,

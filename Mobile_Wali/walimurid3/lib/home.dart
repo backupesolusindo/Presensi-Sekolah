@@ -8,6 +8,45 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'editpassword.dart';
 import 'recognition/RegistrationScreen.dart';
 import 'riwayat.dart';
+import 'profile.dart';
+
+class ApiErrorHandler {
+  static String getErrorMessage(dynamic error) {
+    if (error.toString().contains('TimeoutException')) {
+      return 'Koneksi timeout. Periksa koneksi internet Anda.';
+    } else if (error.toString().contains('SocketException')) {
+      return 'Tidak dapat terhubung ke server. Periksa koneksi internet.';
+    } else if (error.toString().contains('FormatException')) {
+      return 'Format data tidak valid dari server.';
+    } else if (error.toString().contains('Server error: 404')) {
+      return 'Endpoint API tidak ditemukan.';
+    } else if (error.toString().contains('Server error: 500')) {
+      return 'Server sedang mengalami masalah.';
+    } else {
+      return 'Terjadi kesalahan: ${error.toString()}';
+    }
+  }
+
+  static void showErrorSnackBar(BuildContext context, String message) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(message),
+        backgroundColor: const Color(0xFFF44336),
+        behavior: SnackBarBehavior.floating,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(10),
+        ),
+        action: SnackBarAction(
+          label: 'OK',
+          textColor: Colors.white,
+          onPressed: () {
+            ScaffoldMessenger.of(context).hideCurrentSnackBar();
+          },
+        ),
+      ),
+    );
+  }
+}
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -42,6 +81,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
   void initState() {
     super.initState();
     _initializeLocale();
+    _ensureConsistentData();
     _loadUserData();
     _animationController = AnimationController(
       duration: const Duration(milliseconds: 1200),
@@ -51,6 +91,25 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
       CurvedAnimation(parent: _animationController, curve: Curves.easeInOut),
     );
     _animationController.forward();
+  }
+
+  Future<void> _ensureConsistentData() async {
+    final prefs = await SharedPreferences.getInstance();
+    
+    // Pastikan konsistensi data nomor HP
+    String? noHp = prefs.getString('no_hp');
+    String? noHpOrtu = prefs.getString('no_hp_ortu');
+    
+    if (noHp != null && noHpOrtu == null) {
+      await prefs.setString('no_hp_ortu', noHp);
+    } else if (noHpOrtu != null && noHp == null) {
+      await prefs.setString('no_hp', noHpOrtu);
+    }
+    
+    // Debug log
+    print('no_hp: ${prefs.getString('no_hp')}');
+    print('no_hp_ortu: ${prefs.getString('no_hp_ortu')}');
+    print('nama_wali: ${prefs.getString('nama_wali')}');
   }
 
   Future<void> _initializeLocale() async {
@@ -72,7 +131,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
     final prefs = await SharedPreferences.getInstance();
     setState(() {
       namaWali = prefs.getString('nama_wali') ?? 'Nama Wali';
-      noHp = prefs.getString('no_hp') ?? 'Nomor HP';
+      noHp = prefs.getString('no_hp') ?? prefs.getString('no_hp_ortu') ?? 'Nomor HP';
       String nis = prefs.getString('nis') ?? 'NIS tidak tersedia';
       print('NIS: $nis');
     });
@@ -83,12 +142,12 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
     final url = Uri.parse(
         'https://presensi-smp1.esolusindo.com/Api/ApiMobile/ApiSiswa/bynohp/$noHp');
     try {
-      final response = await http.get(url);
+      final response = await http.get(url).timeout(const Duration(seconds: 30));
       if (response.statusCode == 200) {
         print('Respons API: ${response.body}');
         final data = json.decode(response.body);
 
-        if (data['data'].isNotEmpty) {
+        if (data['data'] != null && data['data'].isNotEmpty) {
           setState(() {
             siswaList = data['data'];
             selectedSiswa = siswaList.first['nama'];
@@ -113,6 +172,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
       }
     } catch (e) {
       print('Terjadi kesalahan: $e');
+      ApiErrorHandler.showErrorSnackBar(context, ApiErrorHandler.getErrorMessage(e));
     }
   }
 
@@ -130,9 +190,14 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
     });
 
     if (index == 1) {
-      Navigator.push(
+      Navigator.pushReplacement(
         context,
         MaterialPageRoute(builder: (context) => const RiwayatPage()),
+      );
+    } else if (index == 2) {
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (context) => const ProfilePage()),
       );
     }
   }
@@ -181,7 +246,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
   Widget _buildEnhancedHeader() {
     return Container(
       padding: const EdgeInsets.fromLTRB(20, 20, 20, 30),
-      decoration: BoxDecoration(
+      decoration: const BoxDecoration(
         gradient: LinearGradient(
           begin: Alignment.topCenter,
           end: Alignment.bottomCenter,
@@ -319,7 +384,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                 'assets/logo.png',
                 fit: BoxFit.cover,
                 errorBuilder: (context, error, stackTrace) {
-                  return Icon(
+                  return const Icon(
                     Icons.school,
                     color: primaryBlue,
                     size: 24,
@@ -352,11 +417,11 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                 const SizedBox(height: 8),
                 Row(
                   children: [
-                    Icon(Icons.access_time, size: 14, color: primaryBlue),
+                    const Icon(Icons.access_time, size: 14, color: primaryBlue),
                     const SizedBox(width: 4),
                     Text(
                       _currentTime,
-                      style: TextStyle(
+                      style: const TextStyle(
                         fontSize: 12,
                         color: primaryBlue,
                         fontWeight: FontWeight.w500,
@@ -412,7 +477,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                     hint: const Text('Pilih Siswa'),
                     isExpanded: true,
                     underline: Container(),
-                    icon: Icon(Icons.keyboard_arrow_down, color: primaryBlue),
+                    icon: const Icon(Icons.keyboard_arrow_down, color: primaryBlue),
                     style: const TextStyle(
                       fontSize: 14,
                       fontWeight: FontWeight.w500,
@@ -603,7 +668,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                   ),
                 ),
                 const Spacer(),
-                Text(
+                const Text(
                   'Presensi Terbaru',
                   style: TextStyle(
                     fontSize: 14,
@@ -625,7 +690,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                     borderRadius: BorderRadius.circular(15),
                     color: lightBlue.withOpacity(0.1),
                   ),
-                  child: Icon(
+                  child: const Icon(
                     Icons.person,
                     color: primaryBlue,
                     size: 24,
@@ -653,21 +718,21 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                         ),
                       ),
                       const SizedBox(height: 8),
-                      Row(
+                      const Row(
                         children: [
                           Icon(Icons.star, size: 16, color: Colors.orange),
-                          const SizedBox(width: 4),
-                          const Text(
+                          SizedBox(width: 4),
+                          Text(
                             '4.8',
                             style: TextStyle(
                               fontSize: 12,
                               fontWeight: FontWeight.w500,
                             ),
                           ),
-                          const SizedBox(width: 16),
+                          SizedBox(width: 16),
                           Icon(Icons.location_on, size: 16, color: Colors.grey),
-                          const SizedBox(width: 4),
-                          const Text(
+                          SizedBox(width: 4),
+                          Text(
                             '0.7 km',
                             style: TextStyle(
                               fontSize: 12,

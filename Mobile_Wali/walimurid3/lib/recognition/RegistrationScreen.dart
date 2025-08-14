@@ -22,7 +22,7 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
   CameraController? cameraController;
   File? _image;
   bool isLoading = false;
-  bool isFrontCamera = true; // Menyimpan status kamera (depan/belakang)
+  bool isFrontCamera = true;
   bool showPreview = true;
   late FaceDetector faceDetector;
   late Recognizer recognizer;
@@ -61,8 +61,7 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
         'nama': user[DatabaseHelper.columnName],
         'nis': user[DatabaseHelper.columnNIS],
         'id_kelas': user[DatabaseHelper.columnKelas],
-        'no_hp_ortu':
-            user[DatabaseHelper.columnNoHpOrtu], // Tambahkan No HP Orang Tua
+        'no_hp_ortu': user[DatabaseHelper.columnNoHpOrtu],
         'model': user[DatabaseHelper.columnEmbedding],
       });
     }
@@ -91,8 +90,7 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
               DatabaseHelper.columnName: user['nama'],
               DatabaseHelper.columnNIS: user['nis'],
               DatabaseHelper.columnKelas: user['id_kelas'],
-              DatabaseHelper.columnNoHpOrtu:
-                  user['no_hp_ortu'], // Menyimpan No HP Orang Tua
+              DatabaseHelper.columnNoHpOrtu: user['no_hp_ortu'],
               DatabaseHelper.columnEmbedding: user['model'],
             });
           }
@@ -114,28 +112,58 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: const Text("Success", textAlign: TextAlign.center),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        backgroundColor: Colors.white,
+        title: const Text("Berhasil", textAlign: TextAlign.center,
+          style: TextStyle(
+            fontSize: 22,
+            fontWeight: FontWeight.bold,
+            color: Color(0xFF2E7D32),
+          ),
+        ),
         content: const Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(Icons.check_circle, color: Colors.green, size: 100),
-            SizedBox(height: 20),
-            Text("Berhasil Sinkronisasi", textAlign: TextAlign.center),
+            Icon(Icons.check_circle_rounded, color: Color(0xFF4CAF50), size: 80),
+            SizedBox(height: 16),
+            Text("Sinkronisasi berhasil dilakukan!",
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                fontSize: 16,
+                color: Color(0xFF424242),
+              ),
+            ),
           ],
         ),
         actions: [
-          TextButton(
-            onPressed: () async {
-              Navigator.pop(ctx); // Tutup dialog sukses
-              Navigator.pop(context); // Kembali ke halaman sebelumnya
-            },
-            child: const Text("OK"),
+          Container(
+            width: double.infinity,
+            child: ElevatedButton(
+              onPressed: () async {
+                Navigator.pop(ctx);
+                Navigator.pop(context);
+              },
+              style: ElevatedButton.styleFrom(
+                backgroundColor: const Color(0xFF1976D2),
+                foregroundColor: Colors.white,
+                padding: const EdgeInsets.symmetric(vertical: 12),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(25),
+                ),
+                elevation: 2,
+              ),
+              child: const Text("OK",
+                style: TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ),
           ),
         ],
       ),
     );
 
-    // Reset text controllers setelah dialog sukses ditutup
     nameController.clear();
     nisController.clear();
     kelasController.clear();
@@ -147,14 +175,48 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
-          title: const Text('Kesalahan'),
-          content: Text(message),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+          backgroundColor: Colors.white,
+          title: const Text('Kesalahan',
+            textAlign: TextAlign.center,
+            style: TextStyle(
+              fontSize: 20,
+              fontWeight: FontWeight.bold,
+              color: Color(0xFFD32F2F),
+            ),
+          ),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const Icon(Icons.error_outline_rounded, 
+                color: Color(0xFFE57373), size: 60),
+              const SizedBox(height: 16),
+              Text(message,
+                textAlign: TextAlign.center,
+                style: const TextStyle(
+                  fontSize: 16,
+                  color: Color(0xFF424242),
+                ),
+              ),
+            ],
+          ),
           actions: <Widget>[
-            TextButton(
-              onPressed: () {
-                Navigator.of(context).pop();
-              },
-              child: const Text('OK'),
+            Container(
+              width: double.infinity,
+              child: ElevatedButton(
+                onPressed: () {
+                  Navigator.of(context).pop();
+                },
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: const Color(0xFFE57373),
+                  foregroundColor: Colors.white,
+                  padding: const EdgeInsets.symmetric(vertical: 12),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(25),
+                  ),
+                ),
+                child: const Text('OK'),
+              ),
             ),
           ],
         );
@@ -194,7 +256,7 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
       final XFile imageFile = await cameraController!.takePicture();
       setState(() {
         _image = File(imageFile.path);
-        showPreview = false; // Ganti ke tampilan gambar hasil
+        showPreview = false;
       });
 
       await doFaceDetection();
@@ -212,7 +274,7 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
 
   Future<void> doFaceDetection() async {
     setState(() {
-      isLoading = true; // Mulai proses loading
+      isLoading = true;
     });
 
     if (_image == null) return;
@@ -224,7 +286,7 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
     faces = await faceDetector.processImage(inputImage);
 
     setState(() {
-      isLoading = false; // Hentikan proses loading
+      isLoading = false;
     });
 
     if (faces.isNotEmpty) {
@@ -262,35 +324,58 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
       context: context,
       builder: (ctx) => AlertDialog(
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        backgroundColor: Colors.white,
         title: const Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(Icons.error_outline, color: Colors.red, size: 80),
-            SizedBox(height: 10),
+            Icon(Icons.face_retouching_off_rounded, 
+              color: Color(0xFFFF7043), size: 70),
+            SizedBox(height: 12),
             Text(
               "Wajah Tidak Terdeteksi",
-              style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
+              style: TextStyle(
+                fontSize: 20,
+                fontWeight: FontWeight.bold,
+                color: Color(0xFFE65100),
+              ),
               textAlign: TextAlign.center,
             ),
           ],
         ),
         content: const Text(
-          "Pastikan wajah terlihat jelas dan coba lagi.",
-          style: TextStyle(fontSize: 16),
+          "Pastikan wajah terlihat jelas dalam kotak panduan dan pencahayaan cukup.",
+          style: TextStyle(
+            fontSize: 16,
+            color: Color(0xFF424242),
+          ),
           textAlign: TextAlign.center,
         ),
         actions: [
-          TextButton(
-            onPressed: () {
-              Navigator.pop(ctx); // Tutup dialog dan kembali
-              setState(() {
-                showPreview = true; // Kembali ke tampilan preview kamera
-              });
-            },
-            style: TextButton.styleFrom(
-              foregroundColor: Colors.red,
+          Container(
+            width: double.infinity,
+            child: ElevatedButton(
+              onPressed: () {
+                Navigator.pop(ctx);
+                setState(() {
+                  showPreview = true;
+                });
+              },
+              style: ElevatedButton.styleFrom(
+                backgroundColor: const Color(0xFF1976D2),
+                foregroundColor: Colors.white,
+                padding: const EdgeInsets.symmetric(vertical: 12),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(25),
+                ),
+                elevation: 2,
+              ),
+              child: const Text("Coba Lagi",
+                style: TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
             ),
-            child: const Text("Coba Lagi"),
           ),
         ],
       ),
@@ -315,98 +400,189 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: const Text("Pendaftaran Wajah", textAlign: TextAlign.center),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        backgroundColor: Colors.white,
+        title: const Text("Pendaftaran Siswa",
+          textAlign: TextAlign.center,
+          style: TextStyle(
+            fontSize: 22,
+            fontWeight: FontWeight.bold,
+            color: Color(0xFF1976D2),
+          ),
+        ),
         content: SingleChildScrollView(
           child: Padding(
-            padding: const EdgeInsets.symmetric(
-                horizontal:
-                    16.0), // Menambah padding untuk membuat form lebih lebar
+            padding: const EdgeInsets.all(8.0),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.center,
               mainAxisSize: MainAxisSize.min,
               children: [
+                Container(
+                  padding: const EdgeInsets.all(8),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFF5F5F5),
+                    borderRadius: BorderRadius.circular(15),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withOpacity(0.1),
+                        blurRadius: 8,
+                        offset: const Offset(0, 4),
+                      ),
+                    ],
+                  ),
+                  child: ClipRRect(
+                    borderRadius: BorderRadius.circular(10),
+                    child: Image.memory(croppedFace, width: 150, height: 150,
+                      fit: BoxFit.cover),
+                  ),
+                ),
                 const SizedBox(height: 20),
-                Image.memory(croppedFace, width: 200, height: 200),
-                TextField(
-                  controller: nameController,
-                  decoration: const InputDecoration(
-                    fillColor: Colors.white,
-                    filled: true,
-                    hintText: "Nama",
-                    contentPadding: EdgeInsets.symmetric(
-                        horizontal: 12.0), // Menambah padding dalam inputan
+                Container(
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(color: const Color(0xFFE0E0E0)),
+                  ),
+                  child: TextField(
+                    controller: nameController,
+                    decoration: const InputDecoration(
+                      hintText: "Nama Lengkap",
+                      hintStyle: TextStyle(color: Color(0xFF9E9E9E)),
+                      prefixIcon: Icon(Icons.person_outline, 
+                        color: Color(0xFF1976D2)),
+                      border: InputBorder.none,
+                      contentPadding: EdgeInsets.symmetric(
+                        horizontal: 16, vertical: 14),
+                    ),
                   ),
                 ),
-                const SizedBox(height: 10), // Jarak antar field
-                TextField(
-                  controller: nisController,
-                  decoration: const InputDecoration(
-                    fillColor: Colors.white,
-                    filled: true,
-                    hintText: "NIS",
-                    contentPadding: EdgeInsets.symmetric(
-                        horizontal: 12.0), // Padding di dalam input
+                const SizedBox(height: 12),
+                Container(
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(color: const Color(0xFFE0E0E0)),
                   ),
-                  keyboardType: TextInputType.number,
-                ),
-                const SizedBox(height: 10),
-                DropdownButtonFormField<String>(
-                  decoration: const InputDecoration(
-                    fillColor: Colors.white,
-                    filled: true,
-                    contentPadding: EdgeInsets.symmetric(
-                        horizontal: 12.0), // Padding di dalam dropdown
-                  ),
-                  hint: const Text("Pilih Kelas"),
-                  value: selectedKelas,
-                  items: kelasList.map((kelas) {
-                    return DropdownMenuItem<String>(
-                      value: kelas['id_kelas'],
-                      child: Text(kelas['nama_kelas']),
-                    );
-                  }).toList(),
-                  onChanged: (value) {
-                    setState(() {
-                      selectedKelas = value;
-                    });
-                  },
-                ),
-                const SizedBox(height: 10),
-                TextField(
-                  controller: noHpOrtuController,
-                  decoration: const InputDecoration(
-                    fillColor: Colors.white,
-                    filled: true,
-                    hintText: "No HP Orang Tua",
-                    contentPadding: EdgeInsets.symmetric(
-                        horizontal: 12.0), // Padding di dalam input
+                  child: TextField(
+                    controller: nisController,
+                    decoration: const InputDecoration(
+                      hintText: "NIS (Nomor Induk Siswa)",
+                      hintStyle: TextStyle(color: Color(0xFF9E9E9E)),
+                      prefixIcon: Icon(Icons.badge_outlined, 
+                        color: Color(0xFF1976D2)),
+                      border: InputBorder.none,
+                      contentPadding: EdgeInsets.symmetric(
+                        horizontal: 16, vertical: 14),
+                    ),
+                    keyboardType: TextInputType.number,
                   ),
                 ),
-                const SizedBox(height: 10),
-                ElevatedButton(
-                  onPressed: () async {
-                    if (selectedKelas != null) {
-                      await registerFace(recognition);
-                    } else {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(
-                            content: Text("Pilih kelas terlebih dahulu")),
+                const SizedBox(height: 12),
+                Container(
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(color: const Color(0xFFE0E0E0)),
+                  ),
+                  child: DropdownButtonFormField<String>(
+                    decoration: const InputDecoration(
+                      hintText: "Pilih Kelas",
+                      hintStyle: TextStyle(color: Color(0xFF9E9E9E)),
+                      prefixIcon: Icon(Icons.class_outlined, 
+                        color: Color(0xFF1976D2)),
+                      border: InputBorder.none,
+                      contentPadding: EdgeInsets.symmetric(
+                        horizontal: 16, vertical: 14),
+                    ),
+                    value: selectedKelas,
+                    items: kelasList.map((kelas) {
+                      return DropdownMenuItem<String>(
+                        value: kelas['id_kelas'],
+                        child: Text(kelas['nama_kelas'],
+                          style: const TextStyle(color: Color(0xFF424242))),
                       );
-                    }
-                  },
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.blue,
-                    foregroundColor: Colors.white,
-                    minimumSize: const Size(200, 40),
+                    }).toList(),
+                    onChanged: (value) {
+                      setState(() {
+                        selectedKelas = value;
+                      });
+                    },
                   ),
-                  child: const Text("Register"),
+                ),
+                const SizedBox(height: 12),
+                Container(
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(color: const Color(0xFFE0E0E0)),
+                  ),
+                  child: TextField(
+                    controller: noHpOrtuController,
+                    decoration: const InputDecoration(
+                      hintText: "No. HP Orang Tua",
+                      hintStyle: TextStyle(color: Color(0xFF9E9E9E)),
+                      prefixIcon: Icon(Icons.phone_outlined, 
+                        color: Color(0xFF1976D2)),
+                      border: InputBorder.none,
+                      contentPadding: EdgeInsets.symmetric(
+                        horizontal: 16, vertical: 14),
+                    ),
+                    keyboardType: TextInputType.phone,
+                  ),
+                ),
+                const SizedBox(height: 20),
+                Container(
+                  width: double.infinity,
+                  height: 50,
+                  decoration: BoxDecoration(
+                    gradient: const LinearGradient(
+                      colors: [Color(0xFF1976D2), Color(0xFF42A5F5)],
+                      begin: Alignment.centerLeft,
+                      end: Alignment.centerRight,
+                    ),
+                    borderRadius: BorderRadius.circular(25),
+                    boxShadow: [
+                      BoxShadow(
+                        color: const Color(0xFF1976D2).withOpacity(0.3),
+                        blurRadius: 8,
+                        offset: const Offset(0, 4),
+                      ),
+                    ],
+                  ),
+                  child: ElevatedButton(
+                    onPressed: () async {
+                      if (selectedKelas != null) {
+                        await registerFace(recognition);
+                      } else {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(
+                            content: Text("Pilih kelas terlebih dahulu"),
+                            backgroundColor: Color(0xFFFF7043),
+                          ),
+                        );
+                      }
+                    },
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.transparent,
+                      shadowColor: Colors.transparent,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(25),
+                      ),
+                    ),
+                    child: const Text("Daftarkan Siswa",
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 16,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ),
                 ),
               ],
             ),
           ),
         ),
-        contentPadding: EdgeInsets
-            .zero, // Pastikan tidak ada padding di sekitar content secara keseluruhan
+        contentPadding: const EdgeInsets.fromLTRB(20, 20, 20, 10),
       ),
     );
   }
@@ -417,11 +593,17 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
         noHpOrtuController.text.isEmpty ||
         selectedKelas == null) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Isi dengan lengkap")),
+        const SnackBar(
+          content: Text("Mohon lengkapi semua data"),
+          backgroundColor: Color(0xFFFF7043),
+        ),
       );
     } else if (await DatabaseHelper.instance.isNisExists(nisController.text)) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("NIS telah terdaftar")),
+        const SnackBar(
+          content: Text("NIS sudah terdaftar dalam sistem"),
+          backgroundColor: Color(0xFFFF7043),
+        ),
       );
     } else {
       recognizer.registerFaceInDB(nameController.text, nisController.text,
@@ -435,30 +617,62 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: const Text("Success", textAlign: TextAlign.center),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        backgroundColor: Colors.white,
+        title: const Text("Berhasil Terdaftar",
+          textAlign: TextAlign.center,
+          style: TextStyle(
+            fontSize: 22,
+            fontWeight: FontWeight.bold,
+            color: Color(0xFF2E7D32),
+          ),
+        ),
         content: const Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(Icons.check_circle, color: Colors.green, size: 100),
-            SizedBox(height: 20),
-            Text("Berhasil Mendaftar", textAlign: TextAlign.center),
+            Icon(Icons.check_circle_rounded, 
+              color: Color(0xFF4CAF50), size: 80),
+            SizedBox(height: 16),
+            Text("Siswa berhasil didaftarkan dalam sistem!",
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                fontSize: 16,
+                color: Color(0xFF424242),
+              ),
+            ),
           ],
         ),
         actions: [
-          TextButton(
-            onPressed: () async {
-              Navigator.pop(ctx); // Tutup dialog sukses
-              await syncData(); // Panggil fungsi sinkronisasi
-              Navigator.pop(context); // Kembali ke halaman sebelumnya
-              showSyncDialog();
-            },
-            child: const Text("OK"),
+          Container(
+            width: double.infinity,
+            child: ElevatedButton(
+              onPressed: () async {
+                Navigator.pop(ctx);
+                await syncData();
+                Navigator.pop(context);
+                showSyncDialog();
+              },
+              style: ElevatedButton.styleFrom(
+                backgroundColor: const Color(0xFF4CAF50),
+                foregroundColor: Colors.white,
+                padding: const EdgeInsets.symmetric(vertical: 12),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(25),
+                ),
+                elevation: 2,
+              ),
+              child: const Text("OK",
+                style: TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ),
           ),
         ],
       ),
     );
 
-    // Reset text controllers setelah dialog sukses ditutup
     nameController.clear();
     nisController.clear();
     kelasController.clear();
@@ -482,159 +696,336 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
 
   @override
   Widget build(BuildContext context) {
-    double screenWidth = MediaQuery.of(context).size.width;
-
     return Scaffold(
+      backgroundColor: const Color(0xFFF8F9FA),
       appBar: PreferredSize(
-        preferredSize: const Size.fromHeight(kToolbarHeight),
-        child: ClipRRect(
-          borderRadius: const BorderRadius.vertical(
-            bottom:
-                Radius.circular(16), // Menentukan seberapa tumpul sudut bawah
+        preferredSize: const Size.fromHeight(kToolbarHeight + 10),
+        child: Container(
+          decoration: const BoxDecoration(
+            gradient: LinearGradient(
+              colors: [Color(0xFF1976D2), Color(0xFF42A5F5)],
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+            ),
+            borderRadius: BorderRadius.only(
+              bottomLeft: Radius.circular(25),
+              bottomRight: Radius.circular(25),
+            ),
+            boxShadow: [
+              BoxShadow(
+                color: Color(0x40000000),
+                blurRadius: 8,
+                offset: Offset(0, 4),
+              ),
+            ],
           ),
           child: AppBar(
+            backgroundColor: Colors.transparent,
+            elevation: 0,
+            centerTitle: true,
             title: const Text(
-              'Registrasi Wajah',
+              'Registrasi Wajah Siswa',
               style: TextStyle(
-                  color: Colors.white), // Ubah warna teks menjadi putih
+                color: Colors.white,
+                fontSize: 20,
+                fontWeight: FontWeight.w600,
+              ),
             ),
-            centerTitle: true, // Membuat teks di tengah
-            leading: IconButton(
-              icon: Image.asset(
-                  'assets/logoSMP.png'), // Mengganti tombol dengan logo
-              onPressed: () {
-                Navigator.pop(context); // Navigasi kembali ke layar sebelumnya
-              },
+            leading: Container(
+              margin: const EdgeInsets.all(8),
+              decoration: BoxDecoration(
+                color: Colors.white.withOpacity(0.2),
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: IconButton(
+                icon: const Icon(Icons.arrow_back_ios_new, 
+                  color: Colors.white, size: 20),
+                onPressed: () {
+                  Navigator.pop(context);
+                },
+              ),
             ),
-            backgroundColor: Colors.blueAccent,
           ),
         ),
       ),
-      backgroundColor: Colors.blue[50],
       resizeToAvoidBottomInset: false,
-      body: Center(
-        child: isLoading
-            ? Center(
+      body: isLoading
+          ? Container(
+              decoration: const BoxDecoration(
+                gradient: LinearGradient(
+                  colors: [Color(0xFFF8F9FA), Color(0xFFE3F2FD)],
+                  begin: Alignment.topCenter,
+                  end: Alignment.bottomCenter,
+                ),
+              ),
+              child: Center(
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    Lottie.asset('assets/loading1.json',
-                        width: 150, height: 150),
-                    const SizedBox(height: 20),
-                    const Text(
-                      'Mohon Ditunggu...',
-                      style:
-                          TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                    Container(
+                      padding: const EdgeInsets.all(20),
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(20),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withOpacity(0.1),
+                            blurRadius: 15,
+                            offset: const Offset(0, 8),
+                          ),
+                        ],
+                      ),
+                      child: Column(
+                        children: [
+                          Lottie.asset('assets/loading1.json',
+                              width: 120, height: 120),
+                          const SizedBox(height: 20),
+                          const Text(
+                            'Memproses Data...',
+                            style: TextStyle(
+                              fontSize: 18,
+                              fontWeight: FontWeight.w600,
+                              color: Color(0xFF1976D2),
+                            ),
+                          ),
+                          const SizedBox(height: 8),
+                          const Text(
+                            'Mohon tunggu sebentar',
+                            style: TextStyle(
+                              fontSize: 14,
+                              color: Color(0xFF757575),
+                            ),
+                          ),
+                        ],
+                      ),
                     ),
                   ],
                 ),
-              )
-            : cameraController == null
-                ? const CircularProgressIndicator()
-                : Column(
+              ),
+            )
+          : cameraController == null
+              ? const Center(
+                  child: CircularProgressIndicator(
+                    valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF1976D2)),
+                  ),
+                )
+              : Container(
+                  decoration: const BoxDecoration(
+                    gradient: LinearGradient(
+                      colors: [Color(0xFFF8F9FA), Color(0xFFE3F2FD)],
+                      begin: Alignment.topCenter,
+                      end: Alignment.bottomCenter,
+                    ),
+                  ),
+                  child: Column(
                     children: [
                       Expanded(
-                        child: Stack(
-                          children: [
-                            if (showPreview) CameraPreview(cameraController!),
-                            if (showPreview)
-                              Positioned.fill(
-                                child: Opacity(
-                                  opacity: 0.3, // Menentukan opasitas gambar
-                                  child: FractionallySizedBox(
-                                    widthFactor:
-                                        1.7, // Menentukan lebar sebagai 80% dari lebar parent
-                                    heightFactor:
-                                        1.7, // Menentukan tinggi sebagai 80% dari tinggi parent
-                                    child: Image.asset(
-                                      'assets/kotakwajah.png',
-                                      fit: BoxFit
-                                          .contain, // Menyesuaikan gambar dengan area yang diberikan
+                        child: Container(
+                          margin: const EdgeInsets.all(20),
+                          decoration: BoxDecoration(
+                            borderRadius: BorderRadius.circular(25),
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.black.withOpacity(0.2),
+                                blurRadius: 15,
+                                offset: const Offset(0, 8),
+                              ),
+                            ],
+                          ),
+                          child: ClipRRect(
+                            borderRadius: BorderRadius.circular(25),
+                            child: Stack(
+                              children: [
+                                if (showPreview) 
+                                  SizedBox.expand(
+                                    child: CameraPreview(cameraController!),
+                                  ),
+                                if (showPreview)
+                                  Positioned.fill(
+                                    child: Container(
+                                      decoration: BoxDecoration(
+                                        border: Border.all(
+                                          color: const Color(0xFF1976D2),
+                                          width: 3,
+                                        ),
+                                        borderRadius: BorderRadius.circular(25),
+                                      ),
+                                    ),
+                                  ),
+                                if (showPreview)
+                                  Positioned.fill(
+                                    child: Opacity(
+                                      opacity: 0.3,
+                                      child: FractionallySizedBox(
+                                        widthFactor: 1.7,
+                                        heightFactor: 1.7,
+                                        child: Image.asset(
+                                          'assets/kotakwajah.png',
+                                          fit: BoxFit.contain,
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                Positioned.fill(
+                                  child: Opacity(
+                                    opacity: 1.0,
+                                    child: FractionallySizedBox(
+                                      widthFactor: 1.7,
+                                      heightFactor: 1.7,
+                                      child: Image.asset(
+                                        'assets/kotaknya.png',
+                                        fit: BoxFit.contain,
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                                if (!showPreview && _image != null)
+                                  SizedBox.expand(
+                                    child: Image.file(_image!, fit: BoxFit.cover),
+                                  ),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ),
+                      Container(
+                        padding: const EdgeInsets.all(20),
+                        child: showPreview
+                            ? Row(
+                                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                                children: [
+                                  Container(
+                                    height: 60,
+                                    decoration: BoxDecoration(
+                                      gradient: const LinearGradient(
+                                        colors: [Color(0xFF1976D2), Color(0xFF42A5F5)],
+                                        begin: Alignment.centerLeft,
+                                        end: Alignment.centerRight,
+                                      ),
+                                      borderRadius: BorderRadius.circular(30),
+                                      boxShadow: [
+                                        BoxShadow(
+                                          color: const Color(0xFF1976D2).withOpacity(0.3),
+                                          blurRadius: 8,
+                                          offset: const Offset(0, 4),
+                                        ),
+                                      ],
+                                    ),
+                                    child: ElevatedButton.icon(
+                                      onPressed: captureImage,
+                                      style: ElevatedButton.styleFrom(
+                                        backgroundColor: Colors.transparent,
+                                        shadowColor: Colors.transparent,
+                                        padding: const EdgeInsets.symmetric(
+                                          horizontal: 24,
+                                          vertical: 12,
+                                        ),
+                                        shape: RoundedRectangleBorder(
+                                          borderRadius: BorderRadius.circular(30),
+                                        ),
+                                      ),
+                                      icon: const Icon(
+                                        Icons.camera_alt_rounded,
+                                        color: Colors.white,
+                                        size: 24,
+                                      ),
+                                      label: const Text(
+                                        "Ambil Gambar",
+                                        style: TextStyle(
+                                          color: Colors.white,
+                                          fontSize: 16,
+                                          fontWeight: FontWeight.w600,
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                  Container(
+                                    height: 60,
+                                    width: 60,
+                                    decoration: BoxDecoration(
+                                      color: Colors.white,
+                                      borderRadius: BorderRadius.circular(30),
+                                      boxShadow: [
+                                        BoxShadow(
+                                          color: Colors.black.withOpacity(0.1),
+                                          blurRadius: 8,
+                                          offset: const Offset(0, 4),
+                                        ),
+                                      ],
+                                      border: Border.all(
+                                        color: const Color(0xFF1976D2),
+                                        width: 2,
+                                      ),
+                                    ),
+                                    child: IconButton(
+                                      icon: Icon(
+                                        isFrontCamera 
+                                          ? Icons.cameraswitch_rounded
+                                          : Icons.camera_front_rounded,
+                                        color: const Color(0xFF1976D2),
+                                        size: 28,
+                                      ),
+                                      onPressed: () async {
+                                        setState(() {
+                                          isFrontCamera = !isFrontCamera;
+                                        });
+                                        await initializeCamera(isFrontCamera);
+                                      },
+                                    ),
+                                  ),
+                                ],
+                              )
+                            : Container(
+                                width: double.infinity,
+                                height: 60,
+                                decoration: BoxDecoration(
+                                  gradient: const LinearGradient(
+                                    colors: [Color(0xFFFF7043), Color(0xFFFFAB91)],
+                                    begin: Alignment.centerLeft,
+                                    end: Alignment.centerRight,
+                                  ),
+                                  borderRadius: BorderRadius.circular(30),
+                                  boxShadow: [
+                                    BoxShadow(
+                                      color: const Color(0xFFFF7043).withOpacity(0.3),
+                                      blurRadius: 8,
+                                      offset: const Offset(0, 4),
+                                    ),
+                                  ],
+                                ),
+                                child: ElevatedButton.icon(
+                                  onPressed: () {
+                                    setState(() {
+                                      showPreview = true;
+                                      _image = null;
+                                    });
+                                  },
+                                  style: ElevatedButton.styleFrom(
+                                    backgroundColor: Colors.transparent,
+                                    shadowColor: Colors.transparent,
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(30),
+                                    ),
+                                  ),
+                                  icon: const Icon(
+                                    Icons.refresh_rounded,
+                                    color: Colors.white,
+                                    size: 24,
+                                  ),
+                                  label: const Text(
+                                    "Ambil Ulang",
+                                    style: TextStyle(
+                                      color: Colors.white,
+                                      fontSize: 16,
+                                      fontWeight: FontWeight.w600,
                                     ),
                                   ),
                                 ),
                               ),
-                            Positioned.fill(
-                              child: Opacity(
-                                opacity: 1.0, // Menentukan opasitas gambar
-                                child: FractionallySizedBox(
-                                  widthFactor:
-                                      1.7, // Menentukan lebar sebagai 80% dari lebar parent
-                                  heightFactor:
-                                      1.7, // Menentukan tinggi sebagai 80% dari tinggi parent
-                                  child: Image.asset(
-                                    'assets/kotaknya.png',
-                                    fit: BoxFit
-                                        .contain, // Menyesuaikan gambar dengan area yang diberikan
-                                  ),
-                                ),
-                              ),
-                            ),
-                            if (!showPreview && _image != null)
-                              Image.file(_image!),
-                          ],
-                        ),
                       ),
-                      const SizedBox(height: 20),
-                      // Jarak antara preview dan tombol
-                      if (showPreview)
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment
-                              .center, // Posisikan tombol di tengah
-                          children: [
-                            ElevatedButton(
-                              onPressed: captureImage,
-                              style: ElevatedButton.styleFrom(
-                                padding: const EdgeInsets.symmetric(
-                                    horizontal: 20,
-                                    vertical: 12), // Menambah padding
-                              ),
-                              child: const Row(
-                                mainAxisSize: MainAxisSize
-                                    .min, // Agar ukuran sesuai dengan konten
-                                children: [
-                                  Icon(Icons.camera_alt), // Ikon kamera
-                                  SizedBox(
-                                      width: 8), // Jarak antara ikon dan teks
-                                  Text("Ambil Gambar"),
-                                ],
-                              ),
-                            ),
-
-                            const SizedBox(
-                                width: 10), // Jarak antara dua tombol
-                            IconButton(
-                              icon: const Icon(Icons.cameraswitch),
-                              onPressed: () async {
-                                setState(() {
-                                  isFrontCamera =
-                                      !isFrontCamera; // Ubah status kamera (depan/belakang)
-                                });
-                                await initializeCamera(
-                                    isFrontCamera); // Inisialisasi ulang kamera
-                              },
-                            ),
-                          ],
-                        ),
-
-                      // Menampilkan tombol Capture Again hanya jika _image != null
-                      if (!showPreview && _image != null)
-                        ElevatedButton.icon(
-                          onPressed: () {
-                            setState(() {
-                              showPreview = true; // Kembali ke preview kamera
-                              _image = null; // Reset gambar
-                            });
-                          },
-                          icon: const Icon(Icons.camera_alt), // Tambahkan ikon kamera
-                          label: const Text("Ambil Ulang"), // Teks pada tombol
-                        ),
-
-                      const SizedBox(
-                          height: 20), // Jarak tambahan di bawah tombol
                     ],
                   ),
-      ),
+                ),
     );
   }
 
