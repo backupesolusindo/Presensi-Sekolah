@@ -2,10 +2,10 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:http/http.dart' as http;
-import 'package:shared_preferences/shared_preferences.dart'; // Tambahkan ini
+import 'package:shared_preferences/shared_preferences.dart';
 import '/Utilities/BaseUrl.dart';
-import 'home.dart'; // Ganti dengan file dashboard kamu
-import 'signup.dart'; // Ganti dengan file signup kamu
+import 'home.dart';
+import 'signup.dart';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
@@ -20,6 +20,7 @@ class _LoginPageState extends State<LoginPage>
   final TextEditingController passwordController = TextEditingController();
   bool _isLoading = false;
   bool _isPasswordVisible = false;
+  bool _isCheckingLoginStatus = true; // Tambahkan ini
   late AnimationController _controller;
   late Animation<double> _animation;
 
@@ -32,6 +33,29 @@ class _LoginPageState extends State<LoginPage>
     );
     _animation = CurvedAnimation(parent: _controller, curve: Curves.bounceOut);
     _controller.forward();
+    
+    // Cek status login saat aplikasi dimulai
+    _checkLoginStatus();
+  }
+
+  // Tambahkan method untuk cek status login
+  Future<void> _checkLoginStatus() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    String? namaWali = prefs.getString('nama_wali');
+    String? noHp = prefs.getString('no_hp');
+    
+    // Jika data login ada, langsung ke homepage
+    if (namaWali != null && noHp != null) {
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (context) => const HomePage()),
+      );
+    } else {
+      // Jika tidak ada data login, tampilkan halaman login
+      setState(() {
+        _isCheckingLoginStatus = false;
+      });
+    }
   }
 
   Future<void> login() async {
@@ -65,6 +89,8 @@ class _LoginPageState extends State<LoginPage>
           await prefs.setString('nama_wali', data['nama_wali']);
           await prefs.setString('no_hp', data['no_hp']);
           await prefs.setString('password', password);
+          // Tambahkan flag untuk menandai sudah login
+          await prefs.setBool('is_logged_in', true);
 
           Navigator.pushReplacement(
             context,
@@ -113,15 +139,23 @@ class _LoginPageState extends State<LoginPage>
 
   @override
   Widget build(BuildContext context) {
+    // Tampilkan loading saat mengecek status login
+    if (_isCheckingLoginStatus) {
+      return const Scaffold(
+        body: Center(
+          child: CircularProgressIndicator(),
+        ),
+      );
+    }
+
     return Scaffold(
       body: Stack(
         children: [
-          // Ganti dengan gambar background walibg.png
           Container(
             decoration: const BoxDecoration(
               image: DecorationImage(
                 image: AssetImage('assets/walibg.png'),
-                fit: BoxFit.cover, // Sesuaikan gambar dengan layar
+                fit: BoxFit.cover,
               ),
             ),
           ),
