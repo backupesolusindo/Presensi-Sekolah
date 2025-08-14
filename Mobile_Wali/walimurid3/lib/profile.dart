@@ -5,6 +5,44 @@ import 'login.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'dart:convert';
 
+class ApiErrorHandler {
+  static String getErrorMessage(dynamic error) {
+    if (error.toString().contains('TimeoutException')) {
+      return 'Koneksi timeout. Periksa koneksi internet Anda.';
+    } else if (error.toString().contains('SocketException')) {
+      return 'Tidak dapat terhubung ke server. Periksa koneksi internet.';
+    } else if (error.toString().contains('FormatException')) {
+      return 'Format data tidak valid dari server.';
+    } else if (error.toString().contains('Server error: 404')) {
+      return 'Endpoint API tidak ditemukan.';
+    } else if (error.toString().contains('Server error: 500')) {
+      return 'Server sedang mengalami masalah.';
+    } else {
+      return 'Terjadi kesalahan: ${error.toString()}';
+    }
+  }
+
+  static void showErrorSnackBar(BuildContext context, String message) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(message),
+        backgroundColor: const Color(0xFFF44336),
+        behavior: SnackBarBehavior.floating,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(10),
+        ),
+        action: SnackBarAction(
+          label: 'OK',
+          textColor: Colors.white,
+          onPressed: () {
+            ScaffoldMessenger.of(context).hideCurrentSnackBar();
+          },
+        ),
+      ),
+    );
+  }
+}
+
 class ProfilePage extends StatefulWidget {
   const ProfilePage({super.key});
 
@@ -38,6 +76,7 @@ class _ProfilePageState extends State<ProfilePage> with TickerProviderStateMixin
   @override
   void initState() {
     super.initState();
+    _ensureConsistentData();
     _fetchData();
     _animationController = AnimationController(
       duration: const Duration(milliseconds: 1000),
@@ -47,6 +86,25 @@ class _ProfilePageState extends State<ProfilePage> with TickerProviderStateMixin
       CurvedAnimation(parent: _animationController, curve: Curves.easeOutCubic),
     );
     _animationController.forward();
+  }
+
+  Future<void> _ensureConsistentData() async {
+    final prefs = await SharedPreferences.getInstance();
+    
+    // Pastikan konsistensi data nomor HP
+    String? noHp = prefs.getString('no_hp');
+    String? noHpOrtu = prefs.getString('no_hp_ortu');
+    
+    if (noHp != null && noHpOrtu == null) {
+      await prefs.setString('no_hp_ortu', noHp);
+    } else if (noHpOrtu != null && noHp == null) {
+      await prefs.setString('no_hp', noHpOrtu);
+    }
+    
+    // Debug log
+    print('no_hp: ${prefs.getString('no_hp')}');
+    print('no_hp_ortu: ${prefs.getString('no_hp_ortu')}');
+    print('nama_wali: ${prefs.getString('nama_wali')}');
   }
 
   @override
@@ -59,7 +117,7 @@ class _ProfilePageState extends State<ProfilePage> with TickerProviderStateMixin
     try {
       final prefs = await SharedPreferences.getInstance();
       final savedNamaWali = prefs.getString('nama_wali');
-      final savedNoHp = prefs.getString('no_hp');
+      final savedNoHp = prefs.getString('no_hp') ?? prefs.getString('no_hp_ortu');
 
       setState(() {
         namaWali = savedNamaWali ?? "Loading...";
@@ -98,6 +156,7 @@ class _ProfilePageState extends State<ProfilePage> with TickerProviderStateMixin
         nis = "Loading...";
         kelas = "Loading...";
       });
+      ApiErrorHandler.showErrorSnackBar(context, ApiErrorHandler.getErrorMessage(e));
     }
   }
 
@@ -181,7 +240,7 @@ class _ProfilePageState extends State<ProfilePage> with TickerProviderStateMixin
   Widget _buildEnhancedHeader() {
     return Container(
       padding: const EdgeInsets.fromLTRB(20, 20, 20, 30),
-      decoration: BoxDecoration(
+      decoration: const BoxDecoration(
         gradient: LinearGradient(
           begin: Alignment.topCenter,
           end: Alignment.bottomCenter,
@@ -265,7 +324,7 @@ class _ProfilePageState extends State<ProfilePage> with TickerProviderStateMixin
                 'assets/logoSMP.png',
                 fit: BoxFit.cover,
                 errorBuilder: (context, error, stackTrace) {
-                  return Icon(
+                  return const Icon(
                     Icons.person,
                     size: 40,
                     color: primaryBlue,
@@ -294,7 +353,7 @@ class _ProfilePageState extends State<ProfilePage> with TickerProviderStateMixin
             child: Row(
               mainAxisSize: MainAxisSize.min,
               children: [
-                Icon(
+                const Icon(
                   Icons.phone,
                   size: 16,
                   color: primaryBlue,
@@ -302,7 +361,7 @@ class _ProfilePageState extends State<ProfilePage> with TickerProviderStateMixin
                 const SizedBox(width: 8),
                 Text(
                   noHp,
-                  style: TextStyle(
+                  style: const TextStyle(
                     color: primaryBlue,
                     fontSize: 14,
                     fontWeight: FontWeight.w600,
@@ -315,7 +374,7 @@ class _ProfilePageState extends State<ProfilePage> with TickerProviderStateMixin
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
             children: [
-              _buildQuickStat('3', 'Anak', Icons.family_restroom),
+              _buildQuickStat(siswaList.length.toString(), 'Anak', Icons.family_restroom),
               Container(
                 width: 1,
                 height: 40,
@@ -342,7 +401,7 @@ class _ProfilePageState extends State<ProfilePage> with TickerProviderStateMixin
         const SizedBox(height: 4),
         Text(
           value,
-          style: TextStyle(
+          style: const TextStyle(
             fontSize: 16,
             fontWeight: FontWeight.bold,
             color: textPrimary,
@@ -392,7 +451,112 @@ class _ProfilePageState extends State<ProfilePage> with TickerProviderStateMixin
           value: kelas,
           color: purpleAccent,
         ),
+        const SizedBox(height: 16),
+        siswaList.length > 1 ? _buildSiswaDropdown() : Container(),
       ],
+    );
+  }
+
+  Widget _buildSiswaDropdown() {
+    return Container(
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(20),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.05),
+            blurRadius: 15,
+            offset: const Offset(0, 5),
+          ),
+        ],
+      ),
+      child: Material(
+        color: Colors.transparent,
+        child: Padding(
+          padding: const EdgeInsets.all(20),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                children: [
+                  Container(
+                    padding: const EdgeInsets.all(12),
+                    decoration: BoxDecoration(
+                      color: primaryBlue.withOpacity(0.1),
+                      borderRadius: BorderRadius.circular(16),
+                    ),
+                    child: Icon(Icons.people_outline, color: primaryBlue, size: 20),
+                  ),
+                  const SizedBox(width: 16),
+                  const Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'Pilih Siswa',
+                          style: TextStyle(
+                            fontSize: 12,
+                            color: textSecondary,
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                        SizedBox(height: 4),
+                        Text(
+                          'Ubah data siswa yang ditampilkan',
+                          style: TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
+                            color: textPrimary,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 16),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+                decoration: BoxDecoration(
+                  color: cardWhite,
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(color: Colors.grey[200]!),
+                ),
+                child: DropdownButton<String>(
+                  value: selectedSiswa,
+                  hint: const Text('Pilih Siswa'),
+                  isExpanded: true,
+                  underline: Container(),
+                  icon: const Icon(Icons.keyboard_arrow_down, color: primaryBlue),
+                  style: const TextStyle(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w500,
+                    color: textPrimary,
+                  ),
+                  items: siswaList.map((siswa) {
+                    return DropdownMenuItem<String>(
+                      value: siswa['nama'],
+                      child: Text(siswa['nama']),
+                    );
+                  }).toList(),
+                  onChanged: (value) {
+                    setState(() {
+                      selectedSiswa = value;
+                      _saveSelectedSiswa(selectedSiswa!);
+                      _updateSiswaDetail(
+                        siswaList.firstWhere(
+                          (siswa) => siswa['nama'] == selectedSiswa,
+                          orElse: () => siswaList.first,
+                        ),
+                      );
+                    });
+                  },
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
     );
   }
 
@@ -500,7 +664,7 @@ class _ProfilePageState extends State<ProfilePage> with TickerProviderStateMixin
                     color: dangerRed.withOpacity(0.1),
                     borderRadius: BorderRadius.circular(20),
                   ),
-                  child: Icon(
+                  child: const Icon(
                     Icons.logout_rounded,
                     color: dangerRed,
                     size: 32,
@@ -570,13 +734,21 @@ class _ProfilePageState extends State<ProfilePage> with TickerProviderStateMixin
                         ),
                         child: TextButton(
                           onPressed: () async {
-                            final prefs = await SharedPreferences.getInstance();
-                            await prefs.clear();
-                            Navigator.pushAndRemoveUntil(
-                              context,
-                              MaterialPageRoute(builder: (context) => const LoginPage()),
-                              (route) => false,
-                            );
+                            try {
+                              final prefs = await SharedPreferences.getInstance();
+                              await prefs.clear();
+                              Navigator.pushAndRemoveUntil(
+                                context,
+                                MaterialPageRoute(builder: (context) => const LoginPage()),
+                                (route) => false,
+                              );
+                            } catch (e) {
+                              Navigator.of(context).pop();
+                              ApiErrorHandler.showErrorSnackBar(
+                                context, 
+                                'Gagal logout: ${e.toString()}'
+                              );
+                            }
                           },
                           style: TextButton.styleFrom(
                             padding: const EdgeInsets.symmetric(vertical: 16),
@@ -692,5 +864,10 @@ class _ProfilePageState extends State<ProfilePage> with TickerProviderStateMixin
         ),
       ),
     );
+  }
+
+  _saveSelectedSiswa(String siswa) async {
+    final prefs = await SharedPreferences.getInstance();
+    prefs.setString('selectedSiswa', siswa);
   }
 }
