@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'dart:convert';
+import 'package:http/http.dart' as http;
 import 'home.dart';
 import 'profile.dart';
 
@@ -14,15 +15,32 @@ class RiwayatPage extends StatefulWidget {
 class _RiwayatPageState extends State<RiwayatPage> with TickerProviderStateMixin {
   int _currentIndex = 1;
   List<dynamic> riwayatList = [];
+  bool isLoading = true;
+  String errorMessage = '';
   late AnimationController _animationController;
   late Animation<double> _slideAnimation;
+
+  // Enhanced Color Palette
+  static const Color primaryBlue = Color(0xFF1976D2);
+  static const Color lightBlue = Color(0xFF42A5F5);
+  static const Color accentBlue = Color(0xFF2196F3);
+  static const Color backgroundBlue = Color(0xFF0D47A1);
+  static const Color cardWhite = Color(0xFFFAFAFA);
+  static const Color textPrimary = Color(0xFF1A1A1A);
+  static const Color textSecondary = Color(0xFF757575);
+  static const Color successGreen = Color(0xFF4CAF50);
+  static const Color warningOrange = Color(0xFFFF9800);
+  static const Color dangerRed = Color(0xFFF44336);
+
+  // API Configuration - sesuai dengan server Anda
+  static const String baseUrl = 'https://presensi-smp1.esolusindo.com/Api/ApiMobile/ApiAbsen';
 
   @override
   void initState() {
     super.initState();
     _fetchRiwayat();
     _animationController = AnimationController(
-      duration: const Duration(milliseconds: 800),
+      duration: const Duration(milliseconds: 1000),
       vsync: this,
     );
     _slideAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
@@ -38,63 +56,118 @@ class _RiwayatPageState extends State<RiwayatPage> with TickerProviderStateMixin
   }
 
   Future<void> _fetchRiwayat() async {
+    setState(() {
+      isLoading = true;
+      errorMessage = '';
+    });
+
     try {
       final prefs = await SharedPreferences.getInstance();
-      List<String>? riwayatJsonList = prefs.getStringList('riwayat_list');
+      String? noHpOrtu = prefs.getString('no_hp_ortu');
 
-      if (riwayatJsonList?.isNotEmpty ?? false) {
+      if (noHpOrtu == null || noHpOrtu.isEmpty) {
         setState(() {
-          riwayatList = riwayatJsonList!
-              .map((riwayatJson) => json.decode(riwayatJson))
-              .toList();
+          isLoading = false;
+          errorMessage = 'Nomor HP orang tua tidak ditemukan. Silakan login kembali.';
         });
+        return;
+      }
+
+      print('Fetching data for phone: $noHpOrtu'); // Debug log
+
+      // Call API untuk mengambil data absensi berdasarkan no HP orang tua
+      final response = await http.get(
+        Uri.parse('$baseUrl/ApiAbsen/bynohp/$noHpOrtu'),
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+        },
+      ).timeout(const Duration(seconds: 30));
+
+      print('Response status: ${response.statusCode}'); // Debug log
+      print('Response body: ${response.body}'); // Debug log
+
+      if (response.statusCode == 200) {
+        final Map<String, dynamic> responseData = json.decode(response.body);
+        
+        if (responseData['status'] == true) {
+          setState(() {
+            riwayatList = responseData['data'] ?? [];
+            isLoading = false;
+          });
+          
+          print('Data loaded successfully: ${riwayatList.length} records'); // Debug log
+        } else {
+          setState(() {
+            riwayatList = [];
+            isLoading = false;
+            errorMessage = responseData['message'] ?? 'Gagal mengambil data';
+          });
+        }
       } else {
-        // Mock data untuk demo
-        setState(() {
-          riwayatList = [
-            {
-              'tanggal': '12 Agustus 2025',
-              'status': 'Hadir',
-              'waktu_masuk': '07:30',
-              'waktu_keluar': '13:45',
-              'keterangan': 'Tepat Waktu'
-            },
-            {
-              'tanggal': '11 Agustus 2025',
-              'status': 'Hadir',
-              'waktu_masuk': '07:25',
-              'waktu_keluar': '13:50',
-              'keterangan': 'Tepat Waktu'
-            },
-            {
-              'tanggal': '10 Agustus 2025',
-              'status': 'Terlambat',
-              'waktu_masuk': '07:45',
-              'waktu_keluar': '13:45',
-              'keterangan': 'Terlambat 15 menit'
-            },
-            {
-              'tanggal': '9 Agustus 2025',
-              'status': 'Hadir',
-              'waktu_masuk': '07:20',
-              'waktu_keluar': '13:40',
-              'keterangan': 'Tepat Waktu'
-            },
-            {
-              'tanggal': '8 Agustus 2025',
-              'status': 'Sakit',
-              'waktu_masuk': '-',
-              'waktu_keluar': '-',
-              'keterangan': 'Izin Sakit'
-            },
-          ];
-        });
+        throw Exception('Server error: ${response.statusCode}');
       }
     } catch (e) {
+      print('Error fetching riwayat: $e');
       setState(() {
-        riwayatList = [];
+        isLoading = false;
+        errorMessage = 'Gagal mengambil data: ${e.toString()}';
       });
     }
+  }
+
+  // Test API Connection - untuk debugging
+  Future<void> _testApiConnection() async {
+    try {
+      final response = await http.get(
+        Uri.parse('$baseUrl/ApiAbsen/bynohp/0855555'),
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+        },
+      ).timeout(const Duration(seconds: 30));
+      
+      print('Test API Response: ${response.statusCode}');
+      print('Test API Body: ${response.body}');
+      
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('API Test: ${response.statusCode} - ${response.body}'),
+          duration: const Duration(seconds: 5),
+        ),
+      );
+    } catch (e) {
+      print('Test API Error: $e');
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('API Test Error: $e'),
+          backgroundColor: dangerRed,
+          duration: const Duration(seconds: 5),
+        ),
+      );
+    }
+  }
+
+  // Hitung statistik dari data riwayat
+  Map<String, int> _calculateStats() {
+    Map<String, int> stats = {
+      'hadir': 0,
+      'terlambat': 0,
+      'alpha': 0,
+      'sakit': 0,
+      'izin': 0,
+    };
+
+    for (var item in riwayatList) {
+      String status = (item['status'] ?? 'alpha').toString().toLowerCase();
+      if (stats.containsKey(status)) {
+        stats[status] = stats[status]! + 1;
+      } else if (status.contains('hadir')) {
+        stats['hadir'] = stats['hadir']! + 1;
+      }
+    }
+
+    return stats;
   }
 
   void _onItemTapped(int index) {
@@ -118,16 +191,16 @@ class _RiwayatPageState extends State<RiwayatPage> with TickerProviderStateMixin
   Color _getStatusColor(String status) {
     switch (status.toLowerCase()) {
       case 'hadir':
-        return const Color(0xFF28A745);
+        return successGreen;
       case 'terlambat':
-        return const Color(0xFFFFC107);
+        return warningOrange;
       case 'sakit':
       case 'izin':
-        return const Color(0xFF007BFF);
+        return primaryBlue;
       case 'alpha':
-        return const Color(0xFFDC3545);
+        return dangerRed;
       default:
-        return const Color(0xFF6C757D);
+        return textSecondary;
     }
   }
 
@@ -150,7 +223,7 @@ class _RiwayatPageState extends State<RiwayatPage> with TickerProviderStateMixin
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFF2E3B70),
+      backgroundColor: backgroundBlue,
       body: SlideTransition(
         position: Tween<Offset>(
           begin: const Offset(0, 0.3),
@@ -161,18 +234,18 @@ class _RiwayatPageState extends State<RiwayatPage> with TickerProviderStateMixin
           child: SafeArea(
             child: Column(
               children: [
-                _buildHeader(),
+                _buildEnhancedHeader(),
                 Expanded(
                   child: Container(
                     margin: const EdgeInsets.only(top: 20),
                     decoration: const BoxDecoration(
-                      color: Color(0xFFF8F9FA),
+                      color: cardWhite,
                       borderRadius: BorderRadius.only(
                         topLeft: Radius.circular(32),
                         topRight: Radius.circular(32),
                       ),
                     ),
-                    child: riwayatList.isEmpty ? _buildEmptyState() : _buildRiwayatList(),
+                    child: _buildContent(),
                   ),
                 ),
               ],
@@ -184,20 +257,145 @@ class _RiwayatPageState extends State<RiwayatPage> with TickerProviderStateMixin
     );
   }
 
-  Widget _buildHeader() {
+  Widget _buildContent() {
+    if (isLoading) {
+      return const Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            CircularProgressIndicator(color: primaryBlue),
+            SizedBox(height: 16),
+            Text(
+              'Memuat data riwayat...',
+              style: TextStyle(
+                color: textSecondary,
+                fontSize: 14,
+              ),
+            ),
+          ],
+        ),
+      );
+    }
+
+    if (errorMessage.isNotEmpty && riwayatList.isEmpty) {
+      return _buildErrorState();
+    }
+
+    if (riwayatList.isEmpty) {
+      return _buildEmptyState();
+    }
+
+    return _buildRiwayatList();
+  }
+
+  Widget _buildErrorState() {
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Container(
+            padding: const EdgeInsets.all(32),
+            decoration: BoxDecoration(
+              color: dangerRed.withOpacity(0.1),
+              borderRadius: BorderRadius.circular(24),
+            ),
+            child: Icon(
+              Icons.error_outline,
+              size: 64,
+              color: dangerRed,
+            ),
+          ),
+          const SizedBox(height: 24),
+          const Text(
+            'Gagal Memuat Data',
+            style: TextStyle(
+              fontSize: 20,
+              fontWeight: FontWeight.bold,
+              color: textPrimary,
+            ),
+          ),
+          const SizedBox(height: 8),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 40),
+            child: Text(
+              errorMessage,
+              style: const TextStyle(
+                fontSize: 14,
+                color: textSecondary,
+              ),
+              textAlign: TextAlign.center,
+            ),
+          ),
+          const SizedBox(height: 24),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              ElevatedButton.icon(
+                onPressed: _fetchRiwayat,
+                icon: const Icon(Icons.refresh),
+                label: const Text('Coba Lagi'),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: primaryBlue,
+                  foregroundColor: Colors.white,
+                  padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                ),
+              ),
+              const SizedBox(width: 16),
+              ElevatedButton.icon(
+                onPressed: _testApiConnection,
+                icon: const Icon(Icons.bug_report),
+                label: const Text('Test API'),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: warningOrange,
+                  foregroundColor: Colors.white,
+                  padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildEnhancedHeader() {
     return Container(
-      padding: const EdgeInsets.all(20),
+      padding: const EdgeInsets.fromLTRB(20, 20, 20, 30),
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topCenter,
+          end: Alignment.bottomCenter,
+          colors: [
+            backgroundBlue,
+            primaryBlue,
+          ],
+        ),
+      ),
       child: Column(
         children: [
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              IconButton(
-                onPressed: () => Navigator.pop(context),
-                icon: const Icon(
-                  Icons.arrow_back_ios,
-                  color: Colors.white,
-                  size: 24,
+              Container(
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  color: Colors.white.withOpacity(0.15),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: IconButton(
+                  onPressed: () => Navigator.pop(context),
+                  icon: const Icon(
+                    Icons.arrow_back_ios,
+                    color: Colors.white,
+                    size: 20,
+                  ),
+                  padding: EdgeInsets.zero,
                 ),
               ),
               const Text(
@@ -214,15 +412,19 @@ class _RiwayatPageState extends State<RiwayatPage> with TickerProviderStateMixin
                   color: Colors.white.withOpacity(0.15),
                   borderRadius: BorderRadius.circular(12),
                 ),
-                child: const Icon(
-                  Icons.filter_list,
-                  color: Colors.white,
-                  size: 24,
+                child: IconButton(
+                  onPressed: _fetchRiwayat,
+                  icon: const Icon(
+                    Icons.refresh,
+                    color: Colors.white,
+                    size: 20,
+                  ),
+                  padding: EdgeInsets.zero,
                 ),
               ),
             ],
           ),
-          const SizedBox(height: 20),
+          const SizedBox(height: 24),
           _buildStatsCards(),
         ],
       ),
@@ -230,14 +432,16 @@ class _RiwayatPageState extends State<RiwayatPage> with TickerProviderStateMixin
   }
 
   Widget _buildStatsCards() {
+    Map<String, int> stats = _calculateStats();
+    
     return Row(
       children: [
         Expanded(
           child: _buildStatCard(
             icon: Icons.check_circle,
             title: 'Hadir',
-            value: '22',
-            color: const Color(0xFF28A745),
+            value: '${stats['hadir']}',
+            color: successGreen,
           ),
         ),
         const SizedBox(width: 12),
@@ -245,8 +449,8 @@ class _RiwayatPageState extends State<RiwayatPage> with TickerProviderStateMixin
           child: _buildStatCard(
             icon: Icons.access_time,
             title: 'Terlambat',
-            value: '3',
-            color: const Color(0xFFFFC107),
+            value: '${stats['terlambat']}',
+            color: warningOrange,
           ),
         ),
         const SizedBox(width: 12),
@@ -254,8 +458,8 @@ class _RiwayatPageState extends State<RiwayatPage> with TickerProviderStateMixin
           child: _buildStatCard(
             icon: Icons.cancel,
             title: 'Alpha',
-            value: '0',
-            color: const Color(0xFFDC3545),
+            value: '${stats['alpha']}',
+            color: dangerRed,
           ),
         ),
       ],
@@ -271,16 +475,12 @@ class _RiwayatPageState extends State<RiwayatPage> with TickerProviderStateMixin
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        gradient: LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: [color, color.withOpacity(0.8)],
-        ),
+        color: Colors.white,
         borderRadius: BorderRadius.circular(20),
         boxShadow: [
           BoxShadow(
-            color: color.withOpacity(0.3),
-            blurRadius: 10,
+            color: Colors.black.withOpacity(0.08),
+            blurRadius: 15,
             offset: const Offset(0, 5),
           ),
         ],
@@ -288,21 +488,30 @@ class _RiwayatPageState extends State<RiwayatPage> with TickerProviderStateMixin
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Icon(icon, color: Colors.white, size: 20),
-          const SizedBox(height: 8),
+          Container(
+            padding: const EdgeInsets.all(8),
+            decoration: BoxDecoration(
+              color: color.withOpacity(0.1),
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: Icon(icon, color: color, size: 20),
+          ),
+          const SizedBox(height: 12),
           Text(
             value,
-            style: const TextStyle(
+            style: TextStyle(
               fontSize: 18,
               fontWeight: FontWeight.bold,
-              color: Colors.white,
+              color: textPrimary,
             ),
           ),
+          const SizedBox(height: 4),
           Text(
             title,
             style: TextStyle(
               fontSize: 12,
-              color: Colors.white.withOpacity(0.9),
+              color: textSecondary,
+              fontWeight: FontWeight.w500,
             ),
           ),
         ],
@@ -323,21 +532,21 @@ class _RiwayatPageState extends State<RiwayatPage> with TickerProviderStateMixin
                 style: TextStyle(
                   fontSize: 18,
                   fontWeight: FontWeight.bold,
-                  color: Color(0xFF1A1D29),
+                  color: textPrimary,
                 ),
               ),
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                 decoration: BoxDecoration(
-                  color: const Color(0xFF6B73FF).withOpacity(0.1),
+                  color: primaryBlue.withOpacity(0.1),
                   borderRadius: BorderRadius.circular(12),
                 ),
-                child: const Text(
-                  'Bulan Ini',
+                child: Text(
+                  '${riwayatList.length} Data',
                   style: TextStyle(
                     fontSize: 12,
                     fontWeight: FontWeight.w600,
-                    color: Color(0xFF6B73FF),
+                    color: primaryBlue,
                   ),
                 ),
               ),
@@ -345,14 +554,17 @@ class _RiwayatPageState extends State<RiwayatPage> with TickerProviderStateMixin
           ),
         ),
         Expanded(
-          child: ListView.builder(
-            physics: const BouncingScrollPhysics(),
-            padding: const EdgeInsets.symmetric(horizontal: 20),
-            itemCount: riwayatList.length,
-            itemBuilder: (context, index) {
-              final item = riwayatList[index];
-              return _buildRiwayatCard(item, index);
-            },
+          child: RefreshIndicator(
+            onRefresh: _fetchRiwayat,
+            child: ListView.builder(
+              physics: const AlwaysScrollableScrollPhysics(),
+              padding: const EdgeInsets.symmetric(horizontal: 20),
+              itemCount: riwayatList.length,
+              itemBuilder: (context, index) {
+                final item = riwayatList[index];
+                return _buildRiwayatCard(item, index);
+              },
+            ),
           ),
         ),
       ],
@@ -360,104 +572,140 @@ class _RiwayatPageState extends State<RiwayatPage> with TickerProviderStateMixin
   }
 
   Widget _buildRiwayatCard(Map<String, dynamic> item, int index) {
-    final status = item['status'] ?? 'Unknown';
+    final status = item['status']?.toString() ?? 'Unknown';
     final statusColor = _getStatusColor(status);
     final statusIcon = _getStatusIcon(status);
 
     return Container(
       margin: const EdgeInsets.only(bottom: 16),
-      padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(20),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withOpacity(0.05),
-            blurRadius: 10,
-            offset: const Offset(0, 2),
+            blurRadius: 15,
+            offset: const Offset(0, 5),
           ),
         ],
       ),
-      child: Column(
-        children: [
-          Row(
-            children: [
-              Container(
-                padding: const EdgeInsets.all(10),
-                decoration: BoxDecoration(
-                  color: statusColor.withOpacity(0.1),
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: Icon(
-                  statusIcon,
-                  color: statusColor,
-                  size: 20,
-                ),
-              ),
-              const SizedBox(width: 16),
-              Expanded(
-                child: Column(
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          borderRadius: BorderRadius.circular(20),
+          onTap: () {
+            // Handle tap - bisa ditambahkan detail view
+            showDialog(
+              context: context,
+              builder: (context) => AlertDialog(
+                title: Text('Detail Presensi'),
+                content: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisSize: MainAxisSize.min,
                   children: [
-                    Text(
-                      item['tanggal'] ?? '-',
-                      style: const TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.bold,
-                        color: Color(0xFF1A1D29),
+                    Text('Nama: ${item['nama'] ?? '-'}'),
+                    Text('NIS: ${item['nis'] ?? '-'}'),
+                    Text('Tanggal: ${item['tanggal'] ?? '-'}'),
+                    Text('Status: ${item['status'] ?? '-'}'),
+                    Text('Waktu Masuk: ${item['waktu_masuk'] ?? '-'}'),
+                    Text('Waktu Keluar: ${item['waktu_keluar'] ?? '-'}'),
+                    Text('Keterangan: ${item['keterangan'] ?? '-'}'),
+                  ],
+                ),
+                actions: [
+                  TextButton(
+                    onPressed: () => Navigator.pop(context),
+                    child: Text('Tutup'),
+                  ),
+                ],
+              ),
+            );
+          },
+          child: Padding(
+            padding: const EdgeInsets.all(20),
+            child: Column(
+              children: [
+                Row(
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.all(10),
+                      decoration: BoxDecoration(
+                        color: statusColor.withOpacity(0.1),
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: Icon(
+                        statusIcon,
+                        color: statusColor,
+                        size: 20,
                       ),
                     ),
-                    const SizedBox(height: 4),
-                    Text(
-                      item['keterangan'] ?? '-',
-                      style: TextStyle(
-                        fontSize: 12,
-                        color: Colors.grey[600],
+                    const SizedBox(width: 16),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            item['tanggal']?.toString() ?? '-',
+                            style: const TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.bold,
+                              color: textPrimary,
+                            ),
+                          ),
+                          const SizedBox(height: 4),
+                          Text(
+                            item['keterangan']?.toString() ?? '-',
+                            style: const TextStyle(
+                              fontSize: 12,
+                              color: textSecondary,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                      decoration: BoxDecoration(
+                        color: statusColor.withOpacity(0.1),
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: Text(
+                        status,
+                        style: TextStyle(
+                          fontSize: 12,
+                          fontWeight: FontWeight.w600,
+                          color: statusColor,
+                        ),
                       ),
                     ),
                   ],
                 ),
-              ),
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                decoration: BoxDecoration(
-                  color: statusColor.withOpacity(0.1),
-                  borderRadius: BorderRadius.circular(12),
+                const SizedBox(height: 16),
+                Row(
+                  children: [
+                    Expanded(
+                      child: _buildTimeInfo(
+                        'Masuk',
+                        item['waktu_masuk']?.toString() ?? '-',
+                        Icons.login,
+                        primaryBlue,
+                      ),
+                    ),
+                    const SizedBox(width: 16),
+                    Expanded(
+                      child: _buildTimeInfo(
+                        'Pulang',
+                        item['waktu_keluar']?.toString() ?? '-',
+                        Icons.logout,
+                        accentBlue,
+                      ),
+                    ),
+                  ],
                 ),
-                child: Text(
-                  status,
-                  style: TextStyle(
-                    fontSize: 12,
-                    fontWeight: FontWeight.w600,
-                    color: statusColor,
-                  ),
-                ),
-              ),
-            ],
+              ],
+            ),
           ),
-          const SizedBox(height: 16),
-          Row(
-            children: [
-              Expanded(
-                child: _buildTimeInfo(
-                  'Masuk',
-                  item['waktu_masuk'] ?? '-',
-                  Icons.login,
-                  const Color(0xFF28A745),
-                ),
-              ),
-              const SizedBox(width: 16),
-              Expanded(
-                child: _buildTimeInfo(
-                  'Pulang',
-                  item['waktu_keluar'] ?? '-',
-                  Icons.logout,
-                  const Color(0xFF007BFF),
-                ),
-              ),
-            ],
-          ),
-        ],
+        ),
       ),
     );
   }
@@ -479,9 +727,9 @@ class _RiwayatPageState extends State<RiwayatPage> with TickerProviderStateMixin
             children: [
               Text(
                 label,
-                style: TextStyle(
+                style: const TextStyle(
                   fontSize: 10,
-                  color: Colors.grey[600],
+                  color: textSecondary,
                   fontWeight: FontWeight.w500,
                 ),
               ),
@@ -508,13 +756,13 @@ class _RiwayatPageState extends State<RiwayatPage> with TickerProviderStateMixin
           Container(
             padding: const EdgeInsets.all(32),
             decoration: BoxDecoration(
-              color: const Color(0xFF6B73FF).withOpacity(0.1),
+              color: primaryBlue.withOpacity(0.1),
               borderRadius: BorderRadius.circular(24),
             ),
-            child: const Icon(
+            child: Icon(
               Icons.history,
               size: 64,
-              color: Color(0xFF6B73FF),
+              color: primaryBlue,
             ),
           ),
           const SizedBox(height: 24),
@@ -523,17 +771,31 @@ class _RiwayatPageState extends State<RiwayatPage> with TickerProviderStateMixin
             style: TextStyle(
               fontSize: 20,
               fontWeight: FontWeight.bold,
-              color: Color(0xFF1A1D29),
+              color: textPrimary,
             ),
           ),
           const SizedBox(height: 8),
-          Text(
+          const Text(
             'Riwayat presensi akan muncul di sini',
             style: TextStyle(
               fontSize: 14,
-              color: Colors.grey[600],
+              color: textSecondary,
             ),
             textAlign: TextAlign.center,
+          ),
+          const SizedBox(height: 24),
+          ElevatedButton.icon(
+            onPressed: _fetchRiwayat,
+            icon: const Icon(Icons.refresh),
+            label: const Text('Muat Ulang'),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: primaryBlue,
+              foregroundColor: Colors.white,
+              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12),
+              ),
+            ),
           ),
         ],
       ),
@@ -544,29 +806,27 @@ class _RiwayatPageState extends State<RiwayatPage> with TickerProviderStateMixin
     return Container(
       margin: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        gradient: const LinearGradient(
-          colors: [Color(0xFF6B73FF), Color(0xFF000DFF)],
-        ),
-        borderRadius: BorderRadius.circular(28),
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(25),
         boxShadow: [
           BoxShadow(
-            color: const Color(0xFF6B73FF).withOpacity(0.3),
+            color: Colors.black.withOpacity(0.1),
             blurRadius: 20,
             offset: const Offset(0, 10),
           ),
         ],
       ),
       child: ClipRRect(
-        borderRadius: BorderRadius.circular(28),
+        borderRadius: BorderRadius.circular(25),
         child: BottomNavigationBar(
           currentIndex: _currentIndex,
           onTap: _onItemTapped,
-          backgroundColor: Colors.transparent,
+          backgroundColor: Colors.white,
           elevation: 0,
-          selectedItemColor: Colors.white,
-          unselectedItemColor: Colors.white.withOpacity(0.6),
-          selectedLabelStyle: const TextStyle(fontWeight: FontWeight.w600),
-          unselectedLabelStyle: const TextStyle(fontWeight: FontWeight.w500),
+          selectedItemColor: primaryBlue,
+          unselectedItemColor: Colors.grey[400],
+          selectedLabelStyle: const TextStyle(fontWeight: FontWeight.w600, fontSize: 12),
+          unselectedLabelStyle: const TextStyle(fontWeight: FontWeight.w500, fontSize: 12),
           type: BottomNavigationBarType.fixed,
           items: const [
             BottomNavigationBarItem(

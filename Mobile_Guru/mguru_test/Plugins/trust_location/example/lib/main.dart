@@ -6,7 +6,7 @@ import 'package:trust_location/trust_location.dart';
 
 import 'package:location_permissions/location_permissions.dart';
 
-void main() => runApp(MyApp());
+void main() => runApp(const MyApp());
 
 class MyApp extends StatefulWidget {
   const MyApp({Key? key}) : super(key: key);
