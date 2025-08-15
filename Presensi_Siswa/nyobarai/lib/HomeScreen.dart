@@ -107,13 +107,13 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                 ? Container(
                     padding: const EdgeInsets.all(40),
                     decoration: BoxDecoration(
-                      color: Colors.white.withOpacity(0.9),
+                      color: Colors.white.withOpacity(0.95),
                       borderRadius: BorderRadius.circular(20),
                       boxShadow: [
                         BoxShadow(
-                          color: Colors.black.withOpacity(0.1),
-                          blurRadius: 20,
-                          offset: const Offset(0, 10),
+                          color: Colors.black.withOpacity(0.2),
+                          blurRadius: 25,
+                          offset: const Offset(0, 15),
                         ),
                       ],
                     ),
@@ -155,7 +155,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                                     color: Colors.white,
                                     boxShadow: [
                                       BoxShadow(
-                                        color: Colors.black.withOpacity(0.1),
+                                        color: Colors.black.withOpacity(0.2),
                                         blurRadius: 30,
                                         offset: const Offset(0, 15),
                                       ),
@@ -221,25 +221,25 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                           
                           const SizedBox(height: 60),
 
-                          // Animated Buttons
+                          // Animated Buttons dengan gradasi biru yang berbeda
                           ...List.generate(3, (index) {
                             final buttons = [
                               {
-                                'title': 'Presensi',
+                                'title': 'Presensi Wajah',
                                 'icon': Icons.camera_alt_rounded,
-                                'gradient': [Color(0xFF059669), Color(0xFF10B981)],
+                                'gradient': [Color(0xFF1E40AF), Color(0xFF3B82F6)], // Blue-800 to Blue-500
                                 'action': () => _navigateWithLoading(context, const RecognitionScreen()),
                               },
                               {
                                 'title': 'Murid Terdaftar',
                                 'icon': Icons.list_alt_rounded,
-                                'gradient': [Color(0xFF7C3AED), Color(0xFFA78BFA)],
+                                'gradient': [Color(0xFF1E3A8A), Color(0xFF2563EB)], // Blue-900 to Blue-600
                                 'action': () => _navigateWithLoading(context, const UserListScreen()),
                               },
                               {
-                                'title': 'Absensi RFID',
+                                'title': 'Presensi RFID',
                                 'icon': Icons.wifi_rounded,
-                                'gradient': [Color(0xFFDC2626), Color(0xFFEF4444)],
+                                'gradient': [Color(0xFF1D4ED8), Color(0xFF60A5FA)], // Blue-700 to Blue-400
                                 'action': () => _navigateWithLoading(context, const RFIDScreen()),
                               },
                             ];
@@ -285,17 +285,21 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
           ..rotateZ(_isPressed ? -0.01 : 0.0),
         child: Container(
           width: double.infinity,
-          height: 70,
+          height: 75,
           decoration: BoxDecoration(
             gradient: LinearGradient(
               colors: gradientColors,
               begin: Alignment.topLeft,
               end: Alignment.bottomRight,
             ),
-            borderRadius: BorderRadius.circular(25),
+            borderRadius: BorderRadius.circular(20),
+            border: Border.all(
+              color: Colors.white.withOpacity(0.2), // Border putih transparan
+              width: 1,
+            ),
             boxShadow: [
               BoxShadow(
-                color: gradientColors[0].withOpacity(0.3),
+                color: gradientColors[0].withOpacity(0.4),
                 blurRadius: 15,
                 offset: const Offset(0, 8),
               ),
@@ -309,29 +313,44 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
           child: Material(
             color: Colors.transparent,
             child: InkWell(
-              borderRadius: BorderRadius.circular(25),
+              borderRadius: BorderRadius.circular(20),
               onTap: onPressed,
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Container(
-                    padding: const EdgeInsets.all(8),
-                    decoration: BoxDecoration(
-                      color: Colors.white.withOpacity(0.2),
-                      borderRadius: BorderRadius.circular(12),
+              child: Container(
+                padding: const EdgeInsets.symmetric(horizontal: 20),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.all(10),
+                      decoration: BoxDecoration(
+                        color: Colors.white.withOpacity(0.2),
+                        borderRadius: BorderRadius.circular(12),
+                        border: Border.all(
+                          color: Colors.white.withOpacity(0.3),
+                          width: 1,
+                        ),
+                      ),
+                      child: Icon(icon, color: Colors.white, size: 26),
                     ),
-                    child: Icon(icon, color: Colors.white, size: 24),
-                  ),
-                  const SizedBox(width: 16),
-                  Text(
-                    title,
-                    style: const TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.w600,
-                      color: Colors.white,
+                    const SizedBox(width: 18),
+                    Text(
+                      title,
+                      style: const TextStyle(
+                        fontSize: 19,
+                        fontWeight: FontWeight.w700,
+                        color: Colors.white,
+                        letterSpacing: 0.5,
+                        shadows: [
+                          Shadow(
+                            blurRadius: 5,
+                            color: Colors.black26,
+                            offset: Offset(0, 1),
+                          ),
+                        ],
+                      ),
                     ),
-                  ),
-                ],
+                  ],
+                ),
               ),
             ),
           ),
