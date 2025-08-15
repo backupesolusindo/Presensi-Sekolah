@@ -227,19 +227,19 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                               {
                                 'title': 'Presensi',
                                 'icon': Icons.camera_alt_rounded,
-                                'gradient': [Color(0xFF059669), Color(0xFF10B981)],
+                                'gradient': [const Color(0xFF059669), const Color(0xFF10B981)],
                                 'action': () => _navigateWithLoading(context, const RecognitionScreen()),
                               },
                               {
                                 'title': 'Murid Terdaftar',
                                 'icon': Icons.list_alt_rounded,
-                                'gradient': [Color(0xFF7C3AED), Color(0xFFA78BFA)],
+                                'gradient': [const Color(0xFF7C3AED), const Color(0xFFA78BFA)],
                                 'action': () => _navigateWithLoading(context, const UserListScreen()),
                               },
                               {
                                 'title': 'Absensi RFID',
                                 'icon': Icons.wifi_rounded,
-                                'gradient': [Color(0xFFDC2626), Color(0xFFEF4444)],
+                                'gradient': [const Color(0xFFDC2626), const Color(0xFFEF4444)],
                                 'action': () => _navigateWithLoading(context, const RFIDScreen()),
                               },
                             ];

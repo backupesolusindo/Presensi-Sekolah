@@ -248,13 +248,18 @@ class _RiwayatPageState extends State<RiwayatPage> with TickerProviderStateMixin
   }
 
   // Handler untuk back button - PERBAIKAN
-  void _handleBackButton() {
-    // Kembali ke HomePage alih-alih Navigator.pop()
-    Navigator.pushReplacement(
-      context,
-      MaterialPageRoute(builder: (context) => const HomePage()),
-    );
-  }
+void _handleBackButton() {
+    // Periksa apakah bisa pop sebelum melakukan pop
+    if (Navigator.canPop(context)) {
+        Navigator.pop(context);
+    } else {
+        // Jika tidak bisa pop (halaman root), navigasi ke HomePage
+        Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(builder: (context) => const HomePage()),
+        );
+    }
+}
 
   Color _getStatusColor(String status) {
     switch (status.toLowerCase()) {

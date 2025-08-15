@@ -161,7 +161,7 @@ class _EditPasswordPageState extends State<EditPasswordPage> {
                             ),
                             child: _isLoading
                                 ? const CircularProgressIndicator(color: Colors.white)
-                                : const Text('Simpan', style: TextStyle(fontSize: 16)),
+                                : const Text('Simpan', style: TextStyle(fontSize: 16, color: Colors.white)),
                           ),
                         ],
                       ),

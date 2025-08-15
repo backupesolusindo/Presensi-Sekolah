@@ -67,6 +67,8 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
 
   List<dynamic> siswaList = [];
   String? selectedSiswa;
+  Map<String, dynamic>? presensiHariIni;
+  bool isLoadingPresensi = true;
 
   // Enhanced Color Palette
   static const Color primaryBlue = Color(0xFF1976D2);
@@ -136,6 +138,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
       print('NIS: $nis');
     });
     await _fetchSiswaData();
+    await _fetchPresensiHariIni();
   }
 
   Future<void> _fetchSiswaData() async {
@@ -173,6 +176,127 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
     } catch (e) {
       print('Terjadi kesalahan: $e');
       ApiErrorHandler.showErrorSnackBar(context, ApiErrorHandler.getErrorMessage(e));
+    }
+  }
+
+  Future<void> _fetchPresensiHariIni() async {
+    setState(() {
+      isLoadingPresensi = true;
+    });
+
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      String? noHpOrtu = prefs.getString('no_hp_ortu') ?? prefs.getString('no_hp');
+
+      if (noHpOrtu == null || noHpOrtu.isEmpty) {
+        setState(() {
+          isLoadingPresensi = false;
+          presensiHariIni = null;
+        });
+        return;
+      }
+
+      final response = await http.get(
+        Uri.parse('https://presensi-smp1.esolusindo.com/Api/ApiMobile/ApiAbsen/ByNoHp/$noHpOrtu'),
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+        },
+      ).timeout(const Duration(seconds: 30));
+
+      if (response.statusCode == 200) {
+        final Map<String, dynamic> responseData = json.decode(response.body);
+        
+        if (responseData['status'] == true) {
+          List<dynamic> riwayatList = responseData['data'] ?? [];
+          
+          // Filter presensi hari ini
+          String todayDate = DateFormat('yyyy-MM-dd').format(DateTime.now());
+          
+          Map<String, dynamic>? presensiHariIniTemp;
+          for (var item in riwayatList) {
+            String? tanggal = item['tanggal'];
+            if (tanggal != null) {
+              try {
+                DateTime parsedDate;
+                if (tanggal.contains('/')) {
+                  List<String> parts = tanggal.split('/');
+                  if (parts.length == 3) {
+                    parsedDate = DateTime(
+                      int.parse(parts[2]),
+                      int.parse(parts[1]),
+                      int.parse(parts[0]),
+                    );
+                  } else {
+                    continue;
+                  }
+                } else if (tanggal.contains('-')) {
+                  parsedDate = DateTime.parse(tanggal);
+                } else {
+                  continue;
+                }
+                
+                String itemDate = DateFormat('yyyy-MM-dd').format(parsedDate);
+                if (itemDate == todayDate) {
+                  if (selectedSiswa == null || item['nama'] == selectedSiswa) {
+                    presensiHariIniTemp = item;
+                    break;
+                  }
+                }
+              } catch (e) {
+                continue;
+              }
+            }
+          }
+          
+          setState(() {
+            presensiHariIni = presensiHariIniTemp;
+            isLoadingPresensi = false;
+          });
+        } else {
+          setState(() {
+            presensiHariIni = null;
+            isLoadingPresensi = false;
+          });
+        }
+      }
+    } catch (e) {
+      setState(() {
+        isLoadingPresensi = false;
+        presensiHariIni = null;
+      });
+    }
+  }
+
+  Color _getStatusColor(String status) {
+    switch (status.toLowerCase()) {
+      case 'hadir':
+        return const Color(0xFF4CAF50);
+      case 'terlambat':
+        return const Color(0xFFFF9800);
+      case 'sakit':
+      case 'izin':
+        return primaryBlue;
+      case 'alpha':
+        return const Color(0xFFF44336);
+      default:
+        return textSecondary;
+    }
+  }
+
+  IconData _getStatusIcon(String status) {
+    switch (status.toLowerCase()) {
+      case 'hadir':
+        return Icons.check_circle_outline;
+      case 'terlambat':
+        return Icons.access_time;
+      case 'sakit':
+      case 'izin':
+        return Icons.local_hospital_outlined;
+      case 'alpha':
+        return Icons.cancel_outlined;
+      default:
+        return Icons.help_outline;
     }
   }
 
@@ -494,6 +618,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                         selectedSiswa = value;
                         _saveSelectedSiswa(selectedSiswa!);
                       });
+                      _fetchPresensiHariIni();
                     },
                   ),
                 ),
@@ -659,7 +784,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                     borderRadius: BorderRadius.circular(8),
                   ),
                   child: const Text(
-                    'Top rated',
+                    'Hari ini',
                     style: TextStyle(
                       fontSize: 10,
                       color: Colors.white,
@@ -681,71 +806,238 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
           ),
           Padding(
             padding: const EdgeInsets.all(20),
-            child: Row(
-              children: [
-                Container(
-                  width: 60,
-                  height: 60,
-                  decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(15),
-                    color: lightBlue.withOpacity(0.1),
-                  ),
-                  child: const Icon(
-                    Icons.person,
-                    color: primaryBlue,
-                    size: 24,
-                  ),
-                ),
-                const SizedBox(width: 16),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
+            child: isLoadingPresensi 
+                ? Row(
                     children: [
-                      Text(
-                        selectedSiswa ?? 'Pilih Siswa',
-                        style: const TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.bold,
-                          color: textPrimary,
+                      Container(
+                        width: 60,
+                        height: 60,
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(15),
+                          color: lightBlue.withOpacity(0.1),
+                        ),
+                        child: const Center(
+                          child: CircularProgressIndicator(
+                            strokeWidth: 2,
+                            valueColor: AlwaysStoppedAnimation<Color>(primaryBlue),
+                          ),
                         ),
                       ),
-                      const SizedBox(height: 4),
-                      const Text(
-                        'SMP Negeri 1',
-                        style: TextStyle(
-                          fontSize: 14,
-                          color: textSecondary,
+                      const SizedBox(width: 16),
+                      const Expanded(
+                        child: Text(
+                          'Memuat presensi hari ini...',
+                          style: TextStyle(
+                            fontSize: 14,
+                            color: textSecondary,
+                          ),
                         ),
                       ),
-                      const SizedBox(height: 8),
-                      const Row(
+                    ],
+                  )
+                : presensiHariIni == null
+                    ? Row(
                         children: [
-                          Icon(Icons.star, size: 16, color: Colors.orange),
-                          SizedBox(width: 4),
-                          Text(
-                            '4.8',
-                            style: TextStyle(
-                              fontSize: 12,
-                              fontWeight: FontWeight.w500,
+                          Container(
+                            width: 60,
+                            height: 60,
+                            decoration: BoxDecoration(
+                              borderRadius: BorderRadius.circular(15),
+                              color: Colors.orange.withOpacity(0.1),
+                            ),
+                            child: const Icon(
+                              Icons.schedule,
+                              color: Colors.orange,
+                              size: 24,
                             ),
                           ),
-                          SizedBox(width: 16),
-                          Icon(Icons.location_on, size: 16, color: Colors.grey),
-                          SizedBox(width: 4),
-                          Text(
-                            '0.7 km',
-                            style: TextStyle(
-                              fontSize: 12,
-                              color: textSecondary,
+                          const SizedBox(width: 16),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  selectedSiswa ?? 'Pilih Siswa',
+                                  style: const TextStyle(
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.bold,
+                                    color: textPrimary,
+                                  ),
+                                ),
+                                const SizedBox(height: 4),
+                                const Text(
+                                  'SMP Negeri 1',
+                                  style: TextStyle(
+                                    fontSize: 14,
+                                    color: textSecondary,
+                                  ),
+                                ),
+                                const SizedBox(height: 8),
+                                Container(
+                                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                                  decoration: BoxDecoration(
+                                    color: Colors.orange.withOpacity(0.1),
+                                    borderRadius: BorderRadius.circular(12),
+                                  ),
+                                  child: const Text(
+                                    'Hari ini belum absen',
+                                    style: TextStyle(
+                                      fontSize: 12,
+                                      fontWeight: FontWeight.w600,
+                                      color: Colors.orange,
+                                    ),
+                                  ),
+                                ),
+                              ],
                             ),
                           ),
                         ],
+                      )
+                    : Column(
+                        children: [
+                          Row(
+                            children: [
+                              Container(
+                                width: 60,
+                                height: 60,
+                                decoration: BoxDecoration(
+                                  borderRadius: BorderRadius.circular(15),
+                                  color: _getStatusColor(presensiHariIni!['status']?.toString() ?? '').withOpacity(0.1),
+                                ),
+                                child: Icon(
+                                  _getStatusIcon(presensiHariIni!['status']?.toString() ?? ''),
+                                  color: _getStatusColor(presensiHariIni!['status']?.toString() ?? ''),
+                                  size: 24,
+                                ),
+                              ),
+                              const SizedBox(width: 16),
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      selectedSiswa ?? 'Pilih Siswa',
+                                      style: const TextStyle(
+                                        fontSize: 16,
+                                        fontWeight: FontWeight.bold,
+                                        color: textPrimary,
+                                      ),
+                                    ),
+                                    const SizedBox(height: 4),
+                                    const Text(
+                                      'SMP Negeri 1',
+                                      style: TextStyle(
+                                        fontSize: 14,
+                                        color: textSecondary,
+                                      ),
+                                    ),
+                                    const SizedBox(height: 8),
+                                    Container(
+                                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                                      decoration: BoxDecoration(
+                                                                                  color: _getStatusColor(presensiHariIni!['status']?.toString() ?? '').withOpacity(0.1),
+                                        borderRadius: BorderRadius.circular(12),
+                                      ),
+                                      child: Text(
+                                        presensiHariIni!['status']?.toString() ?? 'Unknown',
+                                        style: TextStyle(
+                                          fontSize: 12,
+                                          fontWeight: FontWeight.w600,
+                                          color: _getStatusColor(presensiHariIni!['status']?.toString() ?? ''),
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: 16),
+                          Row(
+                            children: [
+                              Expanded(
+                                child: Container(
+                                  padding: const EdgeInsets.all(12),
+                                  decoration: BoxDecoration(
+                                    color: primaryBlue.withOpacity(0.05),
+                                    borderRadius: BorderRadius.circular(12),
+                                    border: Border.all(color: primaryBlue.withOpacity(0.2)),
+                                  ),
+                                  child: Row(
+                                    children: [
+                                      const Icon(Icons.login, color: primaryBlue, size: 16),
+                                      const SizedBox(width: 8),
+                                      Expanded(
+                                        child: Column(
+                                          crossAxisAlignment: CrossAxisAlignment.start,
+                                          children: [
+                                            const Text(
+                                              'Masuk',
+                                              style: TextStyle(
+                                                fontSize: 10,
+                                                color: textSecondary,
+                                                fontWeight: FontWeight.w500,
+                                              ),
+                                            ),
+                                            Text(
+                                              presensiHariIni!['waktu_masuk']?.toString() ?? '-',
+                                              style: const TextStyle(
+                                                fontSize: 12,
+                                                fontWeight: FontWeight.bold,
+                                                color: primaryBlue,
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ),
+                              const SizedBox(width: 16),
+                              Expanded(
+                                child: Container(
+                                  padding: const EdgeInsets.all(12),
+                                  decoration: BoxDecoration(
+                                    color: accentBlue.withOpacity(0.05),
+                                    borderRadius: BorderRadius.circular(12),
+                                    border: Border.all(color: accentBlue.withOpacity(0.2)),
+                                  ),
+                                  child: Row(
+                                    children: [
+                                      const Icon(Icons.logout, color: accentBlue, size: 16),
+                                      const SizedBox(width: 8),
+                                      Expanded(
+                                        child: Column(
+                                          crossAxisAlignment: CrossAxisAlignment.start,
+                                          children: [
+                                            const Text(
+                                              'Pulang',
+                                              style: TextStyle(
+                                                fontSize: 10,
+                                                color: textSecondary,
+                                                fontWeight: FontWeight.w500,
+                                              ),
+                                            ),
+                                            Text(
+                                              presensiHariIni!['waktu_keluar']?.toString() ?? '-',
+                                              style: const TextStyle(
+                                                fontSize: 12,
+                                                fontWeight: FontWeight.bold,
+                                                color: accentBlue,
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ],
                       ),
-                    ],
-                  ),
-                ),
-              ],
-            ),
           ),
         ],
       ),

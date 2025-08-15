@@ -437,7 +437,7 @@ class _RFIDScreenState extends State<RFIDScreen> with TickerProviderStateMixin {
                                           children: [
                                             const Icon(Icons.calendar_today, size: 16, color: Color(0xFF6B7280)),
                                             const SizedBox(width: 4),
-                                            Text('${r.tanggal}', style: const TextStyle(color: Color(0xFF6B7280))),
+                                            Text(r.tanggal, style: const TextStyle(color: Color(0xFF6B7280))),
                                           ],
                                         ),
                                       ],

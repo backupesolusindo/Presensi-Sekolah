@@ -186,6 +186,19 @@ class _ProfilePageState extends State<ProfilePage> with TickerProviderStateMixin
     }
   }
 
+  void _handleBackButton() {
+    // Periksa apakah bisa pop sebelum melakukan pop
+    if (Navigator.canPop(context)) {
+        Navigator.pop(context);
+    } else {
+        // Jika tidak bisa pop (halaman root), navigasi ke HomePage
+        Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(builder: (context) => const HomePage()),
+        );
+    }
+}
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -259,15 +272,15 @@ class _ProfilePageState extends State<ProfilePage> with TickerProviderStateMixin
               color: Colors.white.withOpacity(0.15),
               borderRadius: BorderRadius.circular(12),
             ),
-            child: IconButton(
-              onPressed: () => Navigator.pop(context),
-              icon: const Icon(
-                Icons.arrow_back_ios,
-                color: Colors.white,
-                size: 20,
-              ),
-              padding: EdgeInsets.zero,
-            ),
+                child: IconButton(
+                  onPressed: _handleBackButton, // PERBAIKAN: gunakan handler khusus
+                  icon: const Icon(
+                    Icons.arrow_back_ios,
+                    color: Colors.white,
+                    size: 20,
+                  ),
+                  padding: EdgeInsets.zero,
+                ),
           ),
           const Text(
             'Profile',
@@ -485,7 +498,7 @@ class _ProfilePageState extends State<ProfilePage> with TickerProviderStateMixin
                       color: primaryBlue.withOpacity(0.1),
                       borderRadius: BorderRadius.circular(16),
                     ),
-                    child: Icon(Icons.people_outline, color: primaryBlue, size: 20),
+                    child: const Icon(Icons.people_outline, color: primaryBlue, size: 20),
                   ),
                   const SizedBox(width: 16),
                   const Expanded(
