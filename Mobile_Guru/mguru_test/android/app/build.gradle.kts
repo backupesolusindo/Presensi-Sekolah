@@ -7,7 +7,7 @@ plugins {
 android {
     namespace = "com.example.mguru_test"
     compileSdk = 36
-    ndkVersion = "27.0.12077973"
+    ndkVersion = "29.0.13846066"
 
     compileOptions {
         isCoreLibraryDesugaringEnabled = true // ✅ Kotlin DSL pakai "is"
@@ -22,7 +22,7 @@ android {
     defaultConfig {
         applicationId = "com.example.mguru_test"
         minSdk = 28
-        targetSdk = flutter.targetSdkVersion
+        targetSdk = 36
         versionCode = flutter.versionCode
         versionName = flutter.versionName
     }
