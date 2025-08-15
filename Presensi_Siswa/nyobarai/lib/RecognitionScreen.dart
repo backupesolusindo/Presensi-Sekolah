@@ -6,7 +6,7 @@ import 'package:image/image.dart' as img;
 import 'package:google_mlkit_face_detection/google_mlkit_face_detection.dart';
 import 'package:lottie/lottie.dart';
 import 'package:http/http.dart' as http;
-import 'package:camera/camera.dart'; // Tambahkan package kamera
+import 'package:camera/camera.dart';
 import 'ML/Recognition.dart';
 import 'ML/Recognizer.dart';
 
@@ -17,15 +17,19 @@ class RecognitionScreen extends StatefulWidget {
   State<RecognitionScreen> createState() => _RecognitionScreenState();
 }
 
-class _RecognitionScreenState extends State<RecognitionScreen> {
-  CameraController? cameraController; // Controller untuk kamera
+class _RecognitionScreenState extends State<RecognitionScreen> with TickerProviderStateMixin {
+  CameraController? cameraController;
   File? _image;
   bool isLoading = false;
-  bool isFrontCamera = true; // Menyimpan status kamera (depan/belakang)
-  bool showPreview = true; // Untuk menampilkan preview kamera atau gambar hasil
+  bool isFrontCamera = true;
+  bool showPreview = true;
 
   late FaceDetector faceDetector;
   late Recognizer recognizer;
+  late AnimationController _pulseController;
+  late AnimationController _slideController;
+  late Animation<double> _pulseAnimation;
+  late Animation<Offset> _slideAnimation;
 
   List<Recognition> recognitions = [];
   List<Face> faces = [];
@@ -35,63 +39,71 @@ class _RecognitionScreenState extends State<RecognitionScreen> {
   @override
   void initState() {
     super.initState();
-    initializeCamera(); // Inisialisasi kamera
+    initializeCamera();
+    
+    _pulseController = AnimationController(
+      duration: const Duration(seconds: 2),
+      vsync: this,
+    )..repeat(reverse: true);
+    
+    _slideController = AnimationController(
+      duration: const Duration(milliseconds: 500),
+      vsync: this,
+    );
+
+    _pulseAnimation = Tween<double>(begin: 0.95, end: 1.05).animate(
+      CurvedAnimation(parent: _pulseController, curve: Curves.easeInOut),
+    );
+    
+    _slideAnimation = Tween<Offset>(
+      begin: const Offset(0, 1),
+      end: Offset.zero,
+    ).animate(CurvedAnimation(
+      parent: _slideController, 
+      curve: Curves.elasticOut,
+    ));
 
     final options = FaceDetectorOptions();
     faceDetector = FaceDetector(options: options);
     recognizer = Recognizer();
+    
+    _slideController.forward();
+  }
+
+  @override
+  void dispose() {
+    cameraController?.dispose();
+    faceDetector.close();
+    _pulseController.dispose();
+    _slideController.dispose();
+    super.dispose();
   }
 
   Future<void> initializeCamera([bool isFront = true]) async {
-    // Ambil daftar kamera yang tersedia
     final cameras = await availableCameras();
-
-    // Pilih kamera berdasarkan `isFront`
     final selectedCamera = isFront
-        ? cameras.firstWhere(
-            (camera) => camera.lensDirection == CameraLensDirection.front,
-          )
-        : cameras.firstWhere(
-            (camera) => camera.lensDirection == CameraLensDirection.back,
-          );
+        ? cameras.firstWhere((camera) => camera.lensDirection == CameraLensDirection.front)
+        : cameras.firstWhere((camera) => camera.lensDirection == CameraLensDirection.back);
 
-    // Inisialisasi controller kamera
-    cameraController = CameraController(
-      selectedCamera,
-      ResolutionPreset.high,
-    );
-
-    // Mulai kamera
+    cameraController = CameraController(selectedCamera, ResolutionPreset.high);
     await cameraController?.initialize();
     setState(() {});
   }
 
   Future<void> captureImage() async {
-    if (cameraController == null || !cameraController!.value.isInitialized) {
-      return;
-    }
+    if (cameraController == null || !cameraController!.value.isInitialized) return;
 
     try {
-      setState(() {
-        isLoading = true;
-      });
-
-      // Ambil gambar dari kamera
+      setState(() => isLoading = true);
       final XFile imageFile = await cameraController!.takePicture();
       setState(() {
         _image = File(imageFile.path);
-        showPreview = false; // Ganti ke tampilan gambar hasil
+        showPreview = false;
       });
-
-      await doFaceDetection(); // Deteksi wajah setelah gambar diambil
-
-      setState(() {
-        isLoading = false;
-      });
+      await doFaceDetection();
+      setState(() => isLoading = false);
     } catch (e) {
-      setState(() {
-        isLoading = false;
-      });
+      setState(() => isLoading = false);
       print("Error capturing image: $e");
     }
   }
@@ -109,55 +121,20 @@ class _RecognitionScreenState extends State<RecognitionScreen> {
       faces = await faceDetector.processImage(inputImage);
 
       if (faces.isEmpty) {
-        setState(() {
-          showPreview =
-              false; // Tidak menampilkan preview jika wajah tidak terdeteksi
-        });
-
-        // Tampilkan dialog ketika wajah tidak terdeteksi
-        showDialog(
-          context: context,
-          builder: (ctx) => AlertDialog(
-            shape:
-                RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-            title: const Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Icon(Icons.error_outline,
-                    color: Colors.red, size: 80), // Ikon X merah besar
-                SizedBox(height: 10),
-                Text(
-                  "Wajah Tidak Terdeteksi",
-                  style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
-                  textAlign: TextAlign.center,
-                ),
-              ],
-            ),
-            content: const Text(
-              "Pastikan wajah terlihat jelas dan coba lagi.",
-              style: TextStyle(fontSize: 16),
-              textAlign: TextAlign.center,
-            ),
-            actions: [
-              TextButton(
-                onPressed: () {
-                  Navigator.pop(ctx); // Tutup dialog dan kembali
-                  setState(() {
-                    showPreview = true; // Kembali ke tampilan preview kamera
-                  });
-                },
-                style: TextButton.styleFrom(
-                  foregroundColor: Colors.red,
-                ),
-                child: const Text("Coba Lagi"),
-              ),
-            ],
-          ),
+        setState(() => showPreview = false);
+        _showCustomDialog(
+          title: 'Wajah Tidak Terdeteksi',
+          message: 'Pastikan wajah terlihat jelas dan coba lagi.',
+          icon: Icons.error_outline,
+          iconColor: const Color(0xFFDC2626),
+          onPressed: () {
+            Navigator.pop(context);
+            setState(() => showPreview = true);
+          },
         );
         return;
       }
 
-      // Jika wajah terdeteksi, lanjutkan dengan proses pengenalan
       for (Face face in faces) {
         Rect faceRect = face.boundingBox;
         num left = max(0, faceRect.left);
@@ -188,33 +165,25 @@ class _RecognitionScreenState extends State<RecognitionScreen> {
         }
       }
 
-      // Jika tidak ada wajah yang dikenali, tampilkan dialog error
       if (detectedNISList.isEmpty) {
-        showDialog(
-          context: context,
-          builder: (BuildContext context) {
-            return _buildDialog(
-              title: 'Gagal',
-              message: 'Wajah tidak dikenali',
-              icon: Icons.error,
-              iconColor: Colors.red,
-            );
-          },
+        _showCustomDialog(
+          title: 'Gagal',
+          message: 'Wajah tidak dikenali',
+          icon: Icons.error,
+          iconColor: const Color(0xFFDC2626),
+          onPressed: () => Navigator.pop(context),
         );
       } else {
-        // Jika wajah dikenali, lanjutkan dengan proses lainnya
         drawRectangleAroundFaces();
       }
     }
   }
 
   Future<File> removeRotation(File inputImage) async {
-    final img.Image? capturedImage =
-        img.decodeImage(await File(inputImage.path).readAsBytes());
+    final img.Image? capturedImage = img.decodeImage(await File(inputImage.path).readAsBytes());
     if (capturedImage != null) {
       final img.Image orientedImage = img.bakeOrientation(capturedImage);
-      return await File(_image!.path)
-          .writeAsBytes(img.encodeJpg(orientedImage));
+      return await File(_image!.path).writeAsBytes(img.encodeJpg(orientedImage));
     }
     return inputImage;
   }
@@ -223,7 +192,6 @@ class _RecognitionScreenState extends State<RecognitionScreen> {
     if (_image != null) {
       var imageBytes = await _image!.readAsBytes();
       image = await decodeImageFromList(imageBytes);
-
       setState(() {
         recognitions;
         image;
@@ -234,44 +202,28 @@ class _RecognitionScreenState extends State<RecognitionScreen> {
 
   Future<void> verifyAttendance() async {
     if (detectedNISList.isEmpty) {
-      showDialog(
-        context: context,
-        builder: (BuildContext context) {
-          return _buildDialog(
-            title: 'Gagal',
-            message: 'Wajah tidak terdeteksi, coba foto lagi',
-            icon: Icons.error,
-            iconColor: Colors.red,
-          );
-        },
+      _showCustomDialog(
+        title: 'Gagal',
+        message: 'Wajah tidak terdeteksi, coba foto lagi',
+        icon: Icons.error,
+        iconColor: const Color(0xFFDC2626),
+        onPressed: () => Navigator.pop(context),
       );
       return;
     }
 
     for (Recognition rectangle in recognitions) {
       if (rectangle.name == "Tidak dikenali") {
-        // Tangani jika wajah tidak dikenali
-        showDialog(
-          context: context,
-          builder: (BuildContext context) {
-            return _buildDialog(
-              title: 'Gagal',
-              message: 'Wajah belum terdaftar',
-              icon: Icons.error,
-              iconColor: Colors.red,
-            );
-          },
+        _showCustomDialog(
+          title: 'Gagal',
+          message: 'Wajah belum terdaftar',
+          icon: Icons.error,
+          iconColor: const Color(0xFFDC2626),
+          onPressed: () => Navigator.pop(context),
         );
         return;
       } else {
-        // Nama dari rectangle yang dikenali
-        String recognizedName = rectangle.name;
-        print("Wajah dikenali: $recognizedName");
-
-        // Lanjutkan dengan proses absen
-        const url =
-            'https://presensi-smp1.esolusindo.com/Api/ApiGerbang/Gerbang/uploadAbsen';
-
+        const url = 'https://presensi-smp1.esolusindo.com/Api/ApiGerbang/Gerbang/uploadAbsen';
         final response = await http.post(
           Uri.parse(url),
           headers: {'Content-Type': 'application/json'},
@@ -279,133 +231,192 @@ class _RecognitionScreenState extends State<RecognitionScreen> {
         );
 
         if (response.statusCode != 200) {
-          showDialog(
-            context: context,
-            builder: (BuildContext context) {
-              return _buildDialog(
-                title: 'Gagal',
-                message: 'Gagal presensi untuk $recognizedName',
-                icon: Icons.error,
-                iconColor: Colors.red,
-              );
-            },
+          _showCustomDialog(
+            title: 'Gagal',
+            message: 'Gagal presensi untuk ${rectangle.name}',
+            icon: Icons.error,
+            iconColor: const Color(0xFFDC2626),
+            onPressed: () => Navigator.pop(context),
           );
         }
       }
     }
 
-    // Tampilkan dialog sukses setelah semua NIS berhasil dikirim
-    showDialog(
-      context: context,
-      builder: (BuildContext context) {
-        return _buildDialog(
-          title: 'Sukses',
-          message: 'Presensi Berhasil',
-          icon: Icons.check_circle,
-          iconColor: Colors.green,
-        );
-      },
+    _showCustomDialog(
+      title: 'Sukses',
+      message: 'Presensi Berhasil',
+      icon: Icons.check_circle,
+      iconColor: const Color(0xFF059669),
+      onPressed: () => Navigator.pop(context),
     );
-
-    // Kosongkan list setelah verifikasi
     detectedNISList.clear();
   }
 
-  Widget _buildDialog({
+  void _showCustomDialog({
     required String title,
     required String message,
     required IconData icon,
     required Color iconColor,
+    required VoidCallback onPressed,
   }) {
-    return AlertDialog(
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(20.0),
-      ),
-      title: Row(
-        children: [
-          Icon(icon, color: iconColor),
-          const SizedBox(width: 10),
-          Text(
-            title,
-            style: const TextStyle(
-              color: Colors.black,
-              fontWeight: FontWeight.bold,
+    showDialog(
+      context: context,
+      builder: (ctx) => Dialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        child: Container(
+          padding: const EdgeInsets.all(24),
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(20),
+            gradient: const LinearGradient(
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+              colors: [Colors.white, Color(0xFFF8FAFC)],
             ),
           ),
-        ],
-      ),
-      content: Text(
-        message,
-        style: const TextStyle(
-          color: Colors.black54,
-        ),
-      ),
-      actions: <Widget>[
-        TextButton(
-          child: const Text(
-            'OK',
-            style: TextStyle(color: Colors.blue),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Container(
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  color: iconColor.withOpacity(0.1),
+                  shape: BoxShape.circle,
+                ),
+                child: Icon(icon, color: iconColor, size: 48),
+              ),
+              const SizedBox(height: 20),
+              Text(
+                title,
+                style: const TextStyle(
+                  fontSize: 22,
+                  fontWeight: FontWeight.bold,
+                  color: Color(0xFF1F2937),
+                ),
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: 12),
+              Text(
+                message,
+                style: const TextStyle(
+                  fontSize: 16,
+                  color: Color(0xFF6B7280),
+                ),
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: 24),
+              Container(
+                width: double.infinity,
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    colors: [iconColor, iconColor.withOpacity(0.8)],
+                  ),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: TextButton(
+                  onPressed: onPressed,
+                  style: TextButton.styleFrom(
+                    foregroundColor: Colors.white,
+                    padding: const EdgeInsets.symmetric(vertical: 16),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                  ),
+                  child: const Text(
+                    'OK',
+                    style: TextStyle(fontWeight: FontWeight.w600, fontSize: 16),
+                  ),
+                ),
+              ),
+            ],
           ),
-          onPressed: () {
-            Navigator.of(context).pop();
-          },
         ),
-      ],
-      backgroundColor: Colors.white,
-      elevation: 24.0,
+      ),
     );
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: const Color(0xFF0F172A),
       appBar: PreferredSize(
         preferredSize: const Size.fromHeight(kToolbarHeight),
-        child: ClipRRect(
-          borderRadius: const BorderRadius.vertical(
-            bottom:
-                Radius.circular(16), // Menentukan seberapa tumpul sudut bawah
+        child: Container(
+          decoration: const BoxDecoration(
+            gradient: LinearGradient(
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+              colors: [Color(0xFF1E3A8A), Color(0xFF3B82F6)],
+            ),
           ),
           child: AppBar(
             title: const Text(
               'Presensi Wajah',
               style: TextStyle(
-                  color: Colors.white), // Ubah warna teks menjadi putih
+                color: Colors.white,
+                fontWeight: FontWeight.bold,
+                fontSize: 20,
+              ),
             ),
-            centerTitle: true, // Membuat teks di tengah
-            leading: IconButton(
-              icon: Image.asset(
-                  'assets/logoSMP.png'), // Mengganti tombol dengan logo
-              onPressed: () {
-                Navigator.pop(context); // Navigasi kembali ke layar sebelumnya
-              },
+            centerTitle: true,
+            leading: Container(
+              margin: const EdgeInsets.all(8),
+              decoration: BoxDecoration(
+                color: Colors.white.withOpacity(0.2),
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: IconButton(
+                icon: Image.asset('assets/logoSMP.png'),
+                onPressed: () => Navigator.pop(context),
+              ),
             ),
-            backgroundColor: Colors.blue[600],
+            backgroundColor: Colors.transparent,
+            elevation: 0,
           ),
         ),
       ),
-      backgroundColor: Colors.blue[50],
-      resizeToAvoidBottomInset: false,
       body: Column(
         children: [
           if (isLoading)
             Expanded(
-              child: Center(
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  crossAxisAlignment: CrossAxisAlignment.center,
-                  children: [
-                    Lottie.asset(
-                      "assets/loading1.json",
-                      width: 100,
-                      height: 100,
-                    ),
-                    const Text(
-                      'Loading...',
-                      style:
-                          TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-                    ),
-                  ],
+              child: Container(
+                decoration: const BoxDecoration(
+                  gradient: RadialGradient(
+                    center: Alignment.center,
+                    radius: 1.0,
+                    colors: [
+                      Color(0xFF1E3A8A),
+                      Color(0xFF0F172A),
+                    ],
+                  ),
+                ),
+                child: Center(
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.all(24),
+                        decoration: BoxDecoration(
+                          color: Colors.white.withOpacity(0.1),
+                          borderRadius: BorderRadius.circular(20),
+                          border: Border.all(color: Colors.white.withOpacity(0.2)),
+                        ),
+                        child: Lottie.asset(
+                          "assets/loading1.json",
+                          width: 100,
+                          height: 100,
+                        ),
+                      ),
+                      const SizedBox(height: 24),
+                      const Text(
+                        'Memproses...',
+                        style: TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.w600,
+                          color: Colors.white,
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
               ),
             )
@@ -413,159 +424,272 @@ class _RecognitionScreenState extends State<RecognitionScreen> {
               cameraController!.value.isInitialized &&
               showPreview)
             Expanded(
-              child: Stack(
-                children: [
-                  // Tampilkan preview kamera dengan ukuran penuh
-                  ClipRect(
-                    child: Align(
-                      alignment: Alignment.center,
-                      child: CameraPreview(cameraController!),
+              child: Container(
+                margin: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(20),
+                  boxShadow: [
+                    BoxShadow(
+                      color: const Color(0xFF3B82F6).withOpacity(0.3),
+                      blurRadius: 20,
+                      offset: const Offset(0, 8),
                     ),
-                  ),
-                  // Menambahkan kotak wajah di atas preview kamera
-                  Positioned.fill(
-                    child: Opacity(
-                      opacity: 0.3, // Menentukan opasitas gambar
-                      child: FractionallySizedBox(
-                        widthFactor: 1.7, // Menentukan lebar
-                        heightFactor: 1.7, // Menentukan tinggi
-                        child: Image.asset(
-                          'assets/kotakwajah.png',
-                          fit: BoxFit
-                              .contain, // Menyesuaikan gambar dengan area yang diberikan
+                  ],
+                ),
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(20),
+                  child: Stack(
+                    children: [
+                      Positioned.fill(
+                        child: CameraPreview(cameraController!),
+                      ),
+                      // Face detection overlay
+                      Positioned.fill(
+                        child: AnimatedBuilder(
+                          animation: _pulseAnimation,
+                          builder: (context, child) {
+                            return Transform.scale(
+                              scale: _pulseAnimation.value,
+                              child: Opacity(
+                                opacity: 0.4,
+                                child: Image.asset(
+                                  'assets/kotakwajah.png',
+                                  fit: BoxFit.contain,
+                                ),
+                              ),
+                            );
+                          },
                         ),
                       ),
-                    ),
-                  ),
-
-                  Positioned.fill(
-                    child: Opacity(
-                      opacity: 1.0, // Menentukan opasitas gambar
-                      child: FractionallySizedBox(
-                        widthFactor:
-                            1.7, // Menentukan lebar sebagai 80% dari lebar parent
-                        heightFactor:
-                            1.7, // Menentukan tinggi sebagai 80% dari tinggi parent
+                      Positioned.fill(
                         child: Image.asset(
                           'assets/kotaknya.png',
-                          fit: BoxFit
-                              .contain, // Menyesuaikan gambar dengan area yang diberikan
+                          fit: BoxFit.contain,
                         ),
                       ),
-                    ),
+                      // Corner decorations
+                      Positioned(
+                        top: 20,
+                        left: 20,
+                        child: Container(
+                          width: 30,
+                          height: 30,
+                          decoration: BoxDecoration(
+                            border: Border(
+                              top: BorderSide(color: Colors.white.withOpacity(0.8), width: 3),
+                              left: BorderSide(color: Colors.white.withOpacity(0.8), width: 3),
+                            ),
+                          ),
+                        ),
+                      ),
+                      Positioned(
+                        top: 20,
+                        right: 20,
+                        child: Container(
+                          width: 30,
+                          height: 30,
+                          decoration: BoxDecoration(
+                            border: Border(
+                              top: BorderSide(color: Colors.white.withOpacity(0.8), width: 3),
+                              right: BorderSide(color: Colors.white.withOpacity(0.8), width: 3),
+                            ),
+                          ),
+                        ),
+                      ),
+                      Positioned(
+                        bottom: 20,
+                        left: 20,
+                        child: Container(
+                          width: 30,
+                          height: 30,
+                          decoration: BoxDecoration(
+                            border: Border(
+                              bottom: BorderSide(color: Colors.white.withOpacity(0.8), width: 3),
+                              left: BorderSide(color: Colors.white.withOpacity(0.8), width: 3),
+                            ),
+                          ),
+                        ),
+                      ),
+                      Positioned(
+                        bottom: 20,
+                        right: 20,
+                        child: Container(
+                          width: 30,
+                          height: 30,
+                          decoration: BoxDecoration(
+                            border: Border(
+                              bottom: BorderSide(color: Colors.white.withOpacity(0.8), width: 3),
+                              right: BorderSide(color: Colors.white.withOpacity(0.8), width: 3),
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
                   ),
-                ],
+                ),
               ),
             )
           else if (!showPreview && _image != null)
             Expanded(
               child: Container(
-                margin: const EdgeInsets.all(0),
-                child: FittedBox(
-                  fit: BoxFit.cover, // Mengubah ini untuk memperbesar gambar
-                  child: SizedBox(
-                    width: image.width
-                        .toDouble(), // Menggunakan ukuran asli gambar
-                    height: image.height.toDouble(),
-                    child: CustomPaint(
-                      painter: FacePainter(
-                          facesList: recognitions, imageFile: image),
+                margin: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(20),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withOpacity(0.3),
+                      blurRadius: 20,
+                      offset: const Offset(0, 8),
+                    ),
+                  ],
+                ),
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(20),
+                  child: FittedBox(
+                    fit: BoxFit.cover,
+                    child: SizedBox(
+                      width: image.width.toDouble(),
+                      height: image.height.toDouble(),
+                      child: CustomPaint(
+                        painter: FacePainter(facesList: recognitions, imageFile: image),
+                      ),
                     ),
                   ),
                 ),
               ),
             ),
-          const SizedBox(height: 20),
-          if (showPreview)
-            Row(
-              mainAxisAlignment:
-                  MainAxisAlignment.center, // Posisikan tombol di tengah
-              children: [
-                ElevatedButton(
-                  onPressed: () async {
-                    await captureImage(); // Mengambil gambar langsung dari kamera
-                  },
-                  style: ElevatedButton.styleFrom(
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(20),
-                    ),
-                    padding: const EdgeInsets.symmetric(
-                        horizontal: 20,
-                        vertical:
-                            12), // Tambahkan padding untuk menyesuaikan ukuran tombol
-                  ),
-                  child: const Row(
-                    mainAxisSize: MainAxisSize
-                        .min, // Sesuaikan ukuran tombol dengan konten
-                    children: [
-                      Icon(Icons.camera_alt), // Ikon kamera
-                      SizedBox(width: 8), // Jarak antara ikon dan teks
-                      Text('Ambil Gambar'),
-                    ],
-                  ),
-                ),
-
-                const SizedBox(width: 10), // Jarak antara dua tombol
-                IconButton(
-                  icon: const Icon(Icons.cameraswitch),
-                  onPressed: () async {
-                    setState(() {
-                      isFrontCamera =
-                          !isFrontCamera; // Ubah status kamera (depan/belakang)
-                    });
-                    await initializeCamera(
-                        isFrontCamera); // Inisialisasi ulang kamera
-                  },
-                ),
-              ],
+          
+          // Bottom Controls
+          SlideTransition(
+            position: _slideAnimation,
+            child: Container(
+              padding: const EdgeInsets.all(24),
+              decoration: const BoxDecoration(
+                color: Color(0xFF1E293B),
+                borderRadius: BorderRadius.vertical(top: Radius.circular(30)),
+              ),
+              child: showPreview ? _buildCameraControls() : _buildResultControls(),
             ),
-          if (!showPreview && detectedNISList.isNotEmpty)
-            Row(
-              mainAxisAlignment:
-                  MainAxisAlignment.center, // Posisikan di tengah
-              children: [
-                ElevatedButton(
-                  onPressed: () {
-                    setState(() {
-                      showPreview = true; // Kembali ke tampilan preview kamera
-                    });
-                  },
-                  style: ElevatedButton.styleFrom(
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(15),
-                    ),
-                    padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 0),
-                  ),
-                  child: const Text('Ambil Ulang'),
-                ),
-                const SizedBox(width: 20), // Spasi di antara tombol
-                ElevatedButton(
-                  onPressed: () async {
-                    await verifyAttendance(); // Mengirim data untuk verifikasi absen
-                  },
-                  style: ElevatedButton.styleFrom(
-                    foregroundColor: Colors.white,
-                    backgroundColor: Colors.green, // Teks berwarna putih
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(15),
-                    ),
-                    padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 0),
-                  ),
-                  child: const Text('Verifikasi Kehadiran'),
-                ),
-              ],
-            ),
-          const SizedBox(height: 20),
+          ),
         ],
       ),
     );
   }
 
-  @override
-  void dispose() {
-    cameraController?.dispose();
-    faceDetector.close();
-    super.dispose();
+  Widget _buildCameraControls() {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+      children: [
+        // Switch camera button
+        Container(
+          decoration: BoxDecoration(
+            color: Colors.white.withOpacity(0.1),
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(color: Colors.white.withOpacity(0.2)),
+          ),
+          child: IconButton(
+            icon: const Icon(Icons.cameraswitch, color: Colors.white, size: 28),
+            onPressed: () async {
+              setState(() => isFrontCamera = !isFrontCamera);
+              await initializeCamera(isFrontCamera);
+            },
+          ),
+        ),
+        
+        // Capture button
+        GestureDetector(
+          onTap: captureImage,
+          child: Container(
+            width: 80,
+            height: 80,
+            decoration: BoxDecoration(
+              gradient: const LinearGradient(
+                colors: [Color(0xFF3B82F6), Color(0xFF1D4ED8)],
+              ),
+              shape: BoxShape.circle,
+              boxShadow: [
+                BoxShadow(
+                  color: const Color(0xFF3B82F6).withOpacity(0.5),
+                  blurRadius: 20,
+                  offset: const Offset(0, 8),
+                ),
+              ],
+            ),
+            child: const Icon(
+              Icons.camera_alt,
+              color: Colors.white,
+              size: 32,
+            ),
+          ),
+        ),
+        
+        // Settings placeholder (can be used for flash, etc.)
+        Container(
+          decoration: BoxDecoration(
+            color: Colors.white.withOpacity(0.1),
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(color: Colors.white.withOpacity(0.2)),
+          ),
+          child: IconButton(
+            icon: const Icon(Icons.settings, color: Colors.white, size: 28),
+            onPressed: () {},
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildResultControls() {
+    if (detectedNISList.isEmpty) return Container();
+    
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+      children: [
+        Expanded(
+          child: Container(
+            decoration: BoxDecoration(
+              color: Colors.white.withOpacity(0.1),
+              borderRadius: BorderRadius.circular(16),
+              border: Border.all(color: Colors.white.withOpacity(0.2)),
+            ),
+            child: TextButton.icon(
+              onPressed: () => setState(() => showPreview = true),
+              icon: const Icon(Icons.refresh, color: Colors.white),
+              label: const Text(
+                'Ambil Ulang',
+                style: TextStyle(color: Colors.white, fontWeight: FontWeight.w600),
+              ),
+            ),
+          ),
+        ),
+        const SizedBox(width: 16),
+        Expanded(
+          child: Container(
+            decoration: BoxDecoration(
+              gradient: const LinearGradient(
+                colors: [Color(0xFF059669), Color(0xFF047857)],
+              ),
+              borderRadius: BorderRadius.circular(16),
+              boxShadow: [
+                BoxShadow(
+                  color: const Color(0xFF059669).withOpacity(0.5),
+                  blurRadius: 15,
+                  offset: const Offset(0, 6),
+                ),
+              ],
+            ),
+            child: TextButton.icon(
+              onPressed: verifyAttendance,
+              icon: const Icon(Icons.check_circle, color: Colors.white),
+              label: const Text(
+                'Verifikasi',
+                style: TextStyle(color: Colors.white, fontWeight: FontWeight.w600),
+              ),
+            ),
+          ),
+        ),
+      ],
+    );
   }
 }
 
@@ -573,7 +697,7 @@ class FacePainter extends CustomPainter {
   List<Recognition> facesList;
   dynamic imageFile;
 
-  FacePainter({required this.facesList, @required this.imageFile});
+  FacePainter({required this.facesList, required this.imageFile});
 
   @override
   void paint(Canvas canvas, Size size) {
@@ -582,43 +706,51 @@ class FacePainter extends CustomPainter {
     }
 
     Paint p = Paint();
-    p.color = const Color.fromARGB(255, 30, 255, 0);
+    p.color = const Color(0xFF10B981);
     p.style = PaintingStyle.stroke;
-    p.strokeWidth = 5;
+    p.strokeWidth = 4;
 
-    // Draw rectangle and text for each face
     for (Recognition rectangle in facesList) {
-      // Draw the face rectangle
-      canvas.drawRect(rectangle.location, p);
+      canvas.drawRRect(
+        RRect.fromRectAndRadius(rectangle.location, const Radius.circular(12)),
+        p,
+      );
 
-      // Check if the name is "Tidak dikenali"
       if (rectangle.name == "Tidak dikenali") {
-        // Display "Wajah Tidak Dikenali" message
         _drawTextWithBackground(
           canvas,
           "Wajah Tidak Dikenali",
           rectangle.location.left,
-          rectangle.location.top - 80, // Position above the rectangle
+          rectangle.location.top - 80,
+          const Color(0xFFDC2626),
         );
       } else {
-        // Display the name and confidence for recognized faces
-        String text =
-            "${rectangle.name} ${(rectangle.confidence).toStringAsFixed(2)}%";
+        String text = "${rectangle.name} ${(rectangle.confidence).toStringAsFixed(1)}%";
         _drawTextWithBackground(
           canvas,
           text,
           rectangle.location.left,
-          rectangle.location.top - 80, // Position above the rectangle
+          rectangle.location.top - 80,
+          const Color(0xFF10B981),
         );
       }
     }
   }
 
-  // Custom method to draw text with background
-  void _drawTextWithBackground(Canvas canvas, String text, double x, double y) {
+  void _drawTextWithBackground(Canvas canvas, String text, double x, double y, Color color) {
     TextSpan span = TextSpan(
-      style: const TextStyle(
-          color: Colors.black, fontSize: 30, fontWeight: FontWeight.bold),
+      style: TextStyle(
+        color: Colors.white,
+        fontSize: 24,
+        fontWeight: FontWeight.bold,
+        shadows: [
+          Shadow(
+            blurRadius: 4,
+            color: Colors.black.withOpacity(0.5),
+            offset: const Offset(1, 1),
+          ),
+        ],
+      ),
       text: text,
     );
 
@@ -626,24 +758,27 @@ class FacePainter extends CustomPainter {
       text: span,
       textAlign: TextAlign.left,
       textDirection: TextDirection.ltr,
-      maxLines: 2, // Limit to 2 lines
-      ellipsis: '...', // Ellipsis for overflow text
+      maxLines: 2,
+      ellipsis: '...',
     );
-    tp.layout(maxWidth: 500); // Set max width to 200px
+    tp.layout(maxWidth: 400);
 
-    // Calculate background size
-    Paint backgroundPaint = Paint()..color = Colors.white;
-    double padding = 6;
-    Rect backgroundRect = Rect.fromLTWH(x - padding, y - padding,
-        tp.width + 2 * padding, tp.height + 2 * padding);
-    canvas.drawRect(backgroundRect, backgroundPaint);
+    Paint backgroundPaint = Paint()
+      ..color = color
+      ..style = PaintingStyle.fill;
+    double padding = 12;
+    RRect backgroundRect = RRect.fromLTRBR(
+      x - padding,
+      y - padding,
+      x + tp.width + padding,
+      y + tp.height + padding,
+      const Radius.circular(8),
+    );
+    canvas.drawRRect(backgroundRect, backgroundPaint);
 
-    // Draw the text over the background
     tp.paint(canvas, Offset(x, y));
   }
 
   @override
-  bool shouldRepaint(covariant CustomPainter oldDelegate) {
-    return true;
-  }
+  bool shouldRepaint(covariant CustomPainter oldDelegate) => true;
 }
