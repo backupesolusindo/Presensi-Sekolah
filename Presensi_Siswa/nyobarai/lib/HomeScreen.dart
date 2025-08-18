@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:lottie/lottie.dart';
-import 'package:presensiSiswa/RFIDscreen.dart' as rfid_lower;
 import 'RecognitionScreen.dart';
 import 'UserListScreen.dart';
 import 'RFIDScreen.dart';

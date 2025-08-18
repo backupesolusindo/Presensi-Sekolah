@@ -16,7 +16,7 @@ android {
     defaultConfig {
         applicationId = "com.example.mguru_test"
         minSdk = 28
-        targetSdk = flutter.targetSdkVersion
+        targetSdk = 36
         versionCode = flutter.versionCode
         versionName = flutter.versionName
     }
