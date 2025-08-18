@@ -164,7 +164,7 @@ class _ProfilePageState extends State<ProfilePage> with TickerProviderStateMixin
     setState(() {
       namaSiswa = siswa['nama'] ?? "Loading...";
       nis = siswa['nis'] ?? "Loading...";
-      kelas = siswa['nama_kelas'] ?? "Loading...";
+      kelas = siswa['_kelas'] ?? "Loading...";
     });
   }
 
