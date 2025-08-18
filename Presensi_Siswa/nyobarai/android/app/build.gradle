@@ -1,25 +1,23 @@
 plugins {
     id "com.android.application"
     id "kotlin-android"
-    id "dev.flutter.flutter-gradle-plugin"
+    id "dev.flutter.flutter-gradle-plugin" // Flutter plugin harus terakhir
 }
 
 def keystoreProperties = new Properties()
-def keystorePropertiesFile = rootProject.file("key.properties")
+def keystorePropertiesFile = rootProject.file('key.properties')
 if (keystorePropertiesFile.exists()) {
     keystoreProperties.load(new FileInputStream(keystorePropertiesFile))
 }
 
 android {
-    namespace "com.smpn1jember.presensisiswa"
-    compileSdk = flutter.compileSdkVersion
-
-    // ✅ Gunakan NDK versi yang dibutuhkan plugin
-    ndkVersion "25.1.8937393"
+    namespace = "com.smpn1jember.presensisiswa"
+    compileSdk = 36   // ✅ fix ke SDK 36
+    ndkVersion = "27.0.12077973"   // ✅ fix ke NDK versi tertentu
 
     compileOptions {
-        sourceCompatibility JavaVersion.VERSION_1_8
-        targetCompatibility JavaVersion.VERSION_1_8
+        sourceCompatibility = JavaVersion.VERSION_1_8
+        targetCompatibility = JavaVersion.VERSION_1_8
     }
 
     kotlinOptions {
@@ -27,32 +25,25 @@ android {
     }
 
     defaultConfig {
-        applicationId "com.smpn1jember.presensisiswa"
+        applicationId = "com.smpn1jember.presensisiswa"
         minSdk = flutter.minSdkVersion
-        targetSdk = flutter.targetSdkVersion
+        targetSdk = 36   // ✅ sesuaikan dengan compileSdk
         versionCode = flutter.versionCode
         versionName = flutter.versionName
-        multiDexEnabled true // ✅ Kalau pakai banyak library
     }
 
     signingConfigs {
         release {
-            keyAlias keystoreProperties["keyAlias"]
-            keyPassword keystoreProperties["keyPassword"]
-            storeFile keystoreProperties["storeFile"] ? file(keystoreProperties["storeFile"]) : null
-            storePassword keystoreProperties["storePassword"]
+            keyAlias keystoreProperties['keyAlias']
+            keyPassword keystoreProperties['keyPassword']
+            storeFile keystoreProperties['storeFile'] ? file(keystoreProperties['storeFile']) : null
+            storePassword keystoreProperties['storePassword']
         }
     }
 
     buildTypes {
         release {
             signingConfig signingConfigs.release
-            minifyEnabled true
-            shrinkResources true
-            proguardFiles getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro"
-        }
-        debug {
-            signingConfig signingConfigs.release // Biar debug pakai key yang sama (opsional)
         }
     }
 }
