@@ -192,7 +192,7 @@ class _Foto_ProfilState extends State<Foto_Profil> {
   }
 
   Future<void> getImage() async {
-    final pickedFile = await picker.getImage(
+    final pickedFile = await picker.pickImage(
         source: ImageSource.camera,
         preferredCameraDevice: CameraDevice.front,
         maxHeight: 380,

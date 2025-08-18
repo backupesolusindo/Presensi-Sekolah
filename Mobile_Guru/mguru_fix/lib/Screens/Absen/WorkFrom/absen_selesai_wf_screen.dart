@@ -140,7 +140,7 @@ class _AbsenPage extends State<AbsenPage> {
 
   final picker = ImagePicker();
   Future getCameraEx() async {
-    final pickedFile = await picker.getImage(
+    final pickedFile = await picker.pickImage(
         source: ImageSource.camera,
         preferredCameraDevice: CameraDevice.front,
         maxHeight: 380,
@@ -179,7 +179,7 @@ class _AbsenPage extends State<AbsenPage> {
     }
   }
 
-  Future<Future> getCurrentLocation() async {
+  Future<dynamic> getCurrentLocation() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     if (prefs.getBool("sl_wfh_selesai")!) {
       _showPerizinan();

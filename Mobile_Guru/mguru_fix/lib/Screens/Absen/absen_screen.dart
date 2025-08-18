@@ -45,7 +45,7 @@ class _AbsenPage extends State<AbsenPage> {
   late File _image;
   final picker = ImagePicker();
   Future getImage() async {
-    final pickedFile = await picker.getImage(
+    final pickedFile = await picker.pickImage(
         source: ImageSource.camera,
         preferredCameraDevice: CameraDevice.front,
         maxHeight: 380,
@@ -60,7 +60,7 @@ class _AbsenPage extends State<AbsenPage> {
     });
   }
 
-  Future<Future> getCurrentLocation() async {
+  Future<dynamic> getCurrentLocation() async {
     bool serviceEnabled;
     LocationPermission permission;
 

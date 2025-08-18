@@ -68,7 +68,7 @@ class _AbsenHarianScreenState extends State<AbsenHarianScreen> {
   File? _image;
   final picker = ImagePicker();
   Future getImage() async {
-    final pickedFile = await picker.getImage(
+    final pickedFile = await picker.pickImage(
         source: ImageSource.camera,
         preferredCameraDevice: CameraDevice.front,
         maxHeight: 380,
@@ -83,7 +83,7 @@ class _AbsenHarianScreenState extends State<AbsenHarianScreen> {
     });
   }
 
-  Future<Future> getCurrentLocation() async {
+  Future<dynamic> getCurrentLocation() async {
     prefs = await SharedPreferences.getInstance();
     if (prefs.getBool("sl_harian_masuk")!) {
       _showPerizinan();

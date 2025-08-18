@@ -118,7 +118,7 @@ class _AbsenWFScreenState extends State<AbsenWFScreen> {
 
   final picker = ImagePicker();
   Future getCameraEx() async {
-    final pickedFile = await picker.getImage(
+    final pickedFile = await picker.pickImage(
         source: ImageSource.camera,
         preferredCameraDevice: CameraDevice.front,
         maxHeight: 380,
@@ -157,7 +157,7 @@ class _AbsenWFScreenState extends State<AbsenWFScreen> {
     }
   }
 
-  Future<Future> getCurrentLocation() async {
+  Future<dynamic> getCurrentLocation() async {
     prefs = await SharedPreferences.getInstance();
     if (prefs.getBool("sl_wfh_mulai")!) {
       _showPerizinan();
