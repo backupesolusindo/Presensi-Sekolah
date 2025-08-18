@@ -136,7 +136,7 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
           ],
         ),
         actions: [
-          Container(
+          SizedBox(
             width: double.infinity,
             child: ElevatedButton(
               onPressed: () async {
@@ -201,7 +201,7 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
             ],
           ),
           actions: <Widget>[
-            Container(
+            SizedBox(
               width: double.infinity,
               child: ElevatedButton(
                 onPressed: () {
@@ -351,7 +351,7 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
           textAlign: TextAlign.center,
         ),
         actions: [
-          Container(
+          SizedBox(
             width: double.infinity,
             child: ElevatedButton(
               onPressed: () {
@@ -643,7 +643,7 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
           ],
         ),
         actions: [
-          Container(
+          SizedBox(
             width: double.infinity,
             child: ElevatedButton(
               onPressed: () async {

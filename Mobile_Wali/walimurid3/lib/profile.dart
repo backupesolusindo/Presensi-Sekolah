@@ -485,7 +485,7 @@ class _ProfilePageState extends State<ProfilePage> with TickerProviderStateMixin
                       color: primaryBlue.withOpacity(0.1),
                       borderRadius: BorderRadius.circular(16),
                     ),
-                    child: Icon(Icons.people_outline, color: primaryBlue, size: 20),
+                    child: const Icon(Icons.people_outline, color: primaryBlue, size: 20),
                   ),
                   const SizedBox(width: 16),
                   const Expanded(
