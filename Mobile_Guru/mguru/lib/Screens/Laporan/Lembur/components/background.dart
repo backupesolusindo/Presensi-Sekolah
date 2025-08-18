@@ -4,10 +4,10 @@ class Background extends StatelessWidget {
   final Widget child;
   final Widget filter;
   const Background({
-    Key? key,
+    super.key,
     required this.child,
     required this.filter,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {
