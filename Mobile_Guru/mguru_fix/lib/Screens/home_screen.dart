@@ -11,6 +11,7 @@ import 'package:mobile_presensi_kdtg/Screens/Kegiatan/absen_kegiatan_screen.dart
 import 'package:mobile_presensi_kdtg/Screens/Kegiatan/absen_kegiatan_wfh_screen.dart';
 import 'package:mobile_presensi_kdtg/Screens/LokasiKampus/lokasi_kampus_screen.dart';
 import 'package:mobile_presensi_kdtg/Screens/semua_menu.dart';
+import 'package:mobile_presensi_kdtg/Screens/pengumuman_screen.dart';  // Import halaman pengumuman
 import 'package:mobile_presensi_kdtg/constants.dart';
 import 'package:mobile_presensi_kdtg/core.dart';
 import 'package:geolocator/geolocator.dart';
@@ -38,6 +39,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
   String KeteranganMulai = "", KeteranganSelesai = "";
   String jam_istirahat = "";
   List<Map<String, dynamic>> ListJadwalMapel = [];
+  List<Map<String, dynamic>> ListPengumuman = [];  // Tambahan untuk pengumuman
   var DataAbsen,
       DataPegawai,
       DataLokasi,
@@ -110,6 +112,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
     getDataDash();
     fetchKegiatan();
     fetchJadwalMapel();
+    fetchPengumuman();  // Tambahan untuk fetch pengumuman
   }
 
   Future<String> getDataDash() async {
@@ -259,6 +262,30 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
     }
   }
 
+  // Tambahan method untuk fetch pengumuman
+  Future<void> fetchPengumuman() async {
+    try {
+      var url = Uri.parse("${Core().ApiUrl}Pengumuman/getPengumuman");
+      var response = await http.get(url);
+      
+      if (response.statusCode == 200) {
+        var items = json.decode(response.body)['data'];
+        setState(() {
+          ListPengumuman = List<Map<String, dynamic>>.from(items ?? []);
+        });
+        print("Debug: Number of announcements received: ${ListPengumuman.length}");
+      } else {
+        print("Debug: HTTP Response status code: ${response.statusCode}");
+        ListPengumuman = [];
+      }
+    } catch (e) {
+      print("Error fetching pengumuman: $e");
+      setState(() {
+        ListPengumuman = [];
+      });
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     Size size = MediaQuery.of(context).size;
@@ -295,12 +322,168 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                 (statusWF == 1)
                     ? _buildMenuWFO(screenHeight)
                     : _buildMenuWFH(screenHeight),
+                _buildPengumumanSection(screenHeight),  // Tambahan section pengumuman
                 _buildBox(screenHeight),
                 _buildKegiatanTerkini(screenHeight),
                 _buildJadwalMapelHariIni(screenHeight),
               ],
             ),
           ],
+        ),
+      ),
+    );
+  }
+
+  // Tambahan method untuk section pengumuman
+  SliverToBoxAdapter _buildPengumumanSection(double screenHeight) {
+    Size size = MediaQuery.of(context).size;
+
+    return SliverToBoxAdapter(
+      child: AnimatedOpacity(
+        opacity: ssBody ? 1 : 0,
+        duration: const Duration(milliseconds: 500),
+        child: AnimatedContainer(
+          margin: ssBody ? const EdgeInsets.only(top: 10) : const EdgeInsets.only(top: 30),
+          duration: const Duration(milliseconds: 500),
+          curve: Curves.fastEaseInToSlowEaseOut,
+          child: Container(
+            padding: const EdgeInsets.all(20.0),
+            margin: const EdgeInsets.symmetric(vertical: 5.0, horizontal: 15.0),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(12.0),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.15),
+                  blurRadius: 10,
+                  spreadRadius: 2,
+                  offset: const Offset(4, 4),
+                ),
+              ],
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    const Text(
+                      'Pengumuman Terbaru :',
+                      style: TextStyle(
+                        fontSize: 14.0,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                    TextButton(
+                      onPressed: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => const PengumumanScreen(),
+                          ),
+                        );
+                      },
+                      child: const Text(
+                        'Lihat Semua',
+                        style: TextStyle(
+                          fontSize: 12.0,
+                          color: Colors.blue,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 10.0),
+                if (ListPengumuman.isEmpty)
+                  Container(
+                    padding: const EdgeInsets.all(15.0),
+                    width: size.width,
+                    decoration: BoxDecoration(
+                      color: Colors.blue.withOpacity(0.1),
+                      borderRadius: BorderRadius.circular(10.0),
+                    ),
+                    child: const Row(
+                      children: [
+                        Icon(
+                          Icons.info_outline,
+                          color: Colors.blue,
+                          size: 24,
+                        ),
+                        SizedBox(width: 10),
+                        Expanded(
+                          child: Text(
+                            "Tidak ada pengumuman terbaru",
+                            style: TextStyle(
+                              color: Colors.blue,
+                              fontWeight: FontWeight.w500,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  )
+                else
+                  Column(
+                    children: ListPengumuman.take(2).map((item) => Container(
+                      margin: const EdgeInsets.only(bottom: 10.0),
+                      padding: const EdgeInsets.all(12.0),
+                      decoration: BoxDecoration(
+                        color: Colors.blue.withOpacity(0.1),
+                        borderRadius: BorderRadius.circular(8.0),
+                        border: Border.all(color: Colors.blue.withOpacity(0.3)),
+                      ),
+                      child: Row(
+                        children: [
+                          const Icon(
+                            Icons.announcement,
+                            color: Colors.blue,
+                            size: 20,
+                          ),
+                          const SizedBox(width: 10),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  item['judul'] ?? 'Judul tidak tersedia',
+                                  style: const TextStyle(
+                                    fontSize: 14.0,
+                                    fontWeight: FontWeight.w600,
+                                    color: Colors.black87,
+                                  ),
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                                const SizedBox(height: 4),
+                                Text(
+                                  item['isi'] ?? 'Konten tidak tersedia',
+                                  style: const TextStyle(
+                                    fontSize: 12.0,
+                                    color: Colors.black54,
+                                  ),
+                                  maxLines: 2,
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                                if (item['tanggal'] != null)
+                                  Text(
+                                    _formatDate(item['tanggal']),
+                                    style: const TextStyle(
+                                      fontSize: 10.0,
+                                      color: Colors.blue,
+                                      fontWeight: FontWeight.w500,
+                                    ),
+                                  ),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
+                    )).toList(),
+                  ),
+              ],
+            ),
+          ),
         ),
       ),
     );
