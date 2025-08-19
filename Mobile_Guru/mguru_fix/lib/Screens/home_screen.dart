@@ -1,7 +1,6 @@
 import 'dart:async';
 import 'dart:convert';
 import 'dart:ui';
-
 import 'package:date_format/date_format.dart';
 import 'package:flutter/material.dart';
 import 'package:mobile_presensi_kdtg/Screens/Absen/Harian/absen_harian_screen.dart';
@@ -11,7 +10,7 @@ import 'package:mobile_presensi_kdtg/Screens/Kegiatan/absen_kegiatan_screen.dart
 import 'package:mobile_presensi_kdtg/Screens/Kegiatan/absen_kegiatan_wfh_screen.dart';
 import 'package:mobile_presensi_kdtg/Screens/LokasiKampus/lokasi_kampus_screen.dart';
 import 'package:mobile_presensi_kdtg/Screens/semua_menu.dart';
-import 'package:mobile_presensi_kdtg/Screens/pengumuman_screen.dart';  // Import halaman pengumuman
+import 'package:mobile_presensi_kdtg/Screens/pengumuman_screen.dart'; // Import halaman pengumuman
 import 'package:mobile_presensi_kdtg/constants.dart';
 import 'package:mobile_presensi_kdtg/core.dart';
 import 'package:geolocator/geolocator.dart';
@@ -20,7 +19,6 @@ import 'package:http/http.dart' as http;
 import 'package:trust_location/trust_location.dart';
 // import 'package:launch_review/launch_review.dart';
 import 'package:mobile_presensi_kdtg/Screens/presensi_siswa_page.dart';
-
 import 'Absen/WorkFrom/absen_selesai_wf_screen.dart';
 import 'Absen/WorkFrom/absen_wf_screen.dart';
 
@@ -39,7 +37,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
   String KeteranganMulai = "", KeteranganSelesai = "";
   String jam_istirahat = "";
   List<Map<String, dynamic>> ListJadwalMapel = [];
-  List<Map<String, dynamic>> ListPengumuman = [];  // Tambahan untuk pengumuman
+  List<Map<String, dynamic>> ListPengumuman = []; // Tambahan untuk pengumuman
   var DataAbsen,
       DataPegawai,
       DataLokasi,
@@ -60,10 +58,16 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
   bool ssFooter = false;
   int status_lintashari = 0;
   int JenisAbsen = 0;
+  bool isLoadingPengumuman = false; // Loading state untuk pengumuman
+
+  // --- PENAMBAHAN PageController ---
+  late PageController _pageController;
 
   @override
   void initState() {
     super.initState();
+    // --- INISIALISASI PageController ---
+    _pageController = PageController();
     statusLoading = 1;
     ssHeader = false;
     ssBody = false;
@@ -72,6 +76,13 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
     getPref();
     cekFakeGPS();
     Timer.periodic(const Duration(seconds: 1), (Timer t) => _getTime());
+  }
+
+  // --- PENAMBAHAN dispose UNTUK PageController ---
+  @override
+  void dispose() {
+    _pageController.dispose();
+    super.dispose();
   }
 
   Future<void> cekFakeGPS() async {
@@ -112,7 +123,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
     getDataDash();
     fetchKegiatan();
     fetchJadwalMapel();
-    fetchPengumuman();  // Tambahan untuk fetch pengumuman
+    fetchPengumuman(); // Tambahan untuk fetch pengumuman
   }
 
   Future<String> getDataDash() async {
@@ -197,8 +208,8 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
           jam_istirahat = formatDate(
               DateTime.parse(DataIstirahat['waktu']), [HH, ':', nn, ':', ss]);
           if (DataSelesaiIstirahat?['waktu'] != null) {
-            jam_istirahat += " s/d ${formatDate(DateTime.parse(DataSelesaiIstirahat['waktu']),
-                    [HH, ':', nn, ':', ss])}";
+            jam_istirahat +=
+                " s/d ${formatDate(DateTime.parse(DataSelesaiIstirahat['waktu']), [HH, ':', nn, ':', ss])}";
           } else {
             jam_istirahat += " - Belum Presensi";
           }
@@ -235,7 +246,8 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
     String uuid = await SharedPreferences.getInstance()
         .then((prefs) => prefs.getString('NIP') ?? '');
 
-    var url = Uri.parse("${Core().ApiUrl}ApiJadwalMapel/JadwalMapel/getJadwalMapel_byUUID/$uuid");
+    var url = Uri.parse(
+        "${Core().ApiUrl}ApiJadwalMapel/JadwalMapel/getJadwalMapel_byUUID/$uuid");
 
     try {
       final response = await http.get(url);
@@ -262,26 +274,55 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
     }
   }
 
-  // Tambahan method untuk fetch pengumuman
   Future<void> fetchPengumuman() async {
+    setState(() {
+      isLoadingPengumuman = true;
+    });
+
     try {
-      var url = Uri.parse("${Core().ApiUrl}Pengumuman/getPengumuman");
-      var response = await http.get(url);
-      
+      var url =
+          Uri.parse("${Core().ApiUrl}ApiMobile/ApiPengumuman/getPengumuman");
+      print("Debug: Fetching pengumuman from: $url");
+
+      var response = await http.get(url, headers: {
+        "Accept": "application/json",
+        "Content-Type": "application/json",
+      });
+
+      print("Debug: Response status code: ${response.statusCode}");
+      print("Debug: Response body: ${response.body}");
+
       if (response.statusCode == 200) {
-        var items = json.decode(response.body)['data'];
-        setState(() {
-          ListPengumuman = List<Map<String, dynamic>>.from(items ?? []);
-        });
-        print("Debug: Number of announcements received: ${ListPengumuman.length}");
+        var jsonResponse = json.decode(response.body);
+
+        if (jsonResponse['status'] == true) {
+          var items = jsonResponse['data'];
+          setState(() {
+            ListPengumuman = List<Map<String, dynamic>>.from(items ?? []);
+            isLoadingPengumuman = false;
+          });
+          print(
+              "Debug: Number of announcements received: ${ListPengumuman.length}");
+        } else {
+          print(
+              "Debug: API returned false status: ${jsonResponse['message']}");
+          setState(() {
+            ListPengumuman = [];
+            isLoadingPengumuman = false;
+          });
+        }
       } else {
         print("Debug: HTTP Response status code: ${response.statusCode}");
-        ListPengumuman = [];
+        setState(() {
+          ListPengumuman = [];
+          isLoadingPengumuman = false;
+        });
       }
     } catch (e) {
       print("Error fetching pengumuman: $e");
       setState(() {
         ListPengumuman = [];
+        isLoadingPengumuman = false;
       });
     }
   }
@@ -322,7 +363,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                 (statusWF == 1)
                     ? _buildMenuWFO(screenHeight)
                     : _buildMenuWFH(screenHeight),
-                _buildPengumumanSection(screenHeight),  // Tambahan section pengumuman
+                _buildPengumumanSection(screenHeight),
                 _buildBox(screenHeight),
                 _buildKegiatanTerkini(screenHeight),
                 _buildJadwalMapelHariIni(screenHeight),
@@ -334,7 +375,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
     );
   }
 
-  // Tambahan method untuk section pengumuman
+  // --- WIDGET PENGUMUMAN YANG DIPERBAIKI ---
   SliverToBoxAdapter _buildPengumumanSection(double screenHeight) {
     Size size = MediaQuery.of(context).size;
 
@@ -343,12 +384,15 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
         opacity: ssBody ? 1 : 0,
         duration: const Duration(milliseconds: 500),
         child: AnimatedContainer(
-          margin: ssBody ? const EdgeInsets.only(top: 10) : const EdgeInsets.only(top: 30),
+          margin: ssBody
+              ? const EdgeInsets.only(top: 10)
+              : const EdgeInsets.only(top: 30),
           duration: const Duration(milliseconds: 500),
           curve: Curves.fastEaseInToSlowEaseOut,
           child: Container(
             padding: const EdgeInsets.all(20.0),
-            margin: const EdgeInsets.symmetric(vertical: 5.0, horizontal: 15.0),
+            margin:
+                const EdgeInsets.symmetric(vertical: 5.0, horizontal: 15.0),
             decoration: BoxDecoration(
               color: Colors.white,
               borderRadius: BorderRadius.circular(12.0),
@@ -395,7 +439,16 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                   ],
                 ),
                 const SizedBox(height: 10.0),
-                if (ListPengumuman.isEmpty)
+                if (isLoadingPengumuman)
+                  SizedBox(
+                    height: 150, // Sesuaikan tinggi
+                    child: const Center(
+                      child: CircularProgressIndicator(
+                        color: Colors.blue,
+                      ),
+                    ),
+                  )
+                else if (ListPengumuman.isEmpty)
                   Container(
                     padding: const EdgeInsets.all(15.0),
                     width: size.width,
@@ -424,62 +477,156 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                     ),
                   )
                 else
-                  Column(
-                    children: ListPengumuman.take(2).map((item) => Container(
-                      margin: const EdgeInsets.only(bottom: 10.0),
-                      padding: const EdgeInsets.all(12.0),
-                      decoration: BoxDecoration(
-                        color: Colors.blue.withOpacity(0.1),
-                        borderRadius: BorderRadius.circular(8.0),
-                        border: Border.all(color: Colors.blue.withOpacity(0.3)),
-                      ),
-                      child: Row(
-                        children: [
-                          const Icon(
-                            Icons.announcement,
-                            color: Colors.blue,
-                            size: 20,
-                          ),
-                          const SizedBox(width: 10),
-                          Expanded(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  item['judul'] ?? 'Judul tidak tersedia',
-                                  style: const TextStyle(
-                                    fontSize: 14.0,
-                                    fontWeight: FontWeight.w600,
-                                    color: Colors.black87,
+                  SizedBox(
+                    height: 150, // Beri tinggi tetap untuk PageView
+                    child: PageView.builder(
+                      key: const PageStorageKey<String>('pengumumanPageView'),
+                      controller: _pageController,
+                      scrollDirection: Axis.horizontal,
+                      itemCount: ListPengumuman.length > 3
+                          ? 3
+                          : ListPengumuman.length,
+                      itemBuilder: (context, index) {
+                        final item = ListPengumuman[index];
+                        final imageIndex = (index % 3) + 1;
+                        final imageName =
+                            "assets/images/pengumuman$imageIndex.jpg";
+
+                        // --- WIDGET DIBUNGKUS DENGAN GestureDetector ---
+                        return GestureDetector(
+                          onTap: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => const PengumumanScreen(),
+                              ),
+                            );
+                          },
+                          child: Container(
+                            margin: const EdgeInsets.only(right: 10.0),
+                            child: ClipRRect(
+                              borderRadius: BorderRadius.circular(12.0),
+                              child: Stack(
+                                fit: StackFit.expand,
+                                children: [
+                                  // 1. Background Image
+                                  Image.asset(
+                                    imageName,
+                                    fit: BoxFit.cover,
+                                    errorBuilder:
+                                        (context, error, stackTrace) {
+                                      return Container(
+                                        color: Colors.blue.shade100,
+                                        child: const Center(
+                                          child: Icon(
+                                            Icons.image_not_supported,
+                                            color: Colors.white,
+                                            size: 40,
+                                          ),
+                                        ),
+                                      );
+                                    },
                                   ),
-                                  maxLines: 1,
-                                  overflow: TextOverflow.ellipsis,
-                                ),
-                                const SizedBox(height: 4),
-                                Text(
-                                  item['isi'] ?? 'Konten tidak tersedia',
-                                  style: const TextStyle(
-                                    fontSize: 12.0,
-                                    color: Colors.black54,
-                                  ),
-                                  maxLines: 2,
-                                  overflow: TextOverflow.ellipsis,
-                                ),
-                                if (item['tanggal'] != null)
-                                  Text(
-                                    _formatDate(item['tanggal']),
-                                    style: const TextStyle(
-                                      fontSize: 10.0,
-                                      color: Colors.blue,
-                                      fontWeight: FontWeight.w500,
+
+                                  // 2. Overlay Gelap untuk Keterbacaan Teks
+                                  Container(
+                                    decoration: BoxDecoration(
+                                      gradient: LinearGradient(
+                                        colors: [
+                                          Colors.black.withOpacity(0.7),
+                                          Colors.black.withOpacity(0.2),
+                                          Colors.transparent
+                                        ],
+                                        begin: Alignment.bottomCenter,
+                                        end: Alignment.topCenter,
+                                        stops: const [0.0, 0.5, 1.0],
+                                      ),
                                     ),
                                   ),
-                              ],
+
+                                  // 3. Konten Teks
+                                  Positioned(
+                                    bottom: 12,
+                                    left: 12,
+                                    right: 12,
+                                    child: Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      mainAxisSize: MainAxisSize.min,
+                                      children: [
+                                        Text(
+                                          item['judul'] ??
+                                              'Judul tidak tersedia',
+                                          style: const TextStyle(
+                                            fontSize: 16.0,
+                                            fontWeight: FontWeight.bold,
+                                            color: Colors.white,
+                                            shadows: [
+                                              Shadow(
+                                                  blurRadius: 4.0,
+                                                  color: Colors.black54,
+                                                  offset: Offset(2.0, 2.0))
+                                            ],
+                                          ),
+                                          maxLines: 1,
+                                          overflow: TextOverflow.ellipsis,
+                                        ),
+                                        const SizedBox(height: 4),
+                                        Text(
+                                          item['isi'] ??
+                                              'Konten tidak tersedia',
+                                          style: TextStyle(
+                                            fontSize: 13.0,
+                                            color:
+                                                Colors.white.withOpacity(0.9),
+                                          ),
+                                          maxLines: 2,
+                                          overflow: TextOverflow.ellipsis,
+                                        ),
+                                        const SizedBox(height: 8),
+                                        if (item['tanggal'] != null)
+                                          Row(
+                                            children: [
+                                              const Icon(
+                                                Icons.access_time_filled,
+                                                size: 14,
+                                                color: Colors.white,
+                                              ),
+                                              const SizedBox(width: 4),
+                                              Text(
+                                                _formatDate(item['tanggal']),
+                                                style: const TextStyle(
+                                                  fontSize: 11.0,
+                                                  color: Colors.white,
+                                                  fontWeight: FontWeight.w600,
+                                                ),
+                                              ),
+                                            ],
+                                          ),
+                                      ],
+                                    ),
+                                  ),
+                                ],
+                              ),
                             ),
                           ),
-                        ],
+                        );
+                      },
+                    ),
+                  ),
+                if (ListPengumuman.length > 3)
+                  Padding(
+                    padding: const EdgeInsets.only(top: 8.0),
+                    child: Center(
+                      child: Text(
+                        "Geser untuk melihat pengumuman lainnya • ${ListPengumuman.length} total",
+                        style: const TextStyle(
+                          fontSize: 10.0,
+                          color: Colors.grey,
+                          fontStyle: FontStyle.italic,
+                        ),
                       ),
-                    )).toList(),
+                    ),
                   ),
               ],
             ),
@@ -497,7 +644,9 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
         opacity: ssFooter ? 1 : 0,
         duration: const Duration(milliseconds: 500),
         child: AnimatedContainer(
-          margin: ssFooter ? const EdgeInsets.only(top: 0) : const EdgeInsets.only(top: 30),
+          margin: ssFooter
+              ? const EdgeInsets.only(top: 0)
+              : const EdgeInsets.only(top: 30),
           duration: const Duration(milliseconds: 500),
           curve: Curves.fastEaseInToSlowEaseOut,
           child: Column(
@@ -505,8 +654,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
             children: <Widget>[
               const SizedBox(height: 10),
               const Padding(
-                padding:
-                    EdgeInsets.symmetric(horizontal: 20, vertical: 8),
+                padding: EdgeInsets.symmetric(horizontal: 20, vertical: 8),
                 child: Text(
                   'Presensi Anda :',
                   style: TextStyle(
@@ -521,8 +669,8 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                   StatusDinasLuar == 1)
                 Container(
                   padding: const EdgeInsets.all(15.0),
-                  margin:
-                      const EdgeInsets.symmetric(vertical: 0, horizontal: 15.0),
+                  margin: const EdgeInsets.symmetric(
+                      vertical: 0, horizontal: 15.0),
                   width: size.width,
                   decoration: BoxDecoration(
                     color: Colors.blue,
@@ -722,7 +870,9 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
         opacity: ssFooter ? 1 : 0,
         duration: const Duration(milliseconds: 500),
         child: AnimatedContainer(
-          margin: ssFooter ? const EdgeInsets.only(top: 0) : const EdgeInsets.only(top: 30),
+          margin: ssFooter
+              ? const EdgeInsets.only(top: 0)
+              : const EdgeInsets.only(top: 30),
           duration: const Duration(milliseconds: 500),
           curve: Curves.fastEaseInToSlowEaseOut,
           child: Column(
@@ -764,7 +914,9 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
         opacity: ssFooter ? 1 : 0,
         duration: const Duration(milliseconds: 500),
         child: AnimatedContainer(
-          margin: ssFooter ? const EdgeInsets.only(top: 0) : const EdgeInsets.only(top: 30),
+          margin: ssFooter
+              ? const EdgeInsets.only(top: 0)
+              : const EdgeInsets.only(top: 30),
           duration: const Duration(milliseconds: 500),
           curve: Curves.fastEaseInToSlowEaseOut,
           child: Column(
@@ -784,8 +936,8 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
               if (ListJadwalMapel.isEmpty)
                 Container(
                   padding: const EdgeInsets.all(15.0),
-                  margin:
-                      const EdgeInsets.symmetric(vertical: 5, horizontal: 20.0),
+                  margin: const EdgeInsets.symmetric(
+                      vertical: 5, horizontal: 20.0),
                   width: size.width,
                   decoration: BoxDecoration(
                     color: Colors.blue,
@@ -970,7 +1122,8 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                 ),
                 const SizedBox(width: 6),
                 Text(
-                  _formatDate(item['tanggal']), // Use the new method to format the date
+                  _formatDate(
+                      item['tanggal']), // Use the new method to format the date
                   style: const TextStyle(
                     fontSize: 16.0,
                     color: Colors.grey,
@@ -978,46 +1131,6 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                 ),
               ],
             ),
-            const SizedBox(height: 10), // Jarak antar elemen
-
-            // Nama Pegawai
-            // Row(
-            //   children: [
-            //     const Icon(
-            //       Icons.person_rounded,
-            //       color: Colors.blueGrey,
-            //       size: 20,
-            //     ),
-            //     const SizedBox(width: 6),
-            //     Text(
-            //       "Pengajar: ${item['nama_pegawai'] ?? 'Tidak ada data'}", // nama_pegawai
-            //       style: const TextStyle(
-            //         fontSize: 16.0,
-            //         color: Colors.grey,
-            //       ),
-            //     ),
-            //   ],
-            // ),
-            // const SizedBox(height: 10), // Jarak antar elemen
-
-            // ID Pegawai
-            // Row(
-            //   children: [
-            //     const Icon(
-            //       Icons.badge_rounded,
-            //       color: Colors.teal,
-            //       size: 20,
-            //     ),
-            //     const SizedBox(width: 6),
-            //     Text(
-            //       "ID Pegawai: ${item['id_pegawai'] ?? '-'}", // id_pegawai
-            //       style: const TextStyle(
-            //         fontSize: 16.0,
-            //         color: Colors.grey,
-            //       ),
-            //     ),
-            //   ],
-            // ),
             const SizedBox(height: 10), // Jarak antar elemen
           ],
         ),
@@ -1056,17 +1169,16 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
             children: <Widget>[
               Text(item['nama_kegiatan'],
                   style: const TextStyle(
-                      color: CText, fontSize: 16, fontWeight: FontWeight.w800)),
+                      color: CText,
+                      fontSize: 16,
+                      fontWeight: FontWeight.w800)),
               const SizedBox(
                 height: 4,
               ),
               Text(
                 (item['tanggal'] == item['tanggal_selesai'])
-                    ? "Pelaksanaan : ${formatDate(DateTime.parse(item['tanggal']),
-                            [dd, '-', mm, '-', yyyy])}"
-                    : "Pelaksanaan : ${formatDate(DateTime.parse(item['tanggal']),
-                            [dd, '-', mm, '-', yyyy])} s/d ${formatDate(DateTime.parse(item['tanggal_selesai']),
-                            [dd, '-', mm, '-', yyyy])}",
+                    ? "Pelaksanaan : ${formatDate(DateTime.parse(item['tanggal']), [dd, '-', mm, '-', yyyy])}"
+                    : "Pelaksanaan : ${formatDate(DateTime.parse(item['tanggal']), [dd, '-', mm, '-', yyyy])} s/d ${formatDate(DateTime.parse(item['tanggal_selesai']), [dd, '-', mm, '-', yyyy])}",
                 style: const TextStyle(
                     color: kDarkPrimaryColor, fontWeight: FontWeight.w600),
               ),
@@ -1183,14 +1295,17 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
         child: AnimatedContainer(
           padding: const EdgeInsets.only(
               left: 20.0, right: 20.0, bottom: 0.0, top: 40.0),
-          margin: ssHeader ? const EdgeInsets.only(top: 0) : const EdgeInsets.only(top: 8),
+          margin: ssHeader
+              ? const EdgeInsets.only(top: 0)
+              : const EdgeInsets.only(top: 8),
           duration: const Duration(milliseconds: 500),
           curve: Curves.fastEaseInToSlowEaseOut,
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: <Widget>[
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 12),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 18, vertical: 12),
                 decoration: BoxDecoration(
                   color: Colors.white, // Putih polos
                   borderRadius: BorderRadius.circular(12.0),
@@ -1260,7 +1375,8 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                       height: 125,
                       width: size.width * 0.43,
                       margin: const EdgeInsets.only(right: 4),
-                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 8, vertical: 8),
                       decoration: BoxDecoration(
                         color: Colors.white, // Putih polos
                         borderRadius: BorderRadius.circular(12.0),
@@ -1313,8 +1429,8 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                         height: 125,
                         width: size.width * 0.43,
                         margin: const EdgeInsets.only(left: 4),
-                        padding:
-                            const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 8, vertical: 8),
                         decoration: BoxDecoration(
                           color: Colors.white, // Putih polos
                           borderRadius: BorderRadius.circular(12.0),
@@ -1433,7 +1549,8 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
           curve: Curves.fastEaseInToSlowEaseOut,
           child: Container(
             padding: const EdgeInsets.all(20.0),
-            margin: const EdgeInsets.symmetric(vertical: 5.0, horizontal: 15.0),
+            margin:
+                const EdgeInsets.symmetric(vertical: 5.0, horizontal: 15.0),
             decoration: BoxDecoration(
               color: Colors.white,
               borderRadius: BorderRadius.circular(12.0),
@@ -1498,14 +1615,16 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                                   "Presensi Harian",
                                   "Anda belum melakukan Presensi Harian. Silakan Presensi Harian terlebih dahulu!",
                                   MaterialPageRoute(
-                                    builder: (context) => const AbsenHarianScreen(),
+                                    builder: (context) =>
+                                        const AbsenHarianScreen(),
                                   ),
                                 );
                               } else {
                                 Navigator.push(
                                     context,
                                     MaterialPageRoute(
-                                      builder: (context) => const AbsenHarianScreen(),
+                                      builder: (context) =>
+                                          const AbsenHarianScreen(),
                                     ));
                               }
                             } else {
@@ -1546,7 +1665,8 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                                   "Presensi Harian",
                                   "Anda belum melakukan Presensi Harian. Silakan Presensi Harian terlebih dahulu!",
                                   MaterialPageRoute(
-                                    builder: (context) => const AbsenHarianScreen(),
+                                    builder: (context) =>
+                                        const AbsenHarianScreen(),
                                   ),
                                 );
                               } else {
@@ -1613,8 +1733,9 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
             opacity: ssBody ? 1 : 0,
             duration: const Duration(milliseconds: 500),
             child: AnimatedContainer(
-              margin:
-                  ssBody ? const EdgeInsets.only(top: 0) : const EdgeInsets.only(top: 30),
+              margin: ssBody
+                  ? const EdgeInsets.only(top: 0)
+                  : const EdgeInsets.only(top: 30),
               duration: const Duration(milliseconds: 500),
               curve: Curves.fastEaseInToSlowEaseOut,
               child: Container(
@@ -1680,7 +1801,8 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                                       }));
                                     } else {
                                       if (DataAbsenPulang == null) {
-                                        _showMyDialog("Presensi WFH",
+                                        _showMyDialog(
+                                            "Presensi WFH",
                                             "Anda belum melakukan Presensi Selesai WFH. Silakan Presensi Selesai WFH terlebih dahulu !",
                                             MaterialPageRoute(
                                                 builder: (context) {
@@ -1719,7 +1841,8 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                                 onPressed: () {
                                   if (StatusDinasLuar == 1) {
                                     if (DataAbsen == null) {
-                                      _showMyDialog("Presensi WFH",
+                                      _showMyDialog(
+                                          "Presensi WFH",
                                           "Anda belum melakukan Presensi WFH. Silakan Presensi WFH terlebih dahulu !",
                                           MaterialPageRoute(builder: (context) {
                                         return const AbsenWFScreen();
@@ -1732,7 +1855,8 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                                           return const AbsenSelesaiWFScreen();
                                         }));
                                       } else {
-                                        _showMyDialog("Presensi WFH",
+                                        _showMyDialog(
+                                            "Presensi WFH",
                                             "Apakah Anda Membatalkan Selesai WFH Sebelumnya ?",
                                             MaterialPageRoute(
                                                 builder: (context) {
@@ -1891,7 +2015,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
     if (date == null || date.isEmpty) {
       return 'Tanggal belum ditentukan'; // Return default message if date is null or empty
     }
-    
+
     try {
       DateTime parsedDate = DateTime.parse(date); // Parse the date string
       return '${parsedDate.day.toString().padLeft(2, '0')}-${parsedDate.month.toString().padLeft(2, '0')}-${parsedDate.year}'; // Format to DD-MM-YYYY
