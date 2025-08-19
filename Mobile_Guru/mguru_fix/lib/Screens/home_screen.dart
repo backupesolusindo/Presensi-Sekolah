@@ -440,9 +440,9 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                 ),
                 const SizedBox(height: 10.0),
                 if (isLoadingPengumuman)
-                  SizedBox(
+                  const SizedBox(
                     height: 150, // Sesuaikan tinggi
-                    child: const Center(
+                    child: Center(
                       child: CircularProgressIndicator(
                         color: Colors.blue,
                       ),

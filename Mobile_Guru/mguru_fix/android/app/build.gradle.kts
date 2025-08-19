@@ -7,7 +7,7 @@ plugins {
 
 android {
     namespace = "com.example.mguru_fix"
-    compileSdk = 36 
+    compileSdk = 34
     ndkVersion = "27.0.12077973"
 
     compileOptions {
@@ -22,8 +22,8 @@ android {
 
     defaultConfig {
         applicationId = "com.example.mguru_fix"
-        minSdk = 23  
-        targetSdk = 36
+        minSdk = 28  
+        targetSdk = 34
         versionCode = flutter.versionCode
         versionName = flutter.versionName
     }
