@@ -1,68 +1,86 @@
 import 'dart:convert';
-
 import 'package:mobile_presensi_kdtg/core.dart';
 import 'package:http/http.dart' as http;
 
 class PostLogin {
   int status_kode;
-  String status_spesial;
   String message;
-  String Pegawai;
   String NIP;
+  String Pegawai;
   String UUID;
+  String status_spesial;
   String IDKampus, NamaKampus;
   String LokasiLat, LokasiLng, Radius;
 
-  PostLogin(
-      {this.status_kode = 0,
-      this.message = "",
-      this.NIP = "",
-      this.Pegawai = "",
-      this.UUID = "",
-      this.status_spesial = "",
-      this.LokasiLat = "",
-      this.LokasiLng = "",
-      this.Radius = "",
-      this.IDKampus = "",
-      this.NamaKampus = ""});
+  PostLogin({
+    this.status_kode = 0,
+    this.message = "Terjadi kesalahan.", // Set pesan default yang lebih informatif
+    this.NIP = "",
+    this.Pegawai = "",
+    this.UUID = "",
+    this.status_spesial = "",
+    this.LokasiLat = "",
+    this.LokasiLng = "",
+    this.Radius = "",
+    this.IDKampus = "",
+    this.NamaKampus = "",
+  });
 
-  factory PostLogin.createPostLogin(Map<String, dynamic> object) {
-    return PostLogin(
-      status_kode: object['message']['status'],
-      message: object['message']['message'],
-      IDKampus: object['message']['kampus']['idkampus'],
-      NamaKampus: object['message']['kampus']['nama_kampus'],
-      LokasiLat: object['message']['kampus']['latitude'],
-      LokasiLng: object['message']['kampus']['longtitude'],
-      Radius: object['message']['kampus']['radius'],
-      NIP: object['response']["nip"],
-      Pegawai: object['response']["nama"],
-      UUID: object['response']["uuid"],
-      status_spesial: object['response']["spesial"].toString(),
-      // status_kode: 200,
-      // message: object['data']['first_name'],
-      // NIP: object['data']["first_name"],
-      // Pegawai: object['data']["first_name"],
-      // UUID: object['data']["first_name"],
-    );
+  // Factory constructor untuk membuat objek dari respons JSON
+  factory PostLogin.fromJson(Map<String, dynamic> json) {
+    // Tangani respons sukses
+    if (json.containsKey('response') && json.containsKey('message') && json['message']['status'] == 200) {
+      final message = json['message'] as Map<String, dynamic>;
+      final response = json['response'] as Map<String, dynamic>;
+      final kampus = message['kampus'] as Map<String, dynamic>;
+
+      return PostLogin(
+        status_kode: message['status'] ?? 0,
+        message: message['message'] ?? 'Login berhasil.',
+        IDKampus: kampus['idkampus']?.toString() ?? '',
+        NamaKampus: kampus['nama_kampus'] ?? '',
+        LokasiLat: kampus['latitude']?.toString() ?? '',
+        LokasiLng: kampus['longtitude']?.toString() ?? '',
+        Radius: kampus['radius']?.toString() ?? '',
+        NIP: response['nip'] ?? '',
+        Pegawai: response['nama'] ?? '',
+        UUID: response['uuid'] ?? '',
+        status_spesial: response['spesial']?.toString() ?? '',
+      );
+    } 
+    // Tangani respons gagal
+    else {
+      return PostLogin(
+        status_kode: json['status_kode'] ?? 500,
+        message: json['message'] ?? 'Login gagal. Silakan coba lagi.',
+      );
+    }
   }
 
-  static Future<PostLogin?> connectToApi(
+  static Future<PostLogin> connectToApi(
       String username, String password, String token) async {
-    var url = Uri.parse("${Core().ApiUrl}Login/aksi_login");
-    var apiResult = await http.post(url, body: {
-      "nip": username,
-      "password": password,
-      "token": token,
-    });
-    // var url = Uri.parse("https://reqres.in/api/users/2");
-    // var apiResult = await http.get(url);
-    print(apiResult.body);
-    if (apiResult.statusCode == 200) {
+    try {
+      var url = Uri.parse("${Core().ApiUrl}Login/aksi_login");
+      var apiResult = await http.post(url, body: {
+        "nip": username,
+        "password": password,
+        "token": token,
+      });
+
+      print("Response Body: ${apiResult.body}");
+
       var jsonObject = json.decode(apiResult.body);
-      return PostLogin.createPostLogin(jsonObject);
-    } else {
-      return null;
+      
+      // Menggunakan factory constructor yang baru untuk memproses JSON
+      return PostLogin.fromJson(jsonObject);
+
+    } catch (e) {
+      // Tangani kesalahan jaringan atau parsing
+      print("Kesalahan saat koneksi ke API: $e");
+      return PostLogin(
+        status_kode: 500,
+        message: 'Tidak dapat terhubung ke server. Periksa koneksi internet Anda.',
+      );
     }
   }
 }
