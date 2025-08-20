@@ -477,8 +477,9 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                     ),
                   )
                 else
+// --- PENGUMUMAN DENGAN GAMBAR DARI API ---
                   SizedBox(
-                    height: 150, // Beri tinggi tetap untuk PageView
+                    height: 150, // Tinggi tetap untuk PageView
                     child: PageView.builder(
                       key: const PageStorageKey<String>('pengumumanPageView'),
                       controller: _pageController,
@@ -488,11 +489,10 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                           : ListPengumuman.length,
                       itemBuilder: (context, index) {
                         final item = ListPengumuman[index];
-                        final imageIndex = (index % 3) + 1;
-                        final imageName =
-                            "assets/images/pengumuman$imageIndex.jpg";
 
-                        // --- WIDGET DIBUNGKUS DENGAN GestureDetector ---
+                        // Ambil gambar dari API
+                        final String? imageUrl = item['gambar'];
+
                         return GestureDetector(
                           onTap: () {
                             Navigator.push(
@@ -509,26 +509,48 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                               child: Stack(
                                 fit: StackFit.expand,
                                 children: [
-                                  // 1. Background Image
-                                  Image.asset(
-                                    imageName,
-                                    fit: BoxFit.cover,
-                                    errorBuilder:
-                                        (context, error, stackTrace) {
-                                      return Container(
-                                        color: Colors.blue.shade100,
-                                        child: const Center(
-                                          child: Icon(
-                                            Icons.image_not_supported,
-                                            color: Colors.white,
-                                            size: 40,
+                                  // --- Background Gambar dari API ---
+                                  if (imageUrl != null && imageUrl.isNotEmpty)
+                                    Image.network(
+                                      imageUrl,
+                                      fit: BoxFit.cover,
+                                      loadingBuilder: (context, child, loadingProgress) {
+                                        if (loadingProgress == null) return child;
+                                        return Container(
+                                          color: Colors.blue.shade100,
+                                          child: const Center(
+                                            child: CircularProgressIndicator(
+                                              color: Colors.blue,
+                                            ),
                                           ),
+                                        );
+                                      },
+                                      errorBuilder: (context, error, stackTrace) {
+                                        return Container(
+                                          color: Colors.blue.shade100,
+                                          child: const Center(
+                                            child: Icon(
+                                              Icons.broken_image,
+                                              color: Colors.white,
+                                              size: 40,
+                                            ),
+                                          ),
+                                        );
+                                      },
+                                    )
+                                  else
+                                    Container(
+                                      color: Colors.blue.shade100,
+                                      child: const Center(
+                                        child: Icon(
+                                          Icons.image_not_supported,
+                                          color: Colors.white,
+                                          size: 40,
                                         ),
-                                      );
-                                    },
-                                  ),
+                                      ),
+                                    ),
 
-                                  // 2. Overlay Gelap untuk Keterbacaan Teks
+                                  // --- Overlay Gelap untuk Teks ---
                                   Container(
                                     decoration: BoxDecoration(
                                       gradient: LinearGradient(
@@ -544,28 +566,27 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                                     ),
                                   ),
 
-                                  // 3. Konten Teks
+                                  // --- Konten Teks ---
                                   Positioned(
                                     bottom: 12,
                                     left: 12,
                                     right: 12,
                                     child: Column(
-                                      crossAxisAlignment:
-                                          CrossAxisAlignment.start,
+                                      crossAxisAlignment: CrossAxisAlignment.start,
                                       mainAxisSize: MainAxisSize.min,
                                       children: [
                                         Text(
-                                          item['judul'] ??
-                                              'Judul tidak tersedia',
+                                          item['judul'] ?? 'Judul tidak tersedia',
                                           style: const TextStyle(
                                             fontSize: 16.0,
                                             fontWeight: FontWeight.bold,
                                             color: Colors.white,
                                             shadows: [
                                               Shadow(
-                                                  blurRadius: 4.0,
-                                                  color: Colors.black54,
-                                                  offset: Offset(2.0, 2.0))
+                                                blurRadius: 4.0,
+                                                color: Colors.black54,
+                                                offset: Offset(2.0, 2.0),
+                                              )
                                             ],
                                           ),
                                           maxLines: 1,
@@ -573,12 +594,10 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                                         ),
                                         const SizedBox(height: 4),
                                         Text(
-                                          item['isi'] ??
-                                              'Konten tidak tersedia',
+                                          item['isi'] ?? 'Konten tidak tersedia',
                                           style: TextStyle(
                                             fontSize: 13.0,
-                                            color:
-                                                Colors.white.withOpacity(0.9),
+                                            color: Colors.white.withOpacity(0.9),
                                           ),
                                           maxLines: 2,
                                           overflow: TextOverflow.ellipsis,

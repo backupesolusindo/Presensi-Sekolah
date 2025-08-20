@@ -243,7 +243,7 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
                         horizontal: 12.0), // Padding di dalam dropdown
                   ),
                   hint: const Text("Pilih Kelas"),
-                  value: selectedKelas,
+                  initialValue: selectedKelas,
                   items: kelasList.map((kelas) {
                     return DropdownMenuItem<String>(
                       value: kelas['id_kelas'],

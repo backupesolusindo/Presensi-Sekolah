@@ -162,10 +162,34 @@ class _ProfilePageState extends State<ProfilePage> with TickerProviderStateMixin
 
   void _updateSiswaDetail(Map<String, dynamic> siswa) {
     setState(() {
-      namaSiswa = siswa['nama'] ?? "Loading...";
-      nis = siswa['nis'] ?? "Loading...";
-      kelas = siswa['kelas'] ?? "Loading...";
+      namaSiswa = siswa['nama'] ?? "Data tidak tersedia";
+      nis = siswa['nis'] ?? "Data tidak tersedia";
+      
+      // FIX: Prioritas urutan field kelas yang lebih komprehensif
+      String? kelasValue = siswa['kelas'] ?? 
+                         siswa['nama_kelas'] ?? 
+                         siswa['class'] ?? 
+                         siswa['nama_kls'] ?? 
+                         siswa['kelas_nama'];
+      
+      // Jika masih null, coba buat dari id_kelas
+      if (kelasValue == null && siswa['id_kelas'] != null) {
+        String idKelas = siswa['id_kelas'].toString();
+        kelasValue = 'Kelas $idKelas';
+      }
+      
+      kelas = kelasValue ?? "Kelas tidak tersedia";
     });
+    
+    // Debug log untuk melihat struktur data
+    print('=== DEBUG SISWA DATA ===');
+    print('Full siswa data: $siswa');
+    print('Available keys: ${siswa.keys.toList()}');
+    print('kelas: ${siswa['kelas']}');
+    print('nama_kelas: ${siswa['nama_kelas']}');
+    print('id_kelas: ${siswa['id_kelas']}');
+    print('Final kelas value: $kelas');
+    print('========================');
   }
 
   void _onItemTapped(int index) {
@@ -184,6 +208,11 @@ class _ProfilePageState extends State<ProfilePage> with TickerProviderStateMixin
         MaterialPageRoute(builder: (context) => const RiwayatPage()),
       );
     }
+  }
+
+  Future<void> _saveSelectedSiswa(String siswa) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString('selectedSiswa', siswa);
   }
 
   @override
@@ -864,10 +893,5 @@ class _ProfilePageState extends State<ProfilePage> with TickerProviderStateMixin
         ),
       ),
     );
-  }
-
-  _saveSelectedSiswa(String siswa) async {
-    final prefs = await SharedPreferences.getInstance();
-    prefs.setString('selectedSiswa', siswa);
   }
 }
