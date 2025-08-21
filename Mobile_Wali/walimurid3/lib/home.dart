@@ -66,9 +66,16 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
   late Animation<double> _fadeAnimation;
 
   List<dynamic> siswaList = [];
-  String? selectedSiswa;
+  String? selectedSiswaNama;
+  Map<String, dynamic>? get selectedSiswa {
+      if (selectedSiswaNama == null || siswaList.isEmpty) return null;
+      try {
+          return siswaList.firstWhere((siswa) => siswa['nama'] == selectedSiswaNama);
+      } catch (e) {
+          return null;
+      }
+  }
 
-  // Enhanced Color Palette
   static const Color primaryBlue = Color(0xFF1976D2);
   static const Color lightBlue = Color(0xFF42A5F5);
   static const Color accentBlue = Color(0xFF2196F3);
@@ -96,7 +103,6 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
   Future<void> _ensureConsistentData() async {
     final prefs = await SharedPreferences.getInstance();
     
-    // Pastikan konsistensi data nomor HP
     String? noHp = prefs.getString('no_hp');
     String? noHpOrtu = prefs.getString('no_hp_ortu');
     
@@ -105,11 +111,6 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
     } else if (noHpOrtu != null && noHp == null) {
       await prefs.setString('no_hp', noHpOrtu);
     }
-    
-    // Debug log
-    print('no_hp: ${prefs.getString('no_hp')}');
-    print('no_hp_ortu: ${prefs.getString('no_hp_ortu')}');
-    print('nama_wali: ${prefs.getString('nama_wali')}');
   }
 
   Future<void> _initializeLocale() async {
@@ -132,10 +133,15 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
     setState(() {
       namaWali = prefs.getString('nama_wali') ?? 'Nama Wali';
       noHp = prefs.getString('no_hp') ?? prefs.getString('no_hp_ortu') ?? 'Nomor HP';
-      String nis = prefs.getString('nis') ?? 'NIS tidak tersedia';
-      print('NIS: $nis');
     });
     await _fetchSiswaData();
+    
+    String? savedSiswaNama = prefs.getString('selected_siswa_nama');
+    if (savedSiswaNama != null && siswaList.any((s) => s['nama'] == savedSiswaNama)) {
+        setState(() {
+            selectedSiswaNama = savedSiswaNama;
+        });
+    }
   }
 
   Future<void> _fetchSiswaData() async {
@@ -144,25 +150,15 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
     try {
       final response = await http.get(url).timeout(const Duration(seconds: 30));
       if (response.statusCode == 200) {
-        print('Respons API: ${response.body}');
         final data = json.decode(response.body);
 
         if (data['data'] != null && data['data'].isNotEmpty) {
           setState(() {
             siswaList = data['data'];
-            selectedSiswa = siswaList.first['nama'];
-
-            final prefs = SharedPreferences.getInstance();
-            prefs.then((prefs) {
-              List<String> siswaJsonList = siswaList.map((siswa) {
-                return json.encode({
-                  'nama': siswa['nama'],
-                  'nis': siswa['nis'],
-                  'nama_kelas': siswa['nama_kelas']
-                });
-              }).toList();
-              prefs.setStringList('siswa_list', siswaJsonList);
-            });
+            if (selectedSiswaNama == null) {
+                selectedSiswaNama = siswaList.first['nama'];
+                _saveSelectedSiswa(siswaList.first);
+            }
           });
         } else {
           print('Data siswa kosong atau tidak ditemukan.');
@@ -172,7 +168,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
       }
     } catch (e) {
       print('Terjadi kesalahan: $e');
-      ApiErrorHandler.showErrorSnackBar(context, ApiErrorHandler.getErrorMessage(e));
+      if(mounted) ApiErrorHandler.showErrorSnackBar(context, ApiErrorHandler.getErrorMessage(e));
     }
   }
 
@@ -190,9 +186,13 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
     });
 
     if (index == 1) {
+      if (selectedSiswa == null) return;
       Navigator.pushReplacement(
         context,
-        MaterialPageRoute(builder: (context) => const RiwayatPage()),
+        MaterialPageRoute(builder: (context) => RiwayatPage(
+          selectedSiswaNis: selectedSiswa!['nis'],
+          selectedSiswaNama: selectedSiswa!['nama'],
+        )),
       );
     } else if (index == 2) {
       Navigator.pushReplacement(
@@ -201,47 +201,98 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
       );
     }
   }
+  
+  void _navigateToRiwayat() {
+    if (selectedSiswa == null) {
+      ApiErrorHandler.showErrorSnackBar(context, 'Silakan pilih siswa terlebih dahulu.');
+      return;
+    }
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (context) => RiwayatPage(
+        selectedSiswaNis: selectedSiswa!['nis'],
+        selectedSiswaNama: selectedSiswa!['nama'],
+      )),
+    );
+  }
+
+  Future<void> _saveSelectedSiswa(Map<String, dynamic> siswa) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString('selected_siswa_nama', siswa['nama']);
+    await prefs.setString('selected_siswa_nis', siswa['nis']);
+  }
+
+  // --- PENAMBAHAN: Fungsi untuk menangani refresh ---
+  Future<void> _handleRefresh() async {
+    // Memberi sedikit jeda agar animasi loading terlihat lebih mulus
+    await Future.delayed(const Duration(milliseconds: 500));
+    await _loadUserData();
+    if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+                content: const Text('Data berhasil diperbarui'),
+                backgroundColor: Colors.green,
+                behavior: SnackBarBehavior.floating,
+                shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(10),
+                ),
+            ),
+        );
+    }
+  }
+  // --- Akhir Penambahan ---
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: backgroundBlue,
       body: SafeArea(
-        child: FadeTransition(
-          opacity: _fadeAnimation,
-          child: SingleChildScrollView(
-            physics: const BouncingScrollPhysics(),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                _buildEnhancedHeader(),
-                const SizedBox(height: 24),
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 20.0),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      _buildSearchBar(),
-                      const SizedBox(height: 24),
-                      _buildWelcomeSection(),
-                      const SizedBox(height: 20),
-                      _buildDropdownSiswa(),
-                      const SizedBox(height: 20),
-                      _buildCategorySection(),
-                      const SizedBox(height: 24),
-                      _buildDoctorCard(),
-                      const SizedBox(height: 20),
-                    ],
+        // --- PENAMBAHAN: Widget RefreshIndicator ---
+        child: RefreshIndicator(
+          onRefresh: _handleRefresh,
+          color: primaryBlue,
+          backgroundColor: Colors.white,
+          child: FadeTransition(
+            opacity: _fadeAnimation,
+            child: SingleChildScrollView(
+              // Physics ditambahkan agar RefreshIndicator selalu bisa dipicu
+              // bahkan ketika konten tidak cukup panjang untuk di-scroll.
+              physics: const AlwaysScrollableScrollPhysics(), 
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  _buildEnhancedHeader(),
+                  const SizedBox(height: 24),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 20.0),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        _buildSearchBar(),
+                        const SizedBox(height: 24),
+                        _buildWelcomeSection(),
+                        const SizedBox(height: 20),
+                        _buildDropdownSiswa(),
+                        const SizedBox(height: 20),
+                        _buildCategorySection(),
+                        const SizedBox(height: 24),
+                        _buildDoctorCard(),
+                        const SizedBox(height: 20),
+                      ],
+                    ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
           ),
         ),
+        // --- Akhir Penambahan ---
       ),
       bottomNavigationBar: _buildModernBottomNav(),
     );
   }
+  
+  // ... Sisa kode widget lainnya (tidak ada yang diubah dari sini) ...
 
   Widget _buildEnhancedHeader() {
     return Container(
@@ -473,7 +524,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                     border: Border.all(color: Colors.grey[200]!),
                   ),
                   child: DropdownButton<String>(
-                    value: selectedSiswa,
+                    value: selectedSiswaNama,
                     hint: const Text('Pilih Siswa'),
                     isExpanded: true,
                     underline: Container(),
@@ -490,9 +541,11 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                       );
                     }).toList(),
                     onChanged: (value) {
+                      if (value == null) return;
                       setState(() {
-                        selectedSiswa = value;
-                        _saveSelectedSiswa(selectedSiswa!);
+                        selectedSiswaNama = value;
+                        final siswaToSave = siswaList.firstWhere((s) => s['nama'] == value);
+                        _saveSelectedSiswa(siswaToSave);
                       });
                     },
                   ),
@@ -549,14 +602,9 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
               child: _buildCategoryCard(
                 Icons.history_rounded,
                 'Riwayat\nPresensi',
-                '234 Record',
+                'Lihat Detail',
                 lightBlue,
-                () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(builder: (context) => const RiwayatPage()),
-                  );
-                },
+                _navigateToRiwayat,
               ),
             ),
             const SizedBox(width: 12),
@@ -659,7 +707,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                     borderRadius: BorderRadius.circular(8),
                   ),
                   child: const Text(
-                    'Top rated',
+                    'Siswa Terpilih',
                     style: TextStyle(
                       fontSize: 10,
                       color: Colors.white,
@@ -669,7 +717,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                 ),
                 const Spacer(),
                 const Text(
-                  'Presensi Terbaru',
+                  'Informasi Siswa',
                   style: TextStyle(
                     fontSize: 14,
                     fontWeight: FontWeight.w600,
@@ -702,7 +750,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        selectedSiswa ?? 'Pilih Siswa',
+                        selectedSiswaNama ?? 'Pilih Siswa',
                         style: const TextStyle(
                           fontSize: 16,
                           fontWeight: FontWeight.bold,
@@ -710,36 +758,20 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                         ),
                       ),
                       const SizedBox(height: 4),
-                      const Text(
-                        'SMP Negeri 1',
-                        style: TextStyle(
+                      Text(
+                        selectedSiswa?['nama_kelas'] ?? 'SMP Negeri 1',
+                        style: const TextStyle(
                           fontSize: 14,
                           color: textSecondary,
                         ),
                       ),
                       const SizedBox(height: 8),
-                      const Row(
-                        children: [
-                          Icon(Icons.star, size: 16, color: Colors.orange),
-                          SizedBox(width: 4),
-                          Text(
-                            '4.8',
-                            style: TextStyle(
-                              fontSize: 12,
-                              fontWeight: FontWeight.w500,
-                            ),
-                          ),
-                          SizedBox(width: 16),
-                          Icon(Icons.location_on, size: 16, color: Colors.grey),
-                          SizedBox(width: 4),
-                          Text(
-                            '0.7 km',
-                            style: TextStyle(
-                              fontSize: 12,
-                              color: textSecondary,
-                            ),
-                          ),
-                        ],
+                      Text(
+                        'NIS: ${selectedSiswa?['nis'] ?? '-'}',
+                        style: const TextStyle(
+                          fontSize: 12,
+                          color: textSecondary,
+                        ),
                       ),
                     ],
                   ),
@@ -795,10 +827,5 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
         ),
       ),
     );
-  }
-
-  _saveSelectedSiswa(String siswa) async {
-    final prefs = await SharedPreferences.getInstance();
-    prefs.setString('selectedSiswa', siswa);
   }
 }

@@ -44,7 +44,15 @@ class ApiErrorHandler {
 }
 
 class RiwayatPage extends StatefulWidget {
-  const RiwayatPage({super.key});
+  // --- PERBAIKAN: Tambahkan constructor untuk menerima data siswa
+  final String? selectedSiswaNis;
+  final String? selectedSiswaNama;
+
+  const RiwayatPage({
+    super.key,
+    this.selectedSiswaNis,
+    this.selectedSiswaNama,
+  });
 
   @override
   _RiwayatPageState createState() => _RiwayatPageState();
@@ -52,11 +60,15 @@ class RiwayatPage extends StatefulWidget {
 
 class _RiwayatPageState extends State<RiwayatPage> with TickerProviderStateMixin {
   int _currentIndex = 1;
-  List<dynamic> riwayatList = [];
+  List<dynamic> allRiwayatList = []; // --- PERBAIKAN: Simpan semua riwayat
+  List<dynamic> filteredRiwayatList = []; // --- PERBAIKAN: Riwayat yang sudah difilter
   bool isLoading = true;
   String errorMessage = '';
   late AnimationController _animationController;
   late Animation<double> _slideAnimation;
+
+  String? _currentNis;
+  String? _currentNama;
 
   // Enhanced Color Palette
   static const Color primaryBlue = Color(0xFF1976D2);
@@ -73,8 +85,6 @@ class _RiwayatPageState extends State<RiwayatPage> with TickerProviderStateMixin
   @override
   void initState() {
     super.initState();
-    _ensureConsistentData();
-    _fetchRiwayat();
     _animationController = AnimationController(
       duration: const Duration(milliseconds: 1000),
       vsync: this,
@@ -83,25 +93,26 @@ class _RiwayatPageState extends State<RiwayatPage> with TickerProviderStateMixin
       CurvedAnimation(parent: _animationController, curve: Curves.easeOutCubic),
     );
     _animationController.forward();
+
+    // --- PERBAIKAN: Ambil NIS dari widget atau SharedPreferences
+    _initializeSiswaData();
   }
 
-  Future<void> _ensureConsistentData() async {
-    final prefs = await SharedPreferences.getInstance();
-    
-    // Pastikan konsistensi data nomor HP
-    String? noHp = prefs.getString('no_hp');
-    String? noHpOrtu = prefs.getString('no_hp_ortu');
-    
-    if (noHp != null && noHpOrtu == null) {
-      await prefs.setString('no_hp_ortu', noHp);
-    } else if (noHpOrtu != null && noHp == null) {
-      await prefs.setString('no_hp', noHpOrtu);
+  Future<void> _initializeSiswaData() async {
+    if (widget.selectedSiswaNis != null) {
+      _currentNis = widget.selectedSiswaNis;
+      _currentNama = widget.selectedSiswaNama;
+    } else {
+      // Fallback jika halaman dibuka tanpa parameter (misal dari notifikasi)
+      final prefs = await SharedPreferences.getInstance();
+      _currentNis = prefs.getString('selected_siswa_nis');
+      _currentNama = prefs.getString('selected_siswa_nama');
     }
     
-    // Debug log
-    print('no_hp: ${prefs.getString('no_hp')}');
-    print('no_hp_ortu: ${prefs.getString('no_hp_ortu')}');
-    print('nama_wali: ${prefs.getString('nama_wali')}');
+    if (mounted) {
+      setState(() {});
+      _fetchRiwayat();
+    }
   }
 
   @override
@@ -111,6 +122,15 @@ class _RiwayatPageState extends State<RiwayatPage> with TickerProviderStateMixin
   }
 
   Future<void> _fetchRiwayat() async {
+    // --- PERBAIKAN: Cek apakah NIS ada sebelum fetch
+    if (_currentNis == null || _currentNis!.isEmpty) {
+        setState(() {
+            isLoading = false;
+            errorMessage = 'Siswa belum dipilih. Silakan kembali ke Beranda dan pilih siswa.';
+        });
+        return;
+    }
+    
     setState(() {
       isLoading = true;
       errorMessage = '';
@@ -128,9 +148,6 @@ class _RiwayatPageState extends State<RiwayatPage> with TickerProviderStateMixin
         return;
       }
 
-      print('Fetching data for phone: $noHpOrtu'); // Debug log
-
-      // PERBAIKAN: URL API yang konsisten
       final response = await http.get(
         Uri.parse('https://presensi-smp1.esolusindo.com/Api/ApiMobile/ApiAbsen/ByNoHp/$noHpOrtu'),
         headers: {
@@ -139,22 +156,23 @@ class _RiwayatPageState extends State<RiwayatPage> with TickerProviderStateMixin
         },
       ).timeout(const Duration(seconds: 30));
 
-      print('Response status: ${response.statusCode}'); // Debug log
-      print('Response body: ${response.body}'); // Debug log
-
       if (response.statusCode == 200) {
         final Map<String, dynamic> responseData = json.decode(response.body);
         
-        if (responseData['status'] == true) {
+        if (responseData['status'] == true && responseData['data'] != null) {
+          allRiwayatList = responseData['data'];
+          // --- PERBAIKAN UTAMA: Filter riwayat berdasarkan NIS siswa yang dipilih ---
+          filteredRiwayatList = allRiwayatList
+              .where((item) => item['nis'] == _currentNis)
+              .toList();
+
           setState(() {
-            riwayatList = responseData['data'] ?? [];
             isLoading = false;
           });
-          
-          print('Data loaded successfully: ${riwayatList.length} records'); // Debug log
         } else {
           setState(() {
-            riwayatList = [];
+            allRiwayatList = [];
+            filteredRiwayatList = [];
             isLoading = false;
             errorMessage = responseData['message'] ?? 'Gagal mengambil data';
           });
@@ -168,56 +186,16 @@ class _RiwayatPageState extends State<RiwayatPage> with TickerProviderStateMixin
         isLoading = false;
         errorMessage = ApiErrorHandler.getErrorMessage(e);
       });
-      ApiErrorHandler.showErrorSnackBar(context, errorMessage);
+      if(mounted) ApiErrorHandler.showErrorSnackBar(context, errorMessage);
     }
   }
 
-  // Test API Connection - untuk debugging
-  Future<void> _testApiConnection() async {
-    try {
-      final prefs = await SharedPreferences.getInstance();
-      String? noHpOrtu = prefs.getString('no_hp_ortu') ?? prefs.getString('no_hp');
-      
-      final response = await http.get(
-        Uri.parse('https://presensi-smp1.esolusindo.com/Api/ApiMobile/ApiAbsen/ByNoHp/${noHpOrtu ?? "0855555"}'),
-        headers: {
-          'Content-Type': 'application/json',
-          'Accept': 'application/json',
-        },
-      ).timeout(const Duration(seconds: 30));
-      
-      print('Test API Response: ${response.statusCode}');
-      print('Test API Body: ${response.body}');
-      
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('API Test: ${response.statusCode} - ${response.body}'),
-          duration: const Duration(seconds: 5),
-        ),
-      );
-    } catch (e) {
-      print('Test API Error: $e');
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('API Test Error: $e'),
-          backgroundColor: dangerRed,
-          duration: const Duration(seconds: 5),
-        ),
-      );
-    }
-  }
-
-  // Hitung statistik dari data riwayat
   Map<String, int> _calculateStats() {
     Map<String, int> stats = {
-      'hadir': 0,
-      'terlambat': 0,
-      'alpha': 0,
-      'sakit': 0,
-      'izin': 0,
+      'hadir': 0, 'terlambat': 0, 'alpha': 0, 'sakit': 0, 'izin': 0,
     };
-
-    for (var item in riwayatList) {
+    // --- PERBAIKAN: Hitung statistik dari data yang sudah difilter
+    for (var item in filteredRiwayatList) {
       String status = (item['status'] ?? 'alpha').toString().toLowerCase();
       if (stats.containsKey(status)) {
         stats[status] = stats[status]! + 1;
@@ -225,7 +203,6 @@ class _RiwayatPageState extends State<RiwayatPage> with TickerProviderStateMixin
         stats['hadir'] = stats['hadir']! + 1;
       }
     }
-
     return stats;
   }
 
@@ -247,9 +224,7 @@ class _RiwayatPageState extends State<RiwayatPage> with TickerProviderStateMixin
     }
   }
 
-  // Handler untuk back button - PERBAIKAN
   void _handleBackButton() {
-    // Kembali ke HomePage alih-alih Navigator.pop()
     Navigator.pushReplacement(
       context,
       MaterialPageRoute(builder: (context) => const HomePage()),
@@ -258,33 +233,21 @@ class _RiwayatPageState extends State<RiwayatPage> with TickerProviderStateMixin
 
   Color _getStatusColor(String status) {
     switch (status.toLowerCase()) {
-      case 'hadir':
-        return successGreen;
-      case 'terlambat':
-        return warningOrange;
-      case 'sakit':
-      case 'izin':
-        return primaryBlue;
-      case 'alpha':
-        return dangerRed;
-      default:
-        return textSecondary;
+      case 'hadir': return successGreen;
+      case 'terlambat': return warningOrange;
+      case 'sakit': case 'izin': return primaryBlue;
+      case 'alpha': return dangerRed;
+      default: return textSecondary;
     }
   }
 
   IconData _getStatusIcon(String status) {
     switch (status.toLowerCase()) {
-      case 'hadir':
-        return Icons.check_circle_outline;
-      case 'terlambat':
-        return Icons.access_time;
-      case 'sakit':
-      case 'izin':
-        return Icons.local_hospital_outlined;
-      case 'alpha':
-        return Icons.cancel_outlined;
-      default:
-        return Icons.help_outline;
+      case 'hadir': return Icons.check_circle_outline;
+      case 'terlambat': return Icons.access_time;
+      case 'sakit': case 'izin': return Icons.local_hospital_outlined;
+      case 'alpha': return Icons.cancel_outlined;
+      default: return Icons.help_outline;
     }
   }
 
@@ -333,23 +296,17 @@ class _RiwayatPageState extends State<RiwayatPage> with TickerProviderStateMixin
           children: [
             CircularProgressIndicator(color: primaryBlue),
             SizedBox(height: 16),
-            Text(
-              'Memuat data riwayat...',
-              style: TextStyle(
-                color: textSecondary,
-                fontSize: 14,
-              ),
-            ),
+            Text('Memuat data riwayat...', style: TextStyle(color: textSecondary, fontSize: 14)),
           ],
         ),
       );
     }
 
-    if (errorMessage.isNotEmpty && riwayatList.isEmpty) {
+    if (errorMessage.isNotEmpty && filteredRiwayatList.isEmpty) {
       return _buildErrorState();
     }
 
-    if (riwayatList.isEmpty) {
+    if (filteredRiwayatList.isEmpty) {
       return _buildEmptyState();
     }
 
@@ -363,69 +320,26 @@ class _RiwayatPageState extends State<RiwayatPage> with TickerProviderStateMixin
         children: [
           Container(
             padding: const EdgeInsets.all(32),
-            decoration: BoxDecoration(
-              color: dangerRed.withOpacity(0.1),
-              borderRadius: BorderRadius.circular(24),
-            ),
-            child: const Icon(
-              Icons.error_outline,
-              size: 64,
-              color: dangerRed,
-            ),
+            decoration: BoxDecoration(color: dangerRed.withOpacity(0.1), borderRadius: BorderRadius.circular(24)),
+            child: const Icon(Icons.error_outline, size: 64, color: dangerRed),
           ),
           const SizedBox(height: 24),
-          const Text(
-            'Gagal Memuat Data',
-            style: TextStyle(
-              fontSize: 20,
-              fontWeight: FontWeight.bold,
-              color: textPrimary,
-            ),
-          ),
+          const Text('Gagal Memuat Data', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: textPrimary)),
           const SizedBox(height: 8),
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 40),
-            child: Text(
-              errorMessage,
-              style: const TextStyle(
-                fontSize: 14,
-                color: textSecondary,
-              ),
-              textAlign: TextAlign.center,
-            ),
+            child: Text(errorMessage, style: const TextStyle(fontSize: 14, color: textSecondary), textAlign: TextAlign.center),
           ),
           const SizedBox(height: 24),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              ElevatedButton.icon(
-                onPressed: _fetchRiwayat,
-                icon: const Icon(Icons.refresh),
-                label: const Text('Coba Lagi'),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: primaryBlue,
-                  foregroundColor: Colors.white,
-                  padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                ),
-              ),
-              const SizedBox(width: 16),
-              ElevatedButton.icon(
-                onPressed: _testApiConnection,
-                icon: const Icon(Icons.bug_report),
-                label: const Text('Test API'),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: warningOrange,
-                  foregroundColor: Colors.white,
-                  padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                ),
-              ),
-            ],
+          ElevatedButton.icon(
+            onPressed: _fetchRiwayat,
+            icon: const Icon(Icons.refresh),
+            label: const Text('Coba Lagi'),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: primaryBlue, foregroundColor: Colors.white,
+              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+            ),
           ),
         ],
       ),
@@ -437,12 +351,8 @@ class _RiwayatPageState extends State<RiwayatPage> with TickerProviderStateMixin
       padding: const EdgeInsets.fromLTRB(20, 20, 20, 30),
       decoration: const BoxDecoration(
         gradient: LinearGradient(
-          begin: Alignment.topCenter,
-          end: Alignment.bottomCenter,
-          colors: [
-            backgroundBlue,
-            primaryBlue,
-          ],
+          begin: Alignment.topCenter, end: Alignment.bottomCenter,
+          colors: [backgroundBlue, primaryBlue],
         ),
       ),
       child: Column(
@@ -452,41 +362,33 @@ class _RiwayatPageState extends State<RiwayatPage> with TickerProviderStateMixin
             children: [
               Container(
                 padding: const EdgeInsets.all(8),
-                decoration: BoxDecoration(
-                  color: Colors.white.withOpacity(0.15),
-                  borderRadius: BorderRadius.circular(12),
-                ),
+                decoration: BoxDecoration(color: Colors.white.withOpacity(0.15), borderRadius: BorderRadius.circular(12)),
                 child: IconButton(
-                  onPressed: _handleBackButton, // PERBAIKAN: gunakan handler khusus
-                  icon: const Icon(
-                    Icons.arrow_back_ios,
-                    color: Colors.white,
-                    size: 20,
-                  ),
+                  onPressed: _handleBackButton,
+                  icon: const Icon(Icons.arrow_back_ios, color: Colors.white, size: 20),
                   padding: EdgeInsets.zero,
                 ),
               ),
-              const Text(
-                'Riwayat Presensi',
-                style: TextStyle(
-                  fontSize: 20,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.white,
-                ),
+              Column(
+                  children: [
+                      const Text(
+                        'Riwayat Presensi',
+                        style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Colors.white),
+                      ),
+                      // --- PERBAIKAN: Tampilkan nama siswa yang riwayatnya sedang dilihat
+                      if (_currentNama != null)
+                        Text(
+                          _currentNama!,
+                          style: TextStyle(fontSize: 14, color: Colors.white.withOpacity(0.8)),
+                        ),
+                  ],
               ),
               Container(
                 padding: const EdgeInsets.all(8),
-                decoration: BoxDecoration(
-                  color: Colors.white.withOpacity(0.15),
-                  borderRadius: BorderRadius.circular(12),
-                ),
+                decoration: BoxDecoration(color: Colors.white.withOpacity(0.15), borderRadius: BorderRadius.circular(12)),
                 child: IconButton(
                   onPressed: _fetchRiwayat,
-                  icon: const Icon(
-                    Icons.refresh,
-                    color: Colors.white,
-                    size: 20,
-                  ),
+                  icon: const Icon(Icons.refresh, color: Colors.white, size: 20),
                   padding: EdgeInsets.zero,
                 ),
               ),
@@ -501,87 +403,37 @@ class _RiwayatPageState extends State<RiwayatPage> with TickerProviderStateMixin
 
   Widget _buildStatsCards() {
     Map<String, int> stats = _calculateStats();
-    
     return Row(
       children: [
-        Expanded(
-          child: _buildStatCard(
-            icon: Icons.check_circle,
-            title: 'Hadir',
-            value: '${stats['hadir']}',
-            color: successGreen,
-          ),
-        ),
+        Expanded(child: _buildStatCard(icon: Icons.check_circle, title: 'Hadir', value: '${stats['hadir']}', color: successGreen)),
         const SizedBox(width: 12),
-        Expanded(
-          child: _buildStatCard(
-            icon: Icons.access_time,
-            title: 'Terlambat',
-            value: '${stats['terlambat']}',
-            color: warningOrange,
-          ),
-        ),
+        Expanded(child: _buildStatCard(icon: Icons.access_time, title: 'Terlambat', value: '${stats['terlambat']}', color: warningOrange)),
         const SizedBox(width: 12),
-        Expanded(
-          child: _buildStatCard(
-            icon: Icons.cancel,
-            title: 'Alpha',
-            value: '${stats['alpha']}',
-            color: dangerRed,
-          ),
-        ),
+        Expanded(child: _buildStatCard(icon: Icons.cancel, title: 'Alpha', value: '${stats['alpha']}', color: dangerRed)),
       ],
     );
   }
 
-  Widget _buildStatCard({
-    required IconData icon,
-    required String title,
-    required String value,
-    required Color color,
-  }) {
+  Widget _buildStatCard({required IconData icon, required String title, required String value, required Color color}) {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(20),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.08),
-            blurRadius: 15,
-            offset: const Offset(0, 5),
-          ),
-        ],
+        boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.08), blurRadius: 15, offset: const Offset(0, 5))],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Container(
             padding: const EdgeInsets.all(8),
-            decoration: BoxDecoration(
-              color: color.withOpacity(0.1),
-              borderRadius: BorderRadius.circular(12),
-            ),
+            decoration: BoxDecoration(color: color.withOpacity(0.1), borderRadius: BorderRadius.circular(12)),
             child: Icon(icon, color: color, size: 20),
           ),
           const SizedBox(height: 12),
-          Text(
-            value,
-            style: const TextStyle(
-              fontSize: 18,
-              fontWeight: FontWeight.bold,
-              color: textPrimary,
-            ),
-          ),
+          Text(value, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: textPrimary)),
           const SizedBox(height: 4),
-          Text(
-            title,
-            style: const TextStyle(
-              fontSize: 12,
-              color: textSecondary,
-              fontWeight: FontWeight.w500,
-            ),
-          ),
+          Text(title, style: const TextStyle(fontSize: 12, color: textSecondary, fontWeight: FontWeight.w500)),
         ],
       ),
     );
@@ -595,28 +447,11 @@ class _RiwayatPageState extends State<RiwayatPage> with TickerProviderStateMixin
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              const Text(
-                'Riwayat Terbaru',
-                style: TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold,
-                  color: textPrimary,
-                ),
-              ),
+              const Text('Riwayat Terbaru', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: textPrimary)),
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                decoration: BoxDecoration(
-                  color: primaryBlue.withOpacity(0.1),
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: Text(
-                  '${riwayatList.length} Data',
-                  style: const TextStyle(
-                    fontSize: 12,
-                    fontWeight: FontWeight.w600,
-                    color: primaryBlue,
-                  ),
-                ),
+                decoration: BoxDecoration(color: primaryBlue.withOpacity(0.1), borderRadius: BorderRadius.circular(12)),
+                child: Text('${filteredRiwayatList.length} Data', style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: primaryBlue)),
               ),
             ],
           ),
@@ -627,9 +462,9 @@ class _RiwayatPageState extends State<RiwayatPage> with TickerProviderStateMixin
             child: ListView.builder(
               physics: const AlwaysScrollableScrollPhysics(),
               padding: const EdgeInsets.symmetric(horizontal: 20),
-              itemCount: riwayatList.length,
+              itemCount: filteredRiwayatList.length,
               itemBuilder: (context, index) {
-                final item = riwayatList[index];
+                final item = filteredRiwayatList[index];
                 return _buildRiwayatCard(item, index);
               },
             ),
@@ -649,20 +484,13 @@ class _RiwayatPageState extends State<RiwayatPage> with TickerProviderStateMixin
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(20),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.05),
-            blurRadius: 15,
-            offset: const Offset(0, 5),
-          ),
-        ],
+        boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 15, offset: const Offset(0, 5))],
       ),
       child: Material(
         color: Colors.transparent,
         child: InkWell(
           borderRadius: BorderRadius.circular(20),
           onTap: () {
-            // Handle tap - bisa ditambahkan detail view
             showDialog(
               context: context,
               builder: (context) => AlertDialog(
@@ -680,12 +508,7 @@ class _RiwayatPageState extends State<RiwayatPage> with TickerProviderStateMixin
                     Text('Keterangan: ${item['keterangan'] ?? '-'}'),
                   ],
                 ),
-                actions: [
-                  TextButton(
-                    onPressed: () => Navigator.pop(context),
-                    child: const Text('Tutup'),
-                  ),
-                ],
+                actions: [TextButton(onPressed: () => Navigator.pop(context), child: const Text('Tutup'))],
               ),
             );
           },
@@ -697,77 +520,33 @@ class _RiwayatPageState extends State<RiwayatPage> with TickerProviderStateMixin
                   children: [
                     Container(
                       padding: const EdgeInsets.all(10),
-                      decoration: BoxDecoration(
-                        color: statusColor.withOpacity(0.1),
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      child: Icon(
-                        statusIcon,
-                        color: statusColor,
-                        size: 20,
-                      ),
+                      decoration: BoxDecoration(color: statusColor.withOpacity(0.1), borderRadius: BorderRadius.circular(12)),
+                      child: Icon(statusIcon, color: statusColor, size: 20),
                     ),
                     const SizedBox(width: 16),
                     Expanded(
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Text(
-                            item['tanggal']?.toString() ?? '-',
-                            style: const TextStyle(
-                              fontSize: 16,
-                              fontWeight: FontWeight.bold,
-                              color: textPrimary,
-                            ),
-                          ),
+                          Text(item['tanggal']?.toString() ?? '-', style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: textPrimary)),
                           const SizedBox(height: 4),
-                          Text(
-                            item['keterangan']?.toString() ?? '-',
-                            style: const TextStyle(
-                              fontSize: 12,
-                              color: textSecondary,
-                            ),
-                          ),
+                          Text(item['keterangan']?.toString() ?? '-', style: const TextStyle(fontSize: 12, color: textSecondary)),
                         ],
                       ),
                     ),
                     Container(
                       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                      decoration: BoxDecoration(
-                        color: statusColor.withOpacity(0.1),
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      child: Text(
-                        status,
-                        style: TextStyle(
-                          fontSize: 12,
-                          fontWeight: FontWeight.w600,
-                          color: statusColor,
-                        ),
-                      ),
+                      decoration: BoxDecoration(color: statusColor.withOpacity(0.1), borderRadius: BorderRadius.circular(12)),
+                      child: Text(status, style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: statusColor)),
                     ),
                   ],
                 ),
                 const SizedBox(height: 16),
                 Row(
                   children: [
-                    Expanded(
-                      child: _buildTimeInfo(
-                        'Masuk',
-                        item['waktu_masuk']?.toString() ?? '-',
-                        Icons.login,
-                        primaryBlue,
-                      ),
-                    ),
+                    Expanded(child: _buildTimeInfo('Masuk', item['waktu_masuk']?.toString() ?? '-', Icons.login, primaryBlue)),
                     const SizedBox(width: 16),
-                    Expanded(
-                      child: _buildTimeInfo(
-                        'Pulang',
-                        item['waktu_keluar']?.toString() ?? '-',
-                        Icons.logout,
-                        accentBlue,
-                      ),
-                    ),
+                    Expanded(child: _buildTimeInfo('Pulang', item['waktu_keluar']?.toString() ?? '-', Icons.logout, accentBlue)),
                   ],
                 ),
               ],
@@ -793,22 +572,8 @@ class _RiwayatPageState extends State<RiwayatPage> with TickerProviderStateMixin
           Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(
-                label,
-                style: const TextStyle(
-                  fontSize: 10,
-                  color: textSecondary,
-                  fontWeight: FontWeight.w500,
-                ),
-              ),
-              Text(
-                time,
-                style: TextStyle(
-                  fontSize: 12,
-                  fontWeight: FontWeight.bold,
-                  color: color,
-                ),
-              ),
+              Text(label, style: const TextStyle(fontSize: 10, color: textSecondary, fontWeight: FontWeight.w500)),
+              Text(time, style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: color)),
             ],
           ),
         ],
@@ -823,46 +588,22 @@ class _RiwayatPageState extends State<RiwayatPage> with TickerProviderStateMixin
         children: [
           Container(
             padding: const EdgeInsets.all(32),
-            decoration: BoxDecoration(
-              color: primaryBlue.withOpacity(0.1),
-              borderRadius: BorderRadius.circular(24),
-            ),
-            child: const Icon(
-              Icons.history,
-              size: 64,
-              color: primaryBlue,
-            ),
+            decoration: BoxDecoration(color: primaryBlue.withOpacity(0.1), borderRadius: BorderRadius.circular(24)),
+            child: const Icon(Icons.history, size: 64, color: primaryBlue),
           ),
           const SizedBox(height: 24),
-          const Text(
-            'Belum Ada Riwayat',
-            style: TextStyle(
-              fontSize: 20,
-              fontWeight: FontWeight.bold,
-              color: textPrimary,
-            ),
-          ),
+          const Text('Belum Ada Riwayat', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: textPrimary)),
           const SizedBox(height: 8),
-          const Text(
-            'Riwayat presensi akan muncul di sini',
-            style: TextStyle(
-              fontSize: 14,
-              color: textSecondary,
-            ),
-            textAlign: TextAlign.center,
-          ),
+          const Text('Riwayat presensi siswa ini akan muncul di sini', style: TextStyle(fontSize: 14, color: textSecondary), textAlign: TextAlign.center),
           const SizedBox(height: 24),
           ElevatedButton.icon(
             onPressed: _fetchRiwayat,
             icon: const Icon(Icons.refresh),
             label: const Text('Muat Ulang'),
             style: ElevatedButton.styleFrom(
-              backgroundColor: primaryBlue,
-              foregroundColor: Colors.white,
+              backgroundColor: primaryBlue, foregroundColor: Colors.white,
               padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(12),
-              ),
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
             ),
           ),
         ],
@@ -874,41 +615,23 @@ class _RiwayatPageState extends State<RiwayatPage> with TickerProviderStateMixin
     return Container(
       margin: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(25),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.1),
-            blurRadius: 20,
-            offset: const Offset(0, 10),
-          ),
-        ],
+        color: Colors.white, borderRadius: BorderRadius.circular(25),
+        boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.1), blurRadius: 20, offset: const Offset(0, 10))],
       ),
       child: ClipRRect(
         borderRadius: BorderRadius.circular(25),
         child: BottomNavigationBar(
           currentIndex: _currentIndex,
           onTap: _onItemTapped,
-          backgroundColor: Colors.white,
-          elevation: 0,
-          selectedItemColor: primaryBlue,
-          unselectedItemColor: Colors.grey[400],
+          backgroundColor: Colors.white, elevation: 0,
+          selectedItemColor: primaryBlue, unselectedItemColor: Colors.grey[400],
           selectedLabelStyle: const TextStyle(fontWeight: FontWeight.w600, fontSize: 12),
           unselectedLabelStyle: const TextStyle(fontWeight: FontWeight.w500, fontSize: 12),
           type: BottomNavigationBarType.fixed,
           items: const [
-            BottomNavigationBarItem(
-              icon: Icon(Icons.home_rounded),
-              label: 'Beranda',
-            ),
-            BottomNavigationBarItem(
-              icon: Icon(Icons.history_rounded),
-              label: 'Riwayat',
-            ),
-            BottomNavigationBarItem(
-              icon: Icon(Icons.person_rounded),
-              label: 'Profil',
-            ),
+            BottomNavigationBarItem(icon: Icon(Icons.home_rounded), label: 'Beranda'),
+            BottomNavigationBarItem(icon: Icon(Icons.history_rounded), label: 'Riwayat'),
+            BottomNavigationBarItem(icon: Icon(Icons.person_rounded), label: 'Profil'),
           ],
         ),
       ),

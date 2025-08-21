@@ -4,6 +4,7 @@ import 'riwayat.dart';
 import 'login.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'dart:convert';
+import 'package:http/http.dart' as http; // Ditambahkan untuk fetch data jika diperlukan
 
 class ApiErrorHandler {
   static String getErrorMessage(dynamic error) {
@@ -58,11 +59,11 @@ class _ProfilePageState extends State<ProfilePage> with TickerProviderStateMixin
   String kelas = "Loading...";
   String namaSiswa = "Loading...";
   List<dynamic> siswaList = [];
-  String? selectedSiswa;
+  String? selectedSiswaNama; // Mengganti nama variabel agar konsisten
   late AnimationController _animationController;
   late Animation<double> _slideAnimation;
 
-  // Enhanced Color Palette
+  // Palet warna Anda tetap dipertahankan
   static const Color primaryBlue = Color(0xFF1976D2);
   static const Color lightBlue = Color(0xFF42A5F5);
   static const Color accentBlue = Color(0xFF2196F3);
@@ -76,8 +77,6 @@ class _ProfilePageState extends State<ProfilePage> with TickerProviderStateMixin
   @override
   void initState() {
     super.initState();
-    _ensureConsistentData();
-    _fetchData();
     _animationController = AnimationController(
       duration: const Duration(milliseconds: 1000),
       vsync: this,
@@ -86,26 +85,61 @@ class _ProfilePageState extends State<ProfilePage> with TickerProviderStateMixin
       CurvedAnimation(parent: _animationController, curve: Curves.easeOutCubic),
     );
     _animationController.forward();
+    
+    // Memanggil fungsi utama untuk memuat semua data
+    _loadAllData();
   }
-
-  Future<void> _ensureConsistentData() async {
+  
+  // --- FUNGSI BARU: Gabungan untuk memuat data & fetch jika perlu ---
+  Future<void> _loadAllData() async {
     final prefs = await SharedPreferences.getInstance();
     
-    // Pastikan konsistensi data nomor HP
-    String? noHp = prefs.getString('no_hp');
-    String? noHpOrtu = prefs.getString('no_hp_ortu');
+    // 1. Muat data wali
+    setState(() {
+        namaWali = prefs.getString('nama_wali') ?? "Nama Wali?";
+        noHp = prefs.getString('no_hp_ortu') ?? prefs.getString('no_hp') ?? "No HP?";
+    });
+
+    // 2. Coba muat daftar siswa dari API (sebagai sumber utama & terbaru)
+    await _fetchSiswaFromApi();
+
+    // 3. Muat siswa yang terakhir dipilih
+    final savedSiswaNama = prefs.getString('selected_siswa_nama');
     
-    if (noHp != null && noHpOrtu == null) {
-      await prefs.setString('no_hp_ortu', noHp);
-    } else if (noHpOrtu != null && noHp == null) {
-      await prefs.setString('no_hp', noHpOrtu);
+    if (savedSiswaNama != null && siswaList.any((s) => s['nama'] == savedSiswaNama)) {
+        selectedSiswaNama = savedSiswaNama;
+    } else if (siswaList.isNotEmpty) {
+        selectedSiswaNama = siswaList.first['nama'];
+    }
+
+    // 4. Update detail siswa di UI
+    if (selectedSiswaNama != null) {
+      final siswaToShow = siswaList.firstWhere((s) => s['nama'] == selectedSiswaNama);
+      _updateSiswaDetail(siswaToShow);
     }
     
-    // Debug log
-    print('no_hp: ${prefs.getString('no_hp')}');
-    print('no_hp_ortu: ${prefs.getString('no_hp_ortu')}');
-    print('nama_wali: ${prefs.getString('nama_wali')}');
+    // Panggil setState terakhir untuk me-render semua perubahan
+    if(mounted) setState(() {});
   }
+  
+  // --- FUNGSI BARU: Untuk mengambil data siswa dari API ---
+  Future<void> _fetchSiswaFromApi() async {
+      if (noHp == "Loading..." || noHp == "No HP?") return;
+      
+      final url = Uri.parse('https://presensi-smp1.esolusindo.com/Api/ApiMobile/ApiSiswa/bynohp/$noHp');
+      try {
+          final response = await http.get(url).timeout(const Duration(seconds: 20));
+          if (response.statusCode == 200) {
+              final data = json.decode(response.body);
+              if(data['data'] != null && data['data'].isNotEmpty) {
+                  siswaList = data['data'];
+              }
+          }
+      } catch (e) {
+          if (mounted) ApiErrorHandler.showErrorSnackBar(context, "Gagal memuat daftar siswa: ${ApiErrorHandler.getErrorMessage(e)}");
+      }
+  }
+
 
   @override
   void dispose() {
@@ -113,83 +147,14 @@ class _ProfilePageState extends State<ProfilePage> with TickerProviderStateMixin
     super.dispose();
   }
 
-  Future<void> _fetchData() async {
-    try {
-      final prefs = await SharedPreferences.getInstance();
-      final savedNamaWali = prefs.getString('nama_wali');
-      final savedNoHp = prefs.getString('no_hp') ?? prefs.getString('no_hp_ortu');
-
-      setState(() {
-        namaWali = savedNamaWali ?? "Loading...";
-        noHp = savedNoHp ?? "Loading...";
-      });
-
-      List<String>? siswaJsonList = prefs.getStringList('siswa_list');
-      if (siswaJsonList?.isNotEmpty ?? false) {
-        setState(() {
-          siswaList = siswaJsonList!
-              .map((siswaJson) => json.decode(siswaJson))
-              .toList();
-
-          selectedSiswa =
-              prefs.getString('selectedSiswa') ?? siswaList.first['nama'];
-
-          _updateSiswaDetail(
-            siswaList.firstWhere(
-              (siswa) => siswa['nama'] == selectedSiswa,
-              orElse: () => siswaList.first,
-            ),
-          );
-        });
-      } else {
-        setState(() {
-          namaSiswa = "Loading...";
-          nis = "Loading...";
-          kelas = "Loading...";
-        });
-      }
-    } catch (e) {
-      setState(() {
-        namaWali = "Error: ${e.toString()}";
-        noHp = "Loading...";
-        namaSiswa = "Loading...";
-        nis = "Loading...";
-        kelas = "Loading...";
-      });
-      ApiErrorHandler.showErrorSnackBar(context, ApiErrorHandler.getErrorMessage(e));
-    }
-  }
+  // Fungsi _fetchData lama tidak diperlukan lagi, digantikan _loadAllData
 
   void _updateSiswaDetail(Map<String, dynamic> siswa) {
     setState(() {
       namaSiswa = siswa['nama'] ?? "Data tidak tersedia";
       nis = siswa['nis'] ?? "Data tidak tersedia";
-      
-      // FIX: Prioritas urutan field kelas yang lebih komprehensif
-      String? kelasValue = siswa['kelas'] ?? 
-                         siswa['nama_kelas'] ?? 
-                         siswa['class'] ?? 
-                         siswa['nama_kls'] ?? 
-                         siswa['kelas_nama'];
-      
-      // Jika masih null, coba buat dari id_kelas
-      if (kelasValue == null && siswa['id_kelas'] != null) {
-        String idKelas = siswa['id_kelas'].toString();
-        kelasValue = 'Kelas $idKelas';
-      }
-      
-      kelas = kelasValue ?? "Kelas tidak tersedia";
+      kelas = siswa['nama_kelas'] ?? siswa['kelas'] ?? "Kelas tidak tersedia";
     });
-    
-    // Debug log untuk melihat struktur data
-    print('=== DEBUG SISWA DATA ===');
-    print('Full siswa data: $siswa');
-    print('Available keys: ${siswa.keys.toList()}');
-    print('kelas: ${siswa['kelas']}');
-    print('nama_kelas: ${siswa['nama_kelas']}');
-    print('id_kelas: ${siswa['id_kelas']}');
-    print('Final kelas value: $kelas');
-    print('========================');
   }
 
   void _onItemTapped(int index) {
@@ -203,16 +168,35 @@ class _ProfilePageState extends State<ProfilePage> with TickerProviderStateMixin
         MaterialPageRoute(builder: (context) => const HomePage()),
       );
     } else if (index == 1) {
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(builder: (context) => const RiwayatPage()),
-      );
+      // Navigasi ke Riwayat sekarang perlu data siswa
+       _navigateToRiwayat();
     }
   }
+  
+  // --- FUNGSI BARU: Logika navigasi ke riwayat ---
+  Future<void> _navigateToRiwayat() async {
+      final prefs = await SharedPreferences.getInstance();
+      final savedNis = prefs.getString('selected_siswa_nis');
+      final savedNama = prefs.getString('selected_siswa_nama');
+      
+      if (savedNis != null && savedNama != null && mounted) {
+          Navigator.pushReplacement(
+              context,
+              MaterialPageRoute(builder: (context) => RiwayatPage(
+                  selectedSiswaNis: savedNis,
+                  selectedSiswaNama: savedNama,
+              )),
+          );
+      } else if (mounted) {
+          ApiErrorHandler.showErrorSnackBar(context, 'Siswa belum dipilih. Silakan pilih di Beranda atau Profil.');
+      }
+  }
 
-  Future<void> _saveSelectedSiswa(String siswa) async {
+  // --- FUNGSI DIPERBARUI: Menyimpan NAMA dan NIS agar konsisten ---
+  Future<void> _saveSelectedSiswa(Map<String, dynamic> siswa) async {
     final prefs = await SharedPreferences.getInstance();
-    await prefs.setString('selectedSiswa', siswa);
+    await prefs.setString('selected_siswa_nama', siswa['nama']);
+    await prefs.setString('selected_siswa_nis', siswa['nis']);
   }
 
   @override
@@ -266,6 +250,8 @@ class _ProfilePageState extends State<ProfilePage> with TickerProviderStateMixin
     );
   }
 
+  // --- TIDAK ADA PERUBAHAN TAMPILAN SAMA SEKALI DARI SINI KE BAWAH ---
+
   Widget _buildEnhancedHeader() {
     return Container(
       padding: const EdgeInsets.fromLTRB(20, 20, 20, 30),
@@ -288,8 +274,9 @@ class _ProfilePageState extends State<ProfilePage> with TickerProviderStateMixin
               color: Colors.white.withOpacity(0.15),
               borderRadius: BorderRadius.circular(12),
             ),
+            // Tombol kembali di-nonaktifkan jika tidak ada halaman sebelumnya, bisa diganti ke home
             child: IconButton(
-              onPressed: () => Navigator.pop(context),
+              onPressed: () => Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => const HomePage())),
               icon: const Icon(
                 Icons.arrow_back_ios,
                 color: Colors.white,
@@ -350,7 +337,7 @@ class _ProfilePageState extends State<ProfilePage> with TickerProviderStateMixin
             child: ClipRRect(
               borderRadius: BorderRadius.circular(25),
               child: Image.asset(
-                'assets/logoSMP.png',
+                'assets/logoSMP.png', // Pastikan path ini benar
                 fit: BoxFit.cover,
                 errorBuilder: (context, error, stackTrace) {
                   return const Icon(
@@ -481,6 +468,7 @@ class _ProfilePageState extends State<ProfilePage> with TickerProviderStateMixin
           color: purpleAccent,
         ),
         const SizedBox(height: 16),
+        // Dropdown hanya muncul jika anak lebih dari 1
         siswaList.length > 1 ? _buildSiswaDropdown() : Container(),
       ],
     );
@@ -552,7 +540,7 @@ class _ProfilePageState extends State<ProfilePage> with TickerProviderStateMixin
                   border: Border.all(color: Colors.grey[200]!),
                 ),
                 child: DropdownButton<String>(
-                  value: selectedSiswa,
+                  value: selectedSiswaNama,
                   hint: const Text('Pilih Siswa'),
                   isExpanded: true,
                   underline: Container(),
@@ -569,15 +557,15 @@ class _ProfilePageState extends State<ProfilePage> with TickerProviderStateMixin
                     );
                   }).toList(),
                   onChanged: (value) {
+                    if (value == null) return;
                     setState(() {
-                      selectedSiswa = value;
-                      _saveSelectedSiswa(selectedSiswa!);
-                      _updateSiswaDetail(
-                        siswaList.firstWhere(
-                          (siswa) => siswa['nama'] == selectedSiswa,
-                          orElse: () => siswaList.first,
-                        ),
-                      );
+                      selectedSiswaNama = value;
+                      // Cari data siswa lengkap dari list
+                      final siswaData = siswaList.firstWhere((s) => s['nama'] == selectedSiswaNama);
+                      // Simpan siswa terpilih
+                      _saveSelectedSiswa(siswaData);
+                      // Update tampilan UI
+                      _updateSiswaDetail(siswaData);
                     });
                   },
                 ),
@@ -611,9 +599,7 @@ class _ProfilePageState extends State<ProfilePage> with TickerProviderStateMixin
         color: Colors.transparent,
         child: InkWell(
           borderRadius: BorderRadius.circular(20),
-          onTap: () {
-            // Handle tap
-          },
+          onTap: () {},
           child: Padding(
             padding: const EdgeInsets.all(20),
             child: Row(
