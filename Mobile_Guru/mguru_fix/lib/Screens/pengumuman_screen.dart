@@ -437,7 +437,7 @@
                           width: double.infinity,
                           fit: BoxFit.cover,
                           // Tambahkan headers untuk request
-                          headers: {
+                          headers: const {
                             'User-Agent': 'Flutter App',
                           },
                           // Tampilkan loading indicator saat gambar dimuat
@@ -818,7 +818,7 @@
                                   width: double.infinity,
                                   fit: BoxFit.cover,
                                   // Tambahkan headers untuk request
-                                  headers: {
+                                  headers: const {
                                     'User-Agent': 'Flutter App',
                                   },
                                   loadingBuilder: (context, child, loadingProgress) {
@@ -1247,7 +1247,7 @@
                     imageUrl,
                     fit: BoxFit.contain,
                     // Tambahkan headers untuk request
-                    headers: {
+                    headers: const {
                       'User-Agent': 'Flutter App',
                     },
                     loadingBuilder: (context, child, loadingProgress) {

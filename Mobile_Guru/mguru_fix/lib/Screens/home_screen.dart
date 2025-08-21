@@ -10,7 +10,7 @@ import 'package:mobile_presensi_kdtg/Screens/Kegiatan/absen_kegiatan_screen.dart
 import 'package:mobile_presensi_kdtg/Screens/Kegiatan/absen_kegiatan_wfh_screen.dart';
 import 'package:mobile_presensi_kdtg/Screens/LokasiKampus/lokasi_kampus_screen.dart';
 import 'package:mobile_presensi_kdtg/Screens/semua_menu.dart';
-import 'package:mobile_presensi_kdtg/Screens/pengumuman_screen.dart'; // Import halaman pengumuman
+import 'package:mobile_presensi_kdtg/Screens/pengumuman_screen.dart'; 
 import 'package:mobile_presensi_kdtg/constants.dart';
 import 'package:mobile_presensi_kdtg/core.dart';
 import 'package:geolocator/geolocator.dart';
