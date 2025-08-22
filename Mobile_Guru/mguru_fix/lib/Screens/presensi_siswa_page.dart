@@ -300,6 +300,15 @@ class _PresensiSiswaPageState extends State<PresensiSiswaPage> {
                   // Toggle all students' attendance
                   _hadirList =
                       List.generate(_students.length, (_) => !allSelected);
+                  
+                  // Juga toggle presensi guru ketika select all ditekan
+                  if (!allSelected) {
+                    // Jika sedang mencentang semua, maka guru juga hadir
+                    isGuruHadir = 1;
+                  } else {
+                    // Jika sedang uncheck semua, maka guru juga tidak hadir
+                    isGuruHadir = 0;
+                  }
                 });
               },
               child: Row(
