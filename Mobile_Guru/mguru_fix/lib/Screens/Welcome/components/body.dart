@@ -82,23 +82,23 @@ class _BodyState extends State<Body> with SingleTickerProviderStateMixin {
                 ),
               ),
             ),
-            SizedBox(height: size.height * 0.05),
-            FadeTransition(
-              opacity: _opacityAnimation,
-              child: RoundedButton(
-                text: "LOGIN",
-                press: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) {
-                        return const LoginScreen();
-                      },
-                    ),
-                  );
-                },
-              ),
-            ),
+            //SizedBox(height: size.height * 0.05),
+            //FadeTransition(
+              //opacity: _opacityAnimation,
+              //child: RoundedButton(
+                //text: "LOGIN",
+                //press: () {
+                  //Navigator.push(
+                    //context,
+                    //MaterialPageRoute(
+                      //builder: (context) {
+                        //return const presensi();
+                      //},
+                    //),
+                  //);
+                //},
+              //),
+            //),
           ],
         ),
       ),

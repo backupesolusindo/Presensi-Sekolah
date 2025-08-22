@@ -53,7 +53,7 @@ flutter:
 flutter_launcher_icons:
   android: true
   ios: true
-  image_path: "assets/smpn3logo.png"
+  image_path: "assets/iconcuysmpn3.png"
   adaptive_icon_background: "#ffffff"
-  adaptive_icon_foreground: "assets/smpn3logo.png"
+  adaptive_icon_foreground: "assets/iconcuysmpn3.png"
   adaptive_icon_padding: true

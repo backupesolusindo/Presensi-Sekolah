@@ -163,10 +163,10 @@ class _Foto_ProfilState extends State<Foto_Profil> {
                     UploadPost.connectToApi(prefs.getString("ID")!, _image!)
                         .then((value) {
                       if (value!.status_kode == 200) {
-                        Navigator.pushReplacement(context,
-                            MaterialPageRoute(builder: (context) {
-                          return const DashboardScreen();
-                        }));
+                        //Navigator.pushReplacement(context,
+                            //MaterialPageRoute(builder: (context) {
+                          //return const DashboardScreen();
+                        //}));
                       } else {
                         _showMyDialog("Upload Foto Profil", value.message);
                       }

@@ -432,7 +432,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
             child: ClipRRect(
               borderRadius: BorderRadius.circular(15),
               child: Image.asset(
-                'assets/logo.png',
+                'assets/Logo_SMPN_3_Jember.png',
                 fit: BoxFit.cover,
                 errorBuilder: (context, error, stackTrace) {
                   return const Icon(

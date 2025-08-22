@@ -337,7 +337,7 @@ class _ProfilePageState extends State<ProfilePage> with TickerProviderStateMixin
             child: ClipRRect(
               borderRadius: BorderRadius.circular(25),
               child: Image.asset(
-                'assets/logoSMP.png', // Pastikan path ini benar
+                'assets/Logo_SMPN_3_Jember.png', // Pastikan path ini benar
                 fit: BoxFit.cover,
                 errorBuilder: (context, error, stackTrace) {
                   return const Icon(

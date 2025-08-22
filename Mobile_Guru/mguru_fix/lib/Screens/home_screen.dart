@@ -1345,7 +1345,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                       decoration: BoxDecoration(
                         borderRadius: BorderRadius.circular(70),
                         image: const DecorationImage(
-                          image: AssetImage('assets/images/smp1logo.png'),
+                          image: AssetImage('assets/images/logosmpn3.png'),
                         ),
                       ),
                     ),

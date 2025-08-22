@@ -113,10 +113,10 @@ class _Body extends State<Body> {
                       prefs.setDouble("Radius", double.parse(item['radius']));
                       LokasiKampusPost.connectToApi(idKampus).then((value) {});
                       Navigator.pop(context);
-                      Navigator.push(context,
-                          MaterialPageRoute(builder: (context) {
-                        return const DashboardScreen();
-                      }));
+                      //Navigator.push(context,
+                          //MaterialPageRoute(builder: (context) {
+                        //return const DashboardScreen();
+                      //}));
                     },
                     child: SizedBox(
                         width: MediaQuery.of(context).size.width - 200,
