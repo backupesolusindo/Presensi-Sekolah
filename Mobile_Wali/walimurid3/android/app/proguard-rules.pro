@@ -1,6 +1,7 @@
 -keep class com.google.mlkit.vision.** { *; }
 -keep class org.tensorflow.lite.gpu.GpuDelegateFactory$Options { *; }
 -keep class com.google.mlkit.vision.text.* { *; }
+-keep class org.slf4j.** { *; }
 # Suppress warnings for missing classes
 -dontwarn com.google.mlkit.vision.text.chinese.ChineseTextRecognizerOptions$Builder
 -dontwarn com.google.mlkit.vision.text.chinese.ChineseTextRecognizerOptions
@@ -11,3 +12,4 @@
 -dontwarn com.google.mlkit.vision.text.korean.KoreanTextRecognizerOptions$Builder
 -dontwarn com.google.mlkit.vision.text.korean.KoreanTextRecognizerOptions
 -dontwarn org.tensorflow.lite.gpu.GpuDelegateFactory$Options
+-dontwarn org.slf4j.**

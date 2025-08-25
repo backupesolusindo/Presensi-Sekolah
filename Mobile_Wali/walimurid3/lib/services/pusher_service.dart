@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:typed_data';
 import 'package:pusher_channels_flutter/pusher_channels_flutter.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:flutter/material.dart';
@@ -26,8 +27,8 @@ class PusherService {
 
     // Initialize Pusher
     await pusher.init(
-      apiKey: "your-app-key", // Ganti dengan key dari dashboard Pusher
-      cluster: "ap-southeast-1", // Ganti dengan cluster Anda
+      apiKey: "25cc7e774ad55240b5f8", // Ganti dengan key dari dashboard Pusher
+      cluster: "ap1", // Ganti dengan cluster Anda
       onConnectionStateChange: onConnectionStateChange,
       onError: onError,
       onSubscriptionSucceeded: onSubscriptionSucceeded,
@@ -41,7 +42,8 @@ class PusherService {
     await pusher.subscribe(channelName: "wali-$userId");
     
     // Subscribe to general channel (untuk broadcast ke semua wali)
-    await pusher.subscribe(channelName: "absensi-broadcast");
+    // DISESUAIKAN DENGAN KODE BACKEND
+    await pusher.subscribe(channelName: "absensi-channel");
   }
 
   Future<void> _initializeLocalNotifications() async {
@@ -94,104 +96,104 @@ class PusherService {
     print("Event: ${event.eventName} on ${event.channelName}");
     print("Data: ${event.data}");
     
-    // Handle different types of notifications
-    switch (event.eventName) {
-      case "absensi-notification":
-        _handleAbsensiNotification(event.data);
-        break;
-      case "pengumuman":
-        _handlePengumumanNotification(event.data);
-        break;
-      case "reminder":
-        _handleReminderNotification(event.data);
-        break;
-      default:
-        _handleGeneralNotification(event.data);
-        break;
+    // STRICT filtering - hanya proses event yang benar-benar diinginkan
+    // DISESUAIKAN DENGAN NAMA EVENT BACKEND
+    if (event.eventName == "absen-masuk") {
+      print("Processing absen-masuk event");
+      _handleAbsensiMasuk(event.data);
+    } else if (event.eventName == "absen-pulang") {
+      print("Processing absen-pulang event");
+      _handleAbsensiPulang(event.data);
+    } else {
+      // Log event yang diabaikan
+      print("🚫 Event '${event.eventName}' IGNORED - only handling 'absen-masuk' and 'absen-pulang'");
+      return; // Langsung return, tidak proses apapun
     }
   }
 
-  void _handleAbsensiNotification(String data) {
+  void _handleAbsensiMasuk(String data) {
     try {
       final Map<String, dynamic> notificationData = 
           Map<String, dynamic>.from(json.decode(data));
       
-      String title = notificationData['title'] ?? 'Notifikasi Absensi';
-      String message = notificationData['message'] ?? '';
-      String nisAnak = notificationData['nis_anak'] ?? '';
-      String status = notificationData['status'] ?? '';
+      // Validasi data wajib
+      if (!notificationData.containsKey('nama') || 
+          !notificationData.containsKey('nis')) {
+        print("❌ Invalid absensi-masuk data: missing required fields");
+        return;
+      }
+      
+      String namaAnak = notificationData['nama'] ?? 'Siswa';
+      String nisAnak = notificationData['nis'] ?? '';
       String waktu = notificationData['waktu'] ?? '';
+      String kelas = notificationData['kelas'] ?? '';
+      
+      // Jangan tampilkan jika data kosong/invalid
+      if (namaAnak.isEmpty || nisAnak.isEmpty) {
+        print("❌ Absensi masuk data incomplete - notification skipped");
+        return;
+      }
+      
+      String title = "Absensi Masuk";
+      String message = "$namaAnak ($kelas) telah masuk sekolah pada $waktu";
 
       Map<String, dynamic> extraData = {
-        'type': 'absensi',
+        'type': 'absensi_masuk',
         'nis_anak': nisAnak,
-        'status': status,
+        'nama_anak': namaAnak,
         'waktu': waktu,
-        'redirect': 'dashboard' // Redirect ke dashboard setelah tap
-      };
-
-      _showLocalNotification(title, message, extraData, 'absensi');
-    } catch (e) {
-      print("Error parsing absensi notification: $e");
-    }
-  }
-
-  void _handlePengumumanNotification(String data) {
-    try {
-      final Map<String, dynamic> notificationData = 
-          Map<String, dynamic>.from(json.decode(data));
-      
-      String title = notificationData['title'] ?? 'Pengumuman Sekolah';
-      String message = notificationData['message'] ?? '';
-      String pengumumanId = notificationData['pengumuman_id'] ?? '';
-
-      Map<String, dynamic> extraData = {
-        'type': 'pengumuman',
-        'pengumuman_id': pengumumanId,
-        'redirect': 'pengumuman'
-      };
-
-      _showLocalNotification(title, message, extraData, 'pengumuman');
-    } catch (e) {
-      print("Error parsing pengumuman notification: $e");
-    }
-  }
-
-  void _handleReminderNotification(String data) {
-    try {
-      final Map<String, dynamic> notificationData = 
-          Map<String, dynamic>.from(json.decode(data));
-      
-      String title = notificationData['title'] ?? 'Pengingat';
-      String message = notificationData['message'] ?? '';
-
-      Map<String, dynamic> extraData = {
-        'type': 'reminder',
+        'kelas': kelas,
+        'status': 'masuk',
         'redirect': 'dashboard'
       };
 
-      _showLocalNotification(title, message, extraData, 'reminder');
+      print("✅ Showing absensi masuk notification for: $namaAnak");
+      _showLocalNotification(title, message, extraData, 'masuk');
     } catch (e) {
-      print("Error parsing reminder notification: $e");
+      print("❌ Error parsing absensi masuk notification: $e");
     }
   }
 
-  void _handleGeneralNotification(String data) {
+  void _handleAbsensiPulang(String data) {
     try {
       final Map<String, dynamic> notificationData = 
           Map<String, dynamic>.from(json.decode(data));
       
-      String title = notificationData['title'] ?? 'Notifikasi';
-      String message = notificationData['message'] ?? '';
+      // Validasi data wajib
+      if (!notificationData.containsKey('nama') || 
+          !notificationData.containsKey('nis')) {
+        print("❌ Invalid absensi-pulang data: missing required fields");
+        return;
+      }
+      
+      String namaAnak = notificationData['nama'] ?? 'Siswa';
+      String nisAnak = notificationData['nis'] ?? '';
+      String waktu = notificationData['waktu_pulang'] ?? ''; // Menggunakan kunci 'waktu_pulang'
+      String kelas = notificationData['kelas'] ?? '';
+      
+      // Jangan tampilkan jika data kosong/invalid
+      if (namaAnak.isEmpty || nisAnak.isEmpty) {
+        print("❌ Absensi pulang data incomplete - notification skipped");
+        return;
+      }
+      
+      String title = "Absensi Pulang";
+      String message = "$namaAnak ($kelas) telah pulang sekolah pada $waktu";
 
       Map<String, dynamic> extraData = {
-        'type': 'general',
+        'type': 'absensi_pulang',
+        'nis_anak': nisAnak,
+        'nama_anak': namaAnak,
+        'waktu': waktu,
+        'kelas': kelas,
+        'status': 'pulang',
         'redirect': 'dashboard'
       };
 
-      _showLocalNotification(title, message, extraData, 'general');
+      print(" Showing absensi pulang notification for: $namaAnak");
+      _showLocalNotification(title, message, extraData, 'pulang');
     } catch (e) {
-      print("Error parsing general notification: $e");
+      print("❌ Error parsing absensi pulang notification: $e");
     }
   }
 
@@ -202,10 +204,10 @@ class PusherService {
     String type
   ) async {
     
-    // Different notification channels for different types
+    // Different notification channels untuk masuk dan pulang
     String channelId = 'absensi_$type';
-    String channelName = 'Notifikasi ${type.toUpperCase()}';
-    String channelDescription = 'Notifikasi untuk $type';
+    String channelName = 'Notifikasi Absensi ${type.toUpperCase()}';
+    String channelDescription = 'Notifikasi untuk absensi $type sekolah';
 
     AndroidNotificationDetails androidNotificationDetails =
         AndroidNotificationDetails(
@@ -215,11 +217,10 @@ class PusherService {
       importance: Importance.high,
       priority: Priority.high,
       showWhen: true,
-      icon: '@mipmap/ic_launcher',
-      sound: const RawResourceAndroidNotificationSound('notification'),
-      playSound: true,
       enableVibration: true,
       vibrationPattern: Int64List.fromList([0, 1000, 500, 1000]),
+      // Styling berbeda untuk masuk dan pulang
+      color: type == 'masuk' ? const Color(0xFF4CAF50) : const Color(0xFF2196F3), // Hijau untuk masuk, biru untuk pulang
     );
 
     const DarwinNotificationDetails iosNotificationDetails = 
@@ -279,4 +280,7 @@ class PusherService {
   Future<void> reconnect() async {
     await pusher.connect();
   }
+
+  // Method untuk cek status koneksi
+  bool get isConnected => pusher.connectionState == 'CONNECTED';
 }
