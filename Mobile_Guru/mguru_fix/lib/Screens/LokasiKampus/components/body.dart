@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:mobile_presensi_kdtg/Screens/LokasiKampus/components/background.dart';
 import 'package:mobile_presensi_kdtg/Screens/LokasiKampus/lokasi_kampus_post.dart';
-import 'package:mobile_presensi_kdtg/Screens/dashboard_screen.dart';
 import 'package:mobile_presensi_kdtg/constants.dart';
 import 'package:mobile_presensi_kdtg/core.dart';
 import 'dart:convert';

@@ -6,6 +6,8 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '/Utilities/BaseUrl.dart';
 import 'home.dart';
 import 'signup.dart';
+// TAMBAHAN: Import Pusher Service
+import 'services/pusher_service.dart';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
@@ -20,7 +22,7 @@ class _LoginPageState extends State<LoginPage>
   final TextEditingController passwordController = TextEditingController();
   bool _isLoading = false;
   bool _isPasswordVisible = false;
-  bool _isCheckingLoginStatus = true; // Tambahkan ini
+  bool _isCheckingLoginStatus = true;
   late AnimationController _controller;
   late Animation<double> _animation;
 
@@ -38,14 +40,23 @@ class _LoginPageState extends State<LoginPage>
     _checkLoginStatus();
   }
 
-  // Tambahkan method untuk cek status login
+  // Method untuk cek status login
   Future<void> _checkLoginStatus() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     String? namaWali = prefs.getString('nama_wali');
     String? noHp = prefs.getString('no_hp');
+    bool isLoggedIn = prefs.getBool('is_logged_in') ?? false;
     
-    // Jika data login ada, langsung ke homepage
-    if (namaWali != null && noHp != null) {
+    // Jika data login ada, langsung ke homepage dan subscribe pusher
+    if (namaWali != null && noHp != null && isLoggedIn) {
+      try {
+        // TAMBAHAN: Subscribe ke pusher channel dengan nomor HP sebagai user ID
+        await PusherService().subscribeToUserChannel(noHp);
+        print("Auto-subscribed to Pusher channel for user: $noHp");
+      } catch (e) {
+        print("Error auto-subscribing to Pusher: $e");
+      }
+      
       Navigator.pushReplacement(
         context,
         MaterialPageRoute(builder: (context) => const HomePage()),
@@ -85,13 +96,24 @@ class _LoginPageState extends State<LoginPage>
         final data = json.decode(response.body);
 
         if (data['status'] == 'success') {
+          // Simpan data ke SharedPreferences
           SharedPreferences prefs = await SharedPreferences.getInstance();
           await prefs.setString('nama_wali', data['nama_wali']);
           await prefs.setString('no_hp', data['no_hp']);
           await prefs.setString('password', password);
-          // Tambahkan flag untuk menandai sudah login
           await prefs.setBool('is_logged_in', true);
 
+          // TAMBAHAN: Subscribe ke Pusher channel setelah login berhasil
+          try {
+            await PusherService().subscribeToUserChannel(noHp);
+            print("Successfully subscribed to Pusher channel for user: $noHp");
+            _showSuccessSnackbar('Login berhasil! Notifikasi aktif.');
+          } catch (e) {
+            print("Error subscribing to Pusher: $e");
+            _showSuccessSnackbar('Login berhasil! (Notifikasi tidak aktif)');
+          }
+
+          // Navigate ke homepage
           Navigator.pushReplacement(
             context,
             MaterialPageRoute(builder: (context) => const HomePage()),
@@ -129,6 +151,25 @@ class _LoginPageState extends State<LoginPage>
     ScaffoldMessenger.of(context).showSnackBar(snackBar);
   }
 
+  // TAMBAHAN: Method untuk show success snackbar
+  void _showSuccessSnackbar(String message) {
+    final snackBar = SnackBar(
+      content: Row(
+        children: [
+          const Icon(Icons.check_circle_outline, color: Colors.white),
+          const SizedBox(width: 10),
+          Expanded(child: Text(message)),
+        ],
+      ),
+      backgroundColor: Colors.green,
+      behavior: SnackBarBehavior.floating,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+      margin: const EdgeInsets.all(10),
+      duration: const Duration(seconds: 2),
+    );
+    ScaffoldMessenger.of(context).showSnackBar(snackBar);
+  }
+
   @override
   void dispose() {
     _controller.dispose();
@@ -141,9 +182,32 @@ class _LoginPageState extends State<LoginPage>
   Widget build(BuildContext context) {
     // Tampilkan loading saat mengecek status login
     if (_isCheckingLoginStatus) {
-      return const Scaffold(
-        body: Center(
-          child: CircularProgressIndicator(),
+      return Scaffold(
+        body: Container(
+          decoration: const BoxDecoration(
+            image: DecorationImage(
+              image: AssetImage('assets/walibg.png'),
+              fit: BoxFit.cover,
+            ),
+          ),
+          child: const Center(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                CircularProgressIndicator(
+                  valueColor: AlwaysStoppedAnimation<Color>(Colors.blueAccent),
+                ),
+                SizedBox(height: 20),
+                Text(
+                  'Mengecek status login...',
+                  style: TextStyle(
+                    color: Colors.black87,
+                    fontSize: 16,
+                  ),
+                ),
+              ],
+            ),
+          ),
         ),
       );
     }
