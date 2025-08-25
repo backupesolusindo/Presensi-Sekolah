@@ -77,7 +77,8 @@ class _BodyState extends State<Body> with SingleTickerProviderStateMixin {
               scale: _scaleAnimation,
               child: Container(
                 child: Image.asset(
-                  "assets/images/smp1logo.png",
+                  // "assets/images/smp1logo.png",
+                  "assets/images/iconguru.png",
                   width: size.width * 0.6,
                 ),
               ),
