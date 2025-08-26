@@ -6,7 +6,6 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '/Utilities/BaseUrl.dart';
 import 'home.dart';
 import 'signup.dart';
-// TAMBAHAN: Import Pusher Service
 import 'services/pusher_service.dart';
 
 class LoginPage extends StatefulWidget {
@@ -65,7 +64,7 @@ class _LoginPageState extends State<LoginPage>
         } catch (e) {
           print("Error initializing Pusher: $e");
         }
-        
+
         Navigator.pushReplacement(
           context,
           MaterialPageRoute(builder: (context) => const HomePage()),
