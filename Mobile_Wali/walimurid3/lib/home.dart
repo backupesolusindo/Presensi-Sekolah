@@ -570,14 +570,6 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                 color: Colors.white,
               ),
             ),
-            Text(
-              'See all',
-              style: TextStyle(
-                fontSize: 14,
-                color: Colors.white.withOpacity(0.8),
-                fontWeight: FontWeight.w500,
-              ),
-            ),
           ],
         ),
         const SizedBox(height: 16),
