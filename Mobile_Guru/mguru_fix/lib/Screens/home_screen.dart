@@ -16,11 +16,10 @@ import 'package:mobile_presensi_kdtg/core.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:http/http.dart' as http;
-import 'package:trust_location/trust_location.dart';
-// import 'package:launch_review/launch_review.dart';
 import 'package:mobile_presensi_kdtg/Screens/presensi_siswa_page.dart';
 import 'Absen/WorkFrom/absen_selesai_wf_screen.dart';
 import 'Absen/WorkFrom/absen_wf_screen.dart';
+import 'package:mobile_presensi_kdtg/services/location_services.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -86,7 +85,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
   }
 
   Future<void> cekFakeGPS() async {
-    bool isMockLocation = await TrustLocation.isMockLocation;
+    bool isMockLocation = await LocationService.isMockLocation;
     print("Fake GPS: $isMockLocation");
   }
 

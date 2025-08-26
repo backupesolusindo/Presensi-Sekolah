@@ -12,8 +12,9 @@ import 'package:mobile_presensi_kdtg/core.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:trust_location/trust_location.dart';
 import 'package:http/http.dart' as http;
+import 'package:mobile_presensi_kdtg/services/location_services.dart';
+
 
 class AbsenHarianScreen extends StatefulWidget {
   const AbsenHarianScreen({super.key});
@@ -88,7 +89,7 @@ class _AbsenHarianScreenState extends State<AbsenHarianScreen> {
     if (prefs.getBool("sl_harian_masuk")!) {
       _showPerizinan();
     }
-    _isMockLocation = await TrustLocation.isMockLocation;
+    _isMockLocation = await LocationService.isMockLocation;
     print("fake GPS :");
     print(_isMockLocation);
     Nama = prefs.getString("Nama")!;
@@ -369,7 +370,7 @@ class _AbsenHarianScreenState extends State<AbsenHarianScreen> {
                                     }
                                   } else {
                                     _isMockLocation =
-                                        await TrustLocation.isMockLocation;
+                                        await LocationService.isMockLocation;
                                     print("fake GPS :");
                                     print(_isMockLocation);
                                     if (_isMockLocation == true) {

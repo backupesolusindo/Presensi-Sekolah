@@ -8,7 +8,7 @@ import 'package:mobile_presensi_kdtg/components/rounded_input_field.dart';
 import 'package:mobile_presensi_kdtg/components/rounded_password_field.dart';
 import 'package:page_transition/page_transition.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:trust_location/trust_location.dart';
+import 'package:mobile_presensi_kdtg/services/location_services.dart';
 
 class Body extends StatefulWidget {
   const Body({super.key});
@@ -34,7 +34,7 @@ class _Body extends State<Body> {
   }
 
   Future<void> cekFakeGPS() async {
-    bool isMockLocation = await TrustLocation.isMockLocation;
+    bool isMockLocation = await LocationService.isMockLocation;
     print("fake GPS :");
     print(isMockLocation);
   }

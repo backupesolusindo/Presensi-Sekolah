@@ -45,5 +45,15 @@
 	<true/>
 	<key>UIApplicationSupportsIndirectInputEvents</key>
 	<true/>
+	
+	<!-- TAMBAHKAN INI UNTUK LOCATION PERMISSIONS -->
+	<key>NSLocationWhenInUseUsageDescription</key>
+	<string>This app needs location access for attendance tracking</string>
+	<key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
+	<string>This app needs location access for attendance tracking</string>
+	<key>NSLocationAlwaysUsageDescription</key>
+	<string>This app needs location access for attendance tracking</string>
+	<!-- AKHIR LOCATION PERMISSIONS -->
+	
 </dict>
 </plist>

@@ -15,7 +15,8 @@ import 'package:geolocator/geolocator.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:http/http.dart' as http;
-import 'package:trust_location/trust_location.dart';
+import 'package:mobile_presensi_kdtg/services/location_services.dart';
+
 
 List<CameraDescription> cameras = [];
 
@@ -184,7 +185,7 @@ class _AbsenPage extends State<AbsenPage> {
     if (prefs.getBool("sl_wfh_selesai")!) {
       _showPerizinan();
     }
-    _isMockLocation = await TrustLocation.isMockLocation;
+    _isMockLocation = await LocationService.isMockLocation;
     print("fake GPS :");
     print(_isMockLocation);
 
@@ -381,7 +382,7 @@ class _AbsenPage extends State<AbsenPage> {
                                     statusLoading = 1;
                                   });
                                   _isMockLocation =
-                                      await TrustLocation.isMockLocation;
+                                      await LocationService.isMockLocation;
                                   print("fake GPS :");
                                   print(_isMockLocation);
 
