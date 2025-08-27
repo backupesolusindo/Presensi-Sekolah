@@ -29,9 +29,9 @@ dependencies:
   pusher_channels_flutter: ^2.5.0
   flutter_local_notifications: ^19.4.0
   # Background service dependencies
-  flutter_background_service: ^5.0.10
-  flutter_background_service_android: ^6.2.4
-  workmanager: ^0.5.2
+  #flutter_background_service: ^5.0.10
+  #flutter_background_service_android: ^6.2.4
+  #workmanager: ^0.5.2
   
 
 dev_dependencies:
@@ -55,11 +55,8 @@ flutter:
     - assets/walibg.png
     - assets/biru.png
     - assets/iconhp.png
-<<<<<<< HEAD
     - assets/Logo_SMPN_3_Jember.png
-=======
     - assets/logosmpn3.png
->>>>>>> 5e7d6f416c542e984278b8c9ad3e855fd529ed41
 
 flutter_launcher_icons:
   android: true

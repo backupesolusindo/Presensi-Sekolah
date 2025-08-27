@@ -19,7 +19,7 @@ class PusherService {
   // Menyimpan informasi user yang sedang login
   String? _currentUserPhone;
   String? _currentParentChannel;
-  final List<String> _subscribedChannels = [];
+  List<String> _subscribedChannels = [];
 
   Future<void> initialize({
     required String userPhone, // Nomor telepon user yang login (dari data wali/ortu)
@@ -130,7 +130,7 @@ class PusherService {
     
     // Jika reconnected, subscribe ulang ke channels
     if (currentState == 'CONNECTED' && _currentParentChannel != null) {
-      Future.delayed(const Duration(seconds: 1), () {
+      Future.delayed(Duration(seconds: 1), () {
         _subscribeToChannel(_currentParentChannel!);
       });
     }

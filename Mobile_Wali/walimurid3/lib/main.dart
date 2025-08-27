@@ -3,13 +3,13 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'login.dart'; // Import the LoginPage
 import 'home.dart'; // Import HomePage
 import 'services/pusher_service.dart'; // Import Pusher Service
-import 'services/background_pusher_service.dart'; // Import Background Service
+// Import Background Service
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   
   // Initialize background service untuk Pusher
-  await BackgroundPusherService.initializeService();
+  //await BackgroundPusherService.initializeService();
   
   runApp(const MyApp());
 }
@@ -48,7 +48,7 @@ class _MyAppState extends State<MyApp> {
         await _initializePusherService(noHp);
         
         // Start background service
-        await _startBackgroundService(noHp);
+        //await _startBackgroundService(noHp);
         
         setState(() {
           _isLoggedIn = true;
@@ -84,19 +84,19 @@ class _MyAppState extends State<MyApp> {
     }
   }
 
-  Future<void> _startBackgroundService(String userPhone) async {
-    try {
-      // Start background service
-      await BackgroundPusherService.startService();
+  // Future<void> _startBackgroundService(String userPhone) async {
+  //   try {
+  //     // Start background service
+  //     await BackgroundPusherService.startService();
       
-      // Update user phone untuk background service
-      await BackgroundPusherService.updateUserPhone(userPhone);
+  //     // Update user phone untuk background service
+  //     await BackgroundPusherService.updateUserPhone(userPhone);
       
-      print("Background Pusher Service started for phone: $userPhone");
-    } catch (e) {
-      print("Failed to start Background Service: $e");
-    }
-  }
+  //     print("Background Pusher Service started for phone: $userPhone");
+  //   } catch (e) {
+  //     print("Failed to start Background Service: $e");
+  //   }
+  // }
 
   void _handleNotificationTap(Map<String, dynamic> data) {
     // Handle notification tap

@@ -7,7 +7,6 @@ import '/Utilities/BaseUrl.dart';
 import 'home.dart';
 import 'signup.dart';
 import 'services/pusher_service.dart';
-import 'services/background_pusher_service.dart';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
@@ -85,13 +84,13 @@ class _LoginPageState extends State<LoginPage>
       }
       
       // 2. Initialize background service
-      try {
-        await BackgroundPusherService.startService();
-        await BackgroundPusherService.updateUserPhone(userPhone);
-        print("Background Pusher Service started for phone: $userPhone");
-      } catch (bgError) {
-        print("Background service failed: $bgError");
-      }
+      // try {
+      //   await BackgroundPusherService.startService();
+      //   await BackgroundPusherService.updateUserPhone(userPhone);
+      //   print("Background Pusher Service started for phone: $userPhone");
+      // } catch (bgError) {
+      //   print("Background service failed: $bgError");
+      // }
       
       _showSuccessSnackbar('Layanan notifikasi aktif untuk nomor $userPhone');
       
