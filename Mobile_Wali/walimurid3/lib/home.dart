@@ -66,14 +66,16 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
   late Animation<double> _fadeAnimation;
 
   List<dynamic> siswaList = [];
+  String? selectedSiswaNis;
   String? selectedSiswaNama;
+  
   Map<String, dynamic>? get selectedSiswa {
-      if (selectedSiswaNama == null || siswaList.isEmpty) return null;
-      try {
-          return siswaList.firstWhere((siswa) => siswa['nama'] == selectedSiswaNama);
-      } catch (e) {
-          return null;
-      }
+    if (selectedSiswaNis == null || siswaList.isEmpty) return null;
+    try {
+      return siswaList.firstWhere((siswa) => siswa['nis'] == selectedSiswaNis);
+    } catch (e) {
+      return null;
+    }
   }
 
   static const Color primaryBlue = Color(0xFF1976D2);
@@ -134,13 +136,34 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
       namaWali = prefs.getString('nama_wali') ?? 'Nama Wali';
       noHp = prefs.getString('no_hp') ?? prefs.getString('no_hp_ortu') ?? 'Nomor HP';
     });
+    
+    // Load saved student selection FIRST
+    selectedSiswaNis = prefs.getString('selected_siswa_nis');
+    selectedSiswaNama = prefs.getString('selected_siswa_nama');
+    
     await _fetchSiswaData();
     
-    String? savedSiswaNama = prefs.getString('selected_siswa_nama');
-    if (savedSiswaNama != null && siswaList.any((s) => s['nama'] == savedSiswaNama)) {
-        setState(() {
-            selectedSiswaNama = savedSiswaNama;
-        });
+    // Validate and ensure selected student still exists
+    if (selectedSiswaNis != null) {
+      bool siswaExists = siswaList.any((s) => s['nis'] == selectedSiswaNis);
+      if (!siswaExists && siswaList.isNotEmpty) {
+        // If saved student doesn't exist, select first student
+        await _selectFirstSiswa();
+      }
+    } else if (siswaList.isNotEmpty) {
+      // If no student selected, select first one
+      await _selectFirstSiswa();
+    }
+    
+    if (mounted) setState(() {});
+  }
+
+  Future<void> _selectFirstSiswa() async {
+    if (siswaList.isNotEmpty) {
+      final firstSiswa = siswaList.first;
+      selectedSiswaNis = firstSiswa['nis'];
+      selectedSiswaNama = firstSiswa['nama'];
+      await _saveSelectedSiswa(firstSiswa);
     }
   }
 
@@ -155,10 +178,6 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
         if (data['data'] != null && data['data'].isNotEmpty) {
           setState(() {
             siswaList = data['data'];
-            if (selectedSiswaNama == null) {
-                selectedSiswaNama = siswaList.first['nama'];
-                _saveSelectedSiswa(siswaList.first);
-            }
           });
         } else {
           print('Data siswa kosong atau tidak ditemukan.');
@@ -186,14 +205,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
     });
 
     if (index == 1) {
-      if (selectedSiswa == null) return;
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(builder: (context) => RiwayatPage(
-          selectedSiswaNis: selectedSiswa!['nis'],
-          selectedSiswaNama: selectedSiswa!['nama'],
-        )),
-      );
+      _navigateToRiwayat();
     } else if (index == 2) {
       Navigator.pushReplacement(
         context,
@@ -218,13 +230,16 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
 
   Future<void> _saveSelectedSiswa(Map<String, dynamic> siswa) async {
     final prefs = await SharedPreferences.getInstance();
-    await prefs.setString('selected_siswa_nama', siswa['nama']);
     await prefs.setString('selected_siswa_nis', siswa['nis']);
+    await prefs.setString('selected_siswa_nama', siswa['nama']);
+    await prefs.setString('selected_siswa_kelas', siswa['nama_kelas'] ?? '');
+    
+    // Update local state
+    selectedSiswaNis = siswa['nis'];
+    selectedSiswaNama = siswa['nama'];
   }
 
-  // --- PENAMBAHAN: Fungsi untuk menangani refresh ---
   Future<void> _handleRefresh() async {
-    // Memberi sedikit jeda agar animasi loading terlihat lebih mulus
     await Future.delayed(const Duration(milliseconds: 500));
     await _loadUserData();
     if (mounted) {
@@ -240,14 +255,12 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
         );
     }
   }
-  // --- Akhir Penambahan ---
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: backgroundBlue,
       body: SafeArea(
-        // --- PENAMBAHAN: Widget RefreshIndicator ---
         child: RefreshIndicator(
           onRefresh: _handleRefresh,
           color: primaryBlue,
@@ -255,8 +268,6 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
           child: FadeTransition(
             opacity: _fadeAnimation,
             child: SingleChildScrollView(
-              // Physics ditambahkan agar RefreshIndicator selalu bisa dipicu
-              // bahkan ketika konten tidak cukup panjang untuk di-scroll.
               physics: const AlwaysScrollableScrollPhysics(), 
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -286,13 +297,10 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
             ),
           ),
         ),
-        // --- Akhir Penambahan ---
       ),
       bottomNavigationBar: _buildModernBottomNav(),
     );
   }
-  
-  // ... Sisa kode widget lainnya (tidak ada yang diubah dari sini) ...
 
   Widget _buildEnhancedHeader() {
     return Container(
@@ -524,7 +532,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                     border: Border.all(color: Colors.grey[200]!),
                   ),
                   child: DropdownButton<String>(
-                    value: selectedSiswaNama,
+                    value: selectedSiswaNis,
                     hint: const Text('Pilih Siswa'),
                     isExpanded: true,
                     underline: Container(),
@@ -536,17 +544,15 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                     ),
                     items: siswaList.map((siswa) {
                       return DropdownMenuItem<String>(
-                        value: siswa['nama'],
+                        value: siswa['nis'],
                         child: Text(siswa['nama']),
                       );
                     }).toList(),
-                    onChanged: (value) {
+                    onChanged: (value) async {
                       if (value == null) return;
-                      setState(() {
-                        selectedSiswaNama = value;
-                        final siswaToSave = siswaList.firstWhere((s) => s['nama'] == value);
-                        _saveSelectedSiswa(siswaToSave);
-                      });
+                      final siswaToSave = siswaList.firstWhere((s) => s['nis'] == value);
+                      await _saveSelectedSiswa(siswaToSave);
+                      setState(() {});
                     },
                   ),
                 ),
@@ -559,10 +565,10 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Row(
+        const Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            const Text(
+            Text(
               'Category',
               style: TextStyle(
                 fontSize: 18,

@@ -44,7 +44,6 @@ class ApiErrorHandler {
 }
 
 class RiwayatPage extends StatefulWidget {
-  // --- PERBAIKAN: Tambahkan constructor untuk menerima data siswa
   final String? selectedSiswaNis;
   final String? selectedSiswaNama;
 
@@ -60,8 +59,8 @@ class RiwayatPage extends StatefulWidget {
 
 class _RiwayatPageState extends State<RiwayatPage> with TickerProviderStateMixin {
   int _currentIndex = 1;
-  List<dynamic> allRiwayatList = []; // --- PERBAIKAN: Simpan semua riwayat
-  List<dynamic> filteredRiwayatList = []; // --- PERBAIKAN: Riwayat yang sudah difilter
+  List<dynamic> allRiwayatList = [];
+  List<dynamic> filteredRiwayatList = [];
   bool isLoading = true;
   String errorMessage = '';
   late AnimationController _animationController;
@@ -70,7 +69,7 @@ class _RiwayatPageState extends State<RiwayatPage> with TickerProviderStateMixin
   String? _currentNis;
   String? _currentNama;
 
-  // Enhanced Color Palette
+  // Color palette
   static const Color primaryBlue = Color(0xFF1976D2);
   static const Color lightBlue = Color(0xFF42A5F5);
   static const Color accentBlue = Color(0xFF2196F3);
@@ -94,16 +93,21 @@ class _RiwayatPageState extends State<RiwayatPage> with TickerProviderStateMixin
     );
     _animationController.forward();
 
-    // --- PERBAIKAN: Ambil NIS dari widget atau SharedPreferences
     _initializeSiswaData();
   }
 
   Future<void> _initializeSiswaData() async {
-    if (widget.selectedSiswaNis != null) {
+    // Priority: Use passed parameters first, then SharedPreferences
+    if (widget.selectedSiswaNis != null && widget.selectedSiswaNama != null) {
       _currentNis = widget.selectedSiswaNis;
       _currentNama = widget.selectedSiswaNama;
+      
+      // Save to SharedPreferences for consistency
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setString('selected_siswa_nis', _currentNis!);
+      await prefs.setString('selected_siswa_nama', _currentNama!);
     } else {
-      // Fallback jika halaman dibuka tanpa parameter (misal dari notifikasi)
+      // Fallback to SharedPreferences
       final prefs = await SharedPreferences.getInstance();
       _currentNis = prefs.getString('selected_siswa_nis');
       _currentNama = prefs.getString('selected_siswa_nama');
@@ -122,7 +126,6 @@ class _RiwayatPageState extends State<RiwayatPage> with TickerProviderStateMixin
   }
 
   Future<void> _fetchRiwayat() async {
-    // --- PERBAIKAN: Cek apakah NIS ada sebelum fetch
     if (_currentNis == null || _currentNis!.isEmpty) {
         setState(() {
             isLoading = false;
@@ -161,7 +164,7 @@ class _RiwayatPageState extends State<RiwayatPage> with TickerProviderStateMixin
         
         if (responseData['status'] == true && responseData['data'] != null) {
           allRiwayatList = responseData['data'];
-          // --- PERBAIKAN UTAMA: Filter riwayat berdasarkan NIS siswa yang dipilih ---
+          // Filter by selected student NIS
           filteredRiwayatList = allRiwayatList
               .where((item) => item['nis'] == _currentNis)
               .toList();
@@ -194,7 +197,6 @@ class _RiwayatPageState extends State<RiwayatPage> with TickerProviderStateMixin
     Map<String, int> stats = {
       'hadir': 0, 'terlambat': 0, 'alpha': 0, 'sakit': 0, 'izin': 0,
     };
-    // --- PERBAIKAN: Hitung statistik dari data yang sudah difilter
     for (var item in filteredRiwayatList) {
       String status = (item['status'] ?? 'alpha').toString().toLowerCase();
       if (stats.containsKey(status)) {
@@ -375,7 +377,6 @@ class _RiwayatPageState extends State<RiwayatPage> with TickerProviderStateMixin
                         'Riwayat Presensi',
                         style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Colors.white),
                       ),
-                      // --- PERBAIKAN: Tampilkan nama siswa yang riwayatnya sedang dilihat
                       if (_currentNama != null)
                         Text(
                           _currentNama!,
