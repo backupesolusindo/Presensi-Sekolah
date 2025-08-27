@@ -7,6 +7,7 @@ import '/Utilities/BaseUrl.dart';
 import 'home.dart';
 import 'signup.dart';
 import 'services/pusher_service.dart';
+import 'services/background_pusher_service.dart';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
@@ -35,11 +36,9 @@ class _LoginPageState extends State<LoginPage>
     _animation = CurvedAnimation(parent: _controller, curve: Curves.bounceOut);
     _controller.forward();
     
-    // Cek status login saat aplikasi dimulai
     _checkLoginStatus();
   }
 
-  // Method untuk cek status login
   Future<void> _checkLoginStatus() async {
     try {
       SharedPreferences prefs = await SharedPreferences.getInstance();
@@ -47,24 +46,12 @@ class _LoginPageState extends State<LoginPage>
       String? noHp = prefs.getString('no_hp');
       bool isLoggedIn = prefs.getBool('is_logged_in') ?? false;
       
-      // Jika data login ada dan valid, langsung ke homepage dan initialize pusher
       if (namaWali != null && noHp != null && isLoggedIn && noHp.isNotEmpty) {
         print("User already logged in, phone: $noHp");
         
-        try {
-          // PERBAIKAN: Initialize Pusher dengan nomor HP sebagai userPhone
-          await PusherService().initialize(
-            userPhone: noHp, // Gunakan userPhone, bukan userId
-            onNotificationTap: _handleNotificationTap,
-          );
-          
-          print("Pusher initialized successfully for phone: $noHp");
-          _showSuccessSnackbar('Notifikasi aktif untuk nomor $noHp');
-          
-        } catch (e) {
-          print("Error initializing Pusher: $e");
-        }
-
+        // Initialize services
+        await _initializeAllServices(noHp);
+        
         Navigator.pushReplacement(
           context,
           MaterialPageRoute(builder: (context) => const HomePage()),
@@ -75,32 +62,63 @@ class _LoginPageState extends State<LoginPage>
       print("Error checking login status: $e");
     }
     
-    // Jika tidak ada data login atau terjadi error, tampilkan halaman login
     setState(() {
       _isCheckingLoginStatus = false;
     });
   }
 
-  // TAMBAHAN: Handle notification tap
+  Future<void> _initializeAllServices(String userPhone) async {
+    try {
+      // 1. Initialize foreground Pusher Service
+      try {
+        if (PusherService().isConnected) {
+          await PusherService().updateUserPhone(userPhone);
+        } else {
+          await PusherService().initialize(
+            userPhone: userPhone,
+            onNotificationTap: _handleNotificationTap,
+          );
+        }
+        print("Foreground Pusher Service initialized for phone: $userPhone");
+      } catch (pusherError) {
+        print("Foreground Pusher failed: $pusherError");
+      }
+      
+      // 2. Initialize background service
+      try {
+        await BackgroundPusherService.startService();
+        await BackgroundPusherService.updateUserPhone(userPhone);
+        print("Background Pusher Service started for phone: $userPhone");
+      } catch (bgError) {
+        print("Background service failed: $bgError");
+      }
+      
+      _showSuccessSnackbar('Layanan notifikasi aktif untuk nomor $userPhone');
+      
+    } catch (e) {
+      print("Error initializing services: $e");
+      _showSuccessSnackbar('Login berhasil! (Beberapa layanan mungkin tidak aktif)');
+    }
+  }
+
   void _handleNotificationTap(Map<String, dynamic> data) {
     print("Notification tapped in login: $data");
     
     String type = data['type'] ?? '';
     String redirect = data['redirect'] ?? 'dashboard';
     
-    // Navigate sesuai dengan tipe notifikasi
     switch (type) {
       case 'absensi_masuk':
       case 'absensi_pulang':
       case 'parent_notification':
-        // Navigate ke dashboard/home
+      case 'background_masuk':
+      case 'background_pulang':
         Navigator.pushReplacement(
           context,
           MaterialPageRoute(builder: (context) => const HomePage()),
         );
         break;
       default:
-        // Default ke dashboard
         Navigator.pushReplacement(
           context,
           MaterialPageRoute(builder: (context) => const HomePage()),
@@ -145,27 +163,8 @@ class _LoginPageState extends State<LoginPage>
 
           print("Login successful for phone: ${data['no_hp']}");
 
-          // PERBAIKAN: Initialize/Update Pusher dengan nomor telepon setelah login
-          try {
-            // Cek apakah Pusher sudah connected
-            if (PusherService().isConnected) {
-              // Jika sudah connected, update channel ke nomor telepon yang baru
-              await PusherService().updateUserPhone(data['no_hp']);
-              print("Updated Pusher channel for phone: ${data['no_hp']}");
-            } else {
-              // Jika belum connected, initialize baru
-              await PusherService().initialize(
-                userPhone: data['no_hp'],
-                onNotificationTap: _handleNotificationTap,
-              );
-              print("Initialized Pusher for phone: ${data['no_hp']}");
-            }
-            
-            _showSuccessSnackbar('Login berhasil! Notifikasi aktif untuk ${data['no_hp']}');
-          } catch (e) {
-            print("Error with Pusher after login: $e");
-            _showSuccessSnackbar('Login berhasil! (Notifikasi mungkin tidak aktif)');
-          }
+          // Initialize services setelah login berhasil
+          await _initializeAllServices(data['no_hp']);
 
           // Navigate ke homepage
           Navigator.pushReplacement(
@@ -206,7 +205,6 @@ class _LoginPageState extends State<LoginPage>
     ScaffoldMessenger.of(context).showSnackBar(snackBar);
   }
 
-  // TAMBAHAN: Method untuk show success snackbar
   void _showSuccessSnackbar(String message) {
     final snackBar = SnackBar(
       content: Row(
@@ -235,7 +233,6 @@ class _LoginPageState extends State<LoginPage>
 
   @override
   Widget build(BuildContext context) {
-    // Tampilkan loading saat mengecek status login
     if (_isCheckingLoginStatus) {
       return _buildCheckingLoginScreen();
     }
@@ -270,7 +267,7 @@ class _LoginPageState extends State<LoginPage>
               ),
               SizedBox(height: 10),
               Text(
-                'Mohon tunggu sebentar',
+                'Mengaktifkan layanan notifikasi...',
                 style: TextStyle(
                   color: Colors.black54,
                   fontSize: 14,
@@ -340,7 +337,7 @@ class _LoginPageState extends State<LoginPage>
     return ScaleTransition(
       scale: _animation,
       child: Image.asset(
-        'assets/logo_smpn3.png',
+        'assets/logosmpn3.png',
         height: 120,
       ),
     );
