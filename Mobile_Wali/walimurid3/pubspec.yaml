@@ -50,6 +50,7 @@ flutter:
     - assets/walibg.png
     - assets/biru.png
     - assets/iconhp.png
+    -assets/logosmpn3.png
 
 flutter_launcher_icons:
   android: true
