@@ -348,7 +348,7 @@ class _LoginPageState extends State<LoginPage>
 
   Widget _buildTitle() {
     return Text(
-      'LOGIN WALI SMPN 1 JEMBER',
+      'LOGIN WALI SMPN 3 JEMBER',
       style: GoogleFonts.poppins(
         textStyle: const TextStyle(
           fontSize: 26.0,
