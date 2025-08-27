@@ -51,7 +51,7 @@ flutter:
     - assets/walibg.png
     - assets/biru.png
     - assets/iconhp.png
-    -assets/logosmpn3.png
+    - assets/Logo_SMPN_3_Jember.png
 
 flutter_launcher_icons:
   android: true
