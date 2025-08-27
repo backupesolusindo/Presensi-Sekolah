@@ -51,7 +51,7 @@ class LocationService {
     // Mendapatkan posisi dengan akurasi tinggi
     Position position = await Geolocator.getCurrentPosition(
       desiredAccuracy: LocationAccuracy.high,
-      timeLimit: Duration(seconds: 10),
+      timeLimit: const Duration(seconds: 10),
     );
 
     return position;
