@@ -3,8 +3,14 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'login.dart'; // Import the LoginPage
 import 'home.dart'; // Import HomePage
 import 'services/pusher_service.dart'; // Import Pusher Service
+import 'services/background_pusher_service.dart'; // Import Background Service
 
-void main() {
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  
+  // Initialize background service untuk Pusher
+  await BackgroundPusherService.initializeService();
+  
   runApp(const MyApp());
 }
 
@@ -24,10 +30,10 @@ class _MyAppState extends State<MyApp> {
   void initState() {
     super.initState();
     // Cek status login saat app start
-    _checkLoginAndInitializePusher();
+    _checkLoginAndInitializeServices();
   }
 
-  Future<void> _checkLoginAndInitializePusher() async {
+  Future<void> _checkLoginAndInitializeServices() async {
     try {
       SharedPreferences prefs = await SharedPreferences.getInstance();
       String? namaWali = prefs.getString('nama_wali');
@@ -35,10 +41,14 @@ class _MyAppState extends State<MyApp> {
       bool isLoggedIn = prefs.getBool('is_logged_in') ?? false;
       
       if (namaWali != null && noHp != null && isLoggedIn && noHp.isNotEmpty) {
-        // User sudah login, initialize Pusher dengan nomor telepon
+        // User sudah login
         print("User already logged in with phone: $noHp");
         
-        await _initializePusherWithPhone(noHp);
+        // Initialize Pusher Service untuk foreground
+        await _initializePusherService(noHp);
+        
+        // Start background service
+        await _startBackgroundService(noHp);
         
         setState(() {
           _isLoggedIn = true;
@@ -46,8 +56,8 @@ class _MyAppState extends State<MyApp> {
           _isCheckingLogin = false;
         });
       } else {
-        // User belum login atau data tidak lengkap
-        print("User not logged in or incomplete data");
+        // User belum login
+        print("User not logged in");
         setState(() {
           _isLoggedIn = false;
           _isCheckingLogin = false;
@@ -62,63 +72,72 @@ class _MyAppState extends State<MyApp> {
     }
   }
 
-  Future<void> _initializePusherWithPhone(String userPhone) async {
+  Future<void> _initializePusherService(String userPhone) async {
     try {
       await PusherService().initialize(
-        userPhone: userPhone, // Gunakan userPhone, bukan userId
+        userPhone: userPhone,
         onNotificationTap: _handleNotificationTap,
       );
-      print("✅ Pusher initialized successfully for phone: $userPhone");
+      print("Foreground Pusher Service initialized for phone: $userPhone");
     } catch (e) {
-      print("❌ Failed to initialize Pusher: $e");
+      print("Failed to initialize Pusher Service: $e");
+    }
+  }
+
+  Future<void> _startBackgroundService(String userPhone) async {
+    try {
+      // Start background service
+      await BackgroundPusherService.startService();
+      
+      // Update user phone untuk background service
+      await BackgroundPusherService.updateUserPhone(userPhone);
+      
+      print("Background Pusher Service started for phone: $userPhone");
+    } catch (e) {
+      print("Failed to start Background Service: $e");
     }
   }
 
   void _handleNotificationTap(Map<String, dynamic> data) {
-    // Handle notification tap di sini
-    print("🎯 Notification tapped: $data");
+    // Handle notification tap
+    print("Notification tapped: $data");
     
-    // Ambil informasi dari data notifikasi
     String type = data['type'] ?? '';
     String redirect = data['redirect'] ?? 'dashboard';
     String namaAnak = data['nama_anak'] ?? '';
     String nisAnak = data['nis_anak'] ?? '';
     
-    // Log untuk debugging
     print("Notification type: $type");
     print("Redirect to: $redirect");
     print("Student: $namaAnak ($nisAnak)");
     
-    // Navigate berdasarkan redirect atau type
+    // Navigate berdasarkan type
     switch (type) {
       case 'absensi_masuk':
       case 'absensi_pulang':
       case 'parent_notification':
-        // Navigate ke halaman dashboard/absensi
+      case 'background_masuk':
+      case 'background_pulang':
         _navigateToPage(redirect);
         break;
       case 'pengumuman':
-        // Navigate ke halaman pengumuman
         _navigateToPage('pengumuman');
         break;
       case 'test':
-        // Handle test notification
+      case 'background_test':
         print("Test notification received");
+        _navigateToPage('dashboard');
         break;
       default:
-        // Default navigate ke dashboard
         _navigateToPage('dashboard');
         break;
     }
   }
 
   void _navigateToPage(String page) {
-    // Implementasi navigasi berdasarkan halaman
-    // Sesuaikan dengan routing aplikasi Anda
     switch (page) {
       case 'dashboard':
       case 'home':
-        // Navigate ke HomePage jika sudah login
         if (_isLoggedIn) {
           Navigator.pushAndRemoveUntil(
             context,
@@ -128,11 +147,9 @@ class _MyAppState extends State<MyApp> {
         }
         break;
       case 'absensi':
-        // Navigate ke halaman absensi
         print("Navigate to absensi page");
         break;
       case 'pengumuman':
-        // Navigate ke halaman pengumuman
         print("Navigate to pengumuman page");
         break;
       default:
@@ -143,8 +160,13 @@ class _MyAppState extends State<MyApp> {
 
   @override
   void dispose() {
-    // Disconnect Pusher saat app ditutup
-    PusherService().disconnect();
+    // Disconnect foreground services saat app ditutup
+    // Background service akan tetap berjalan
+    try {
+      PusherService().disconnect();
+    } catch (e) {
+      print("Error disposing services: $e");
+    }
     super.dispose();
   }
 
@@ -152,7 +174,7 @@ class _MyAppState extends State<MyApp> {
   Widget build(BuildContext context) {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
-      title: 'Absensi SMPN 1 Jember',
+      title: 'E-Presensi SMPN 3 Jember',
       theme: ThemeData(
         primarySwatch: Colors.blue,
         visualDensity: VisualDensity.adaptivePlatformDensity,
@@ -162,17 +184,14 @@ class _MyAppState extends State<MyApp> {
   }
 
   Widget _buildHomeWidget() {
-    // Tampilkan loading saat mengecek status login
     if (_isCheckingLogin) {
       return _buildLoadingScreen();
     }
     
-    // Jika sudah login, langsung ke HomePage
     if (_isLoggedIn) {
       return const HomePage();
     }
     
-    // Jika belum login, tampilkan LoginPage
     return const LoginPage();
   }
 
@@ -203,7 +222,7 @@ class _MyAppState extends State<MyApp> {
               ),
               SizedBox(height: 10),
               Text(
-                'Mohon tunggu sebentar',
+                'Mengaktifkan layanan notifikasi...',
                 style: TextStyle(
                   color: Colors.black54,
                   fontSize: 14,

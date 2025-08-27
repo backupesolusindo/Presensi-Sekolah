@@ -28,6 +28,10 @@ dependencies:
   dropdown_search: ^6.0.2
   pusher_channels_flutter: ^2.5.0
   flutter_local_notifications: ^19.4.0
+  # Background service dependencies
+  flutter_background_service: ^5.0.10
+  flutter_background_service_android: ^6.2.4
+  workmanager: ^0.5.2
   
 
 dev_dependencies:
@@ -51,7 +55,7 @@ flutter:
     - assets/walibg.png
     - assets/biru.png
     - assets/iconhp.png
-    -assets/logosmpn3.png
+    - assets/logosmpn3.png
 
 flutter_launcher_icons:
   android: true
