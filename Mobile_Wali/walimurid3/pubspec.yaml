@@ -28,6 +28,7 @@ dependencies:
   dropdown_search: ^6.0.2
   pusher_channels_flutter: ^2.5.0
   flutter_local_notifications: ^19.4.0
+  firebase_messaging: ^16.0.0
 
 dev_dependencies:
   flutter_test:
