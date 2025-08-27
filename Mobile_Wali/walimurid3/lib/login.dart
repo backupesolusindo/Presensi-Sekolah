@@ -340,7 +340,7 @@ class _LoginPageState extends State<LoginPage>
     return ScaleTransition(
       scale: _animation,
       child: Image.asset(
-        'assets/logo.png',
+        'assets/logo_smpn3.png',
         height: 120,
       ),
     );
