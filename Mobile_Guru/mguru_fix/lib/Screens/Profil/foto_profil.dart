@@ -5,6 +5,7 @@ import 'dart:convert';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:mobile_presensi_kdtg/Screens/Profil/upload_post.dart';
+import 'package:mobile_presensi_kdtg/Screens/dashboard_screen.dart';
 import 'package:mobile_presensi_kdtg/components/rounded_button_small.dart';
 import 'package:mobile_presensi_kdtg/constants.dart';
 import 'package:mobile_presensi_kdtg/core.dart';
@@ -162,10 +163,10 @@ class _Foto_ProfilState extends State<Foto_Profil> {
                     UploadPost.connectToApi(prefs.getString("ID")!, _image!)
                         .then((value) {
                       if (value!.status_kode == 200) {
-                        //Navigator.pushReplacement(context,
-                            //MaterialPageRoute(builder: (context) {
-                          //return const DashboardScreen();
-                        //}));
+                        Navigator.pushReplacement(context,
+                            MaterialPageRoute(builder: (context) {
+                          return const DashboardScreen();
+                        }));
                       } else {
                         _showMyDialog("Upload Foto Profil", value.message);
                       }
