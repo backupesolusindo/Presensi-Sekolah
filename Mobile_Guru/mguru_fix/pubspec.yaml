@@ -139,7 +139,8 @@ flutter_icons:
   ios: true
   image_path: "assets/images/iconguru.png"
   adaptive_icon_background: "#ffffff" # Warna background untuk Android adaptive icons
-  adaptive_icon_foreground: "assets/icons/app_icon_foreground.png" # Icon foreground untuk Android adaptive icons
+  # adaptive_icon_foreground: "assets/icons/app_icon_foreground.png" # Icon foreground untuk Android adaptive icons
+  adaptive_icon_foreground: "assets/images/iconguru.png" # Icon foreground untuk Android adaptive icons
   min_sdk_android: 28 # Optional, minimal SDK Android
   # Ukuran spesifik untuk Android (opsional)
   android_generate_round: true # Membuat versi round icon
