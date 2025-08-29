@@ -6,7 +6,7 @@ plugins {
 }
 
 android {
-    namespace = "com.example.mguru_fix"
+    namespace = "com.esolusindo.smpn3jember_guru"
     compileSdk = 36
     ndkVersion = "27.0.12077973"
 
@@ -21,7 +21,7 @@ android {
     }
 
     defaultConfig {
-        applicationId = "com.example.mguru_fix"
+        applicationId = "com.esolusindo.smpn3jember_guru"
         minSdk = 28  
         targetSdk = 36
         versionCode = flutter.versionCode

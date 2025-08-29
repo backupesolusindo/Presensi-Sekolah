@@ -1,4 +1,4 @@
-package com.example.mguru_fix
+package com.esolusindo.smpn3jember_guru
 
 import io.flutter.embedding.android.FlutterActivity
 
