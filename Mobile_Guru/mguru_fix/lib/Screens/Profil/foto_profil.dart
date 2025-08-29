@@ -29,7 +29,7 @@ class _Foto_ProfilState extends State<Foto_Profil> {
   late String UUID;
   String Nama = "";
   String NIP = "";
-  String Foto = "desain/logo.png";
+  String Foto = "desain/user.png";
   String Email = "", Unit = "";
   var DataPegawai;
 
@@ -85,7 +85,20 @@ class _Foto_ProfilState extends State<Foto_Profil> {
           // You can assign other fields from DataPegawai if needed
           Email = DataPegawai["email"];
           Unit = DataPegawai["unit"];
-          Foto = DataPegawai["foto_profil"] ?? Foto; // Default to existing Foto
+        //   Foto = DataPegawai["foto_profil"] ?? Foto; // Default to existing Foto
+        // });
+        // Validasi dan cleaning untuk foto_profil
+          String? fotoFromAPI = DataPegawai["foto_profil"];
+          if (fotoFromAPI != null && fotoFromAPI.isNotEmpty) {
+            // Jika foto dari API mengandung path yang salah, perbaiki
+            if (fotoFromAPI.contains("Login/logo.png")) {
+              Foto = "desain/user.png"; // Gunakan default
+            } else {
+              Foto = fotoFromAPI;
+            }
+          } else {
+            Foto = "desain/user.png"; // Default jika kosong
+          }
         });
       } else {
         print("Error fetching data: ${res.statusCode}");

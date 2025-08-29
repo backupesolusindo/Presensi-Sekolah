@@ -1,14 +1,17 @@
 // import 'package:mobile_presensi_kdtg/circular_profile_avatar.dart';
 import 'dart:convert';
+import 'dart:io';
 
 import 'package:circular_profile_avatar/circular_profile_avatar.dart';
 import 'package:flutter/material.dart';
-import 'package:mobile_presensi_kdtg/Screens/Profil/foto_profil.dart';
+// Import untuk foto_profil dihapus karena tidak digunakan lagi
+// import 'package:mobile_presensi_kdtg/Screens/Profil/foto_profil.dart';
 import 'package:mobile_presensi_kdtg/constants.dart';
 import 'package:mobile_presensi_kdtg/core.dart';
 import 'package:mobile_presensi_kdtg/utils/custom_clipper.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:http/http.dart' as http;
+
 class ProfilUser extends StatefulWidget {
   const ProfilUser({super.key});
 
@@ -20,7 +23,7 @@ class _ProfilUserState extends State<ProfilUser> {
   String UUID = "";
   String NamaPegawai = ""; // Default value
   String NIP = ""; // Default value
-  String Foto = "desain/logo.png";
+  String Foto = "desain/user.png";
   String Email = "", Unit = "";
   var DataPegawai;
   int jmlPre = 0, jmlCuti = 0, jmlKegiatan = 0;
@@ -64,12 +67,28 @@ class _ProfilUserState extends State<ProfilUser> {
             NIP = DataPegawai["NIP"] ?? NIP;
             Email = DataPegawai["email"] ?? Email;
             Unit = DataPegawai["unit"] ?? Unit;
-            Foto = DataPegawai["foto_profil"] ?? Foto;
+            
+            String? fotoFromAPI = DataPegawai["foto_profil"];
+            Foto = (fotoFromAPI != null && fotoFromAPI.isNotEmpty && !fotoFromAPI.contains("logo.png")) 
+                   ? fotoFromAPI 
+                   : "desain/user.png";
           }
         });
       } else {
         print("Error: ${res.statusCode}");
       }
+    }
+  }
+
+  // Fungsi untuk mendapatkan path foto dari SharedPreferences per user
+  Future<String?> getFotoFromPreferences() async {
+    try {
+      SharedPreferences prefs = await SharedPreferences.getInstance();
+      String key = "foto_profil_path_$UUID"; // Gunakan UUID sebagai identifier
+      return prefs.getString(key);
+    } catch (e) {
+      print("Error getting foto from preferences: $e");
+      return null;
     }
   }
 
@@ -102,19 +121,9 @@ class _ProfilUserState extends State<ProfilUser> {
                     child: Column(
                       mainAxisSize: MainAxisSize.min,
                       children: <Widget>[
-                        TextButton(
-                          onPressed: () {
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(builder: (context) => const Foto_Profil()),
-                            );
-                          },
-                          child: CircularProfileAvatar(
-                            Core().Url + Foto,
-                            borderWidth: 4.0,
-                            radius: 60.0,
-                          ),
-                        ),
+                        // Menghapus TextButton dan navigasi ke halaman upload
+                        // Foto profil sekarang hanya display saja, tidak bisa diklik
+                        _buildProfileAvatar(),
                         const SizedBox(height: 4.0),
                         Text(
                           NamaPegawai,
@@ -189,6 +198,57 @@ class _ProfilUserState extends State<ProfilUser> {
           ],
         ),
       ),
+    );
+  }
+
+  // Widget untuk menampilkan avatar profil dengan prioritas dari SharedPreferences
+  // Sekarang tidak bisa diklik lagi
+  Widget _buildProfileAvatar() {
+    return FutureBuilder<String?>(
+      future: getFotoFromPreferences(),
+      builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.done) {
+          String? savedPath = snapshot.data;
+          if (savedPath != null && File(savedPath).existsSync()) {
+            // Gunakan foto dari SharedPreferences jika ada
+            return Container(
+              width: 120,
+              height: 120,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                border: Border.all(color: Colors.white, width: 4.0),
+                image: DecorationImage(
+                  image: FileImage(File(savedPath)),
+                  fit: BoxFit.cover,
+                ),
+              ),
+            );
+          }
+        }
+        
+        // Fallback ke CircularProfileAvatar dengan network image
+        return CircularProfileAvatar(
+          Core().Url + Foto,
+          borderWidth: 4.0,
+          radius: 60.0,
+          errorWidget: (context, url, error) {
+            return Container(
+              width: 120,
+              height: 120,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                border: Border.all(color: Colors.white, width: 4.0),
+                color: Colors.grey[300],
+              ),
+              child: const Icon(
+                Icons.person,
+                size: 60,
+                color: Colors.grey,
+              ),
+            );
+          },
+        );
+      },
     );
   }
 
