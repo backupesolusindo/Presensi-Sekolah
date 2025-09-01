@@ -58,7 +58,7 @@ class _Body extends State<Body> {
             SizedBox(height: size.height * 0.03),
             Container(
               child: Image.asset(
-                "assets/images/smp1logo.png",
+                "assets/images/logosmpn3.png",
                 width: size.width * 0.4, //ukuran gambar
               ),
             ),

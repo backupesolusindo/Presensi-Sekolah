@@ -60,7 +60,7 @@ class _BodyState extends State<Body> with SingleTickerProviderStateMixin {
                     ),
                   ),
                   Text(
-                    "SMP Negeri 1 Jember",
+                    "SMP Negeri 3 Jember",
                     style: TextStyle(
                       fontWeight: FontWeight.bold,
                       fontSize: 18,
