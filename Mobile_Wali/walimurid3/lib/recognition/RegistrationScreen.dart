@@ -114,7 +114,9 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
       builder: (ctx) => AlertDialog(
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
         backgroundColor: Colors.white,
-        title: const Text("Berhasil", textAlign: TextAlign.center,
+        title: const Text(
+          "Berhasil",
+          textAlign: TextAlign.center,
           style: TextStyle(
             fontSize: 22,
             fontWeight: FontWeight.bold,
@@ -124,9 +126,11 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
         content: const Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(Icons.check_circle_rounded, color: Color(0xFF4CAF50), size: 80),
+            Icon(Icons.check_circle_rounded,
+                color: Color(0xFF4CAF50), size: 80),
             SizedBox(height: 16),
-            Text("Sinkronisasi berhasil dilakukan!",
+            Text(
+              "Sinkronisasi berhasil dilakukan!",
               textAlign: TextAlign.center,
               style: TextStyle(
                 fontSize: 16,
@@ -152,7 +156,8 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
                 ),
                 elevation: 2,
               ),
-              child: const Text("OK",
+              child: const Text(
+                "OK",
                 style: TextStyle(
                   fontSize: 16,
                   fontWeight: FontWeight.w600,
@@ -175,9 +180,11 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+          shape:
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
           backgroundColor: Colors.white,
-          title: const Text('Kesalahan',
+          title: const Text(
+            'Kesalahan',
             textAlign: TextAlign.center,
             style: TextStyle(
               fontSize: 20,
@@ -188,10 +195,11 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
           content: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              const Icon(Icons.error_outline_rounded, 
-                color: Color(0xFFE57373), size: 60),
+              const Icon(Icons.error_outline_rounded,
+                  color: Color(0xFFE57373), size: 60),
               const SizedBox(height: 16),
-              Text(message,
+              Text(
+                message,
                 textAlign: TextAlign.center,
                 style: const TextStyle(
                   fontSize: 16,
@@ -328,8 +336,8 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
         title: const Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(Icons.face_retouching_off_rounded, 
-              color: Color(0xFFFF7043), size: 70),
+            Icon(Icons.face_retouching_off_rounded,
+                color: Color(0xFFFF7043), size: 70),
             SizedBox(height: 12),
             Text(
               "Wajah Tidak Terdeteksi",
@@ -369,7 +377,8 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
                 ),
                 elevation: 2,
               ),
-              child: const Text("Coba Lagi",
+              child: const Text(
+                "Coba Lagi",
                 style: TextStyle(
                   fontSize: 16,
                   fontWeight: FontWeight.w600,
@@ -402,7 +411,8 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
       builder: (ctx) => AlertDialog(
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
         backgroundColor: Colors.white,
-        title: const Text("Pendaftaran Siswa",
+        title: const Text(
+          "Pendaftaran Siswa",
           textAlign: TextAlign.center,
           style: TextStyle(
             fontSize: 22,
@@ -432,8 +442,8 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
                   ),
                   child: ClipRRect(
                     borderRadius: BorderRadius.circular(10),
-                    child: Image.memory(croppedFace, width: 150, height: 150,
-                      fit: BoxFit.cover),
+                    child: Image.memory(croppedFace,
+                        width: 150, height: 150, fit: BoxFit.cover),
                   ),
                 ),
                 const SizedBox(height: 20),
@@ -448,11 +458,11 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
                     decoration: const InputDecoration(
                       hintText: "Nama Lengkap",
                       hintStyle: TextStyle(color: Color(0xFF9E9E9E)),
-                      prefixIcon: Icon(Icons.person_outline, 
-                        color: Color(0xFF1976D2)),
+                      prefixIcon:
+                          Icon(Icons.person_outline, color: Color(0xFF1976D2)),
                       border: InputBorder.none,
-                      contentPadding: EdgeInsets.symmetric(
-                        horizontal: 16, vertical: 14),
+                      contentPadding:
+                          EdgeInsets.symmetric(horizontal: 16, vertical: 14),
                     ),
                   ),
                 ),
@@ -468,11 +478,11 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
                     decoration: const InputDecoration(
                       hintText: "NIS (Nomor Induk Siswa)",
                       hintStyle: TextStyle(color: Color(0xFF9E9E9E)),
-                      prefixIcon: Icon(Icons.badge_outlined, 
-                        color: Color(0xFF1976D2)),
+                      prefixIcon:
+                          Icon(Icons.badge_outlined, color: Color(0xFF1976D2)),
                       border: InputBorder.none,
-                      contentPadding: EdgeInsets.symmetric(
-                        horizontal: 16, vertical: 14),
+                      contentPadding:
+                          EdgeInsets.symmetric(horizontal: 16, vertical: 14),
                     ),
                     keyboardType: TextInputType.number,
                   ),
@@ -488,18 +498,18 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
                     decoration: const InputDecoration(
                       hintText: "Pilih Kelas",
                       hintStyle: TextStyle(color: Color(0xFF9E9E9E)),
-                      prefixIcon: Icon(Icons.class_outlined, 
-                        color: Color(0xFF1976D2)),
+                      prefixIcon:
+                          Icon(Icons.class_outlined, color: Color(0xFF1976D2)),
                       border: InputBorder.none,
-                      contentPadding: EdgeInsets.symmetric(
-                        horizontal: 16, vertical: 14),
+                      contentPadding:
+                          EdgeInsets.symmetric(horizontal: 16, vertical: 14),
                     ),
-                    initialValue: selectedKelas,
+                    value: selectedKelas,
                     items: kelasList.map((kelas) {
                       return DropdownMenuItem<String>(
                         value: kelas['id_kelas'],
                         child: Text(kelas['nama_kelas'],
-                          style: const TextStyle(color: Color(0xFF424242))),
+                            style: const TextStyle(color: Color(0xFF424242))),
                       );
                     }).toList(),
                     onChanged: (value) {
@@ -521,11 +531,11 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
                     decoration: const InputDecoration(
                       hintText: "No. HP Orang Tua",
                       hintStyle: TextStyle(color: Color(0xFF9E9E9E)),
-                      prefixIcon: Icon(Icons.phone_outlined, 
-                        color: Color(0xFF1976D2)),
+                      prefixIcon:
+                          Icon(Icons.phone_outlined, color: Color(0xFF1976D2)),
                       border: InputBorder.none,
-                      contentPadding: EdgeInsets.symmetric(
-                        horizontal: 16, vertical: 14),
+                      contentPadding:
+                          EdgeInsets.symmetric(horizontal: 16, vertical: 14),
                     ),
                     keyboardType: TextInputType.phone,
                   ),
@@ -569,7 +579,8 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
                         borderRadius: BorderRadius.circular(25),
                       ),
                     ),
-                    child: const Text("Daftarkan Siswa",
+                    child: const Text(
+                      "Daftarkan Siswa",
                       style: TextStyle(
                         color: Colors.white,
                         fontSize: 16,
@@ -619,7 +630,8 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
       builder: (ctx) => AlertDialog(
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
         backgroundColor: Colors.white,
-        title: const Text("Berhasil Terdaftar",
+        title: const Text(
+          "Berhasil Terdaftar",
           textAlign: TextAlign.center,
           style: TextStyle(
             fontSize: 22,
@@ -630,10 +642,11 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
         content: const Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(Icons.check_circle_rounded, 
-              color: Color(0xFF4CAF50), size: 80),
+            Icon(Icons.check_circle_rounded,
+                color: Color(0xFF4CAF50), size: 80),
             SizedBox(height: 16),
-            Text("Siswa berhasil didaftarkan dalam sistem!",
+            Text(
+              "Siswa berhasil didaftarkan dalam sistem!",
               textAlign: TextAlign.center,
               style: TextStyle(
                 fontSize: 16,
@@ -661,7 +674,8 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
                 ),
                 elevation: 2,
               ),
-              child: const Text("OK",
+              child: const Text(
+                "OK",
                 style: TextStyle(
                   fontSize: 16,
                   fontWeight: FontWeight.w600,
@@ -738,8 +752,8 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
                 borderRadius: BorderRadius.circular(12),
               ),
               child: IconButton(
-                icon: const Icon(Icons.arrow_back_ios_new, 
-                  color: Colors.white, size: 20),
+                icon: const Icon(Icons.arrow_back_ios_new,
+                    color: Colors.white, size: 20),
                 onPressed: () {
                   Navigator.pop(context);
                 },
@@ -806,7 +820,8 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
           : cameraController == null
               ? const Center(
                   child: CircularProgressIndicator(
-                    valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF1976D2)),
+                    valueColor:
+                        AlwaysStoppedAnimation<Color>(Color(0xFF1976D2)),
                   ),
                 )
               : Container(
@@ -836,7 +851,7 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
                             borderRadius: BorderRadius.circular(25),
                             child: Stack(
                               children: [
-                                if (showPreview) 
+                                if (showPreview)
                                   SizedBox.expand(
                                     child: CameraPreview(cameraController!),
                                   ),
@@ -881,7 +896,8 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
                                 ),
                                 if (!showPreview && _image != null)
                                   SizedBox.expand(
-                                    child: Image.file(_image!, fit: BoxFit.cover),
+                                    child:
+                                        Image.file(_image!, fit: BoxFit.cover),
                                   ),
                               ],
                             ),
@@ -892,20 +908,25 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
                         padding: const EdgeInsets.all(20),
                         child: showPreview
                             ? Row(
-                                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                                mainAxisAlignment:
+                                    MainAxisAlignment.spaceEvenly,
                                 children: [
                                   Container(
                                     height: 60,
                                     decoration: BoxDecoration(
                                       gradient: const LinearGradient(
-                                        colors: [Color(0xFF1976D2), Color(0xFF42A5F5)],
+                                        colors: [
+                                          Color(0xFF1976D2),
+                                          Color(0xFF42A5F5)
+                                        ],
                                         begin: Alignment.centerLeft,
                                         end: Alignment.centerRight,
                                       ),
                                       borderRadius: BorderRadius.circular(30),
                                       boxShadow: [
                                         BoxShadow(
-                                          color: const Color(0xFF1976D2).withOpacity(0.3),
+                                          color: const Color(0xFF1976D2)
+                                              .withOpacity(0.3),
                                           blurRadius: 8,
                                           offset: const Offset(0, 4),
                                         ),
@@ -921,7 +942,8 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
                                           vertical: 12,
                                         ),
                                         shape: RoundedRectangleBorder(
-                                          borderRadius: BorderRadius.circular(30),
+                                          borderRadius:
+                                              BorderRadius.circular(30),
                                         ),
                                       ),
                                       icon: const Icon(
@@ -959,9 +981,9 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
                                     ),
                                     child: IconButton(
                                       icon: Icon(
-                                        isFrontCamera 
-                                          ? Icons.cameraswitch_rounded
-                                          : Icons.camera_front_rounded,
+                                        isFrontCamera
+                                            ? Icons.cameraswitch_rounded
+                                            : Icons.camera_front_rounded,
                                         color: const Color(0xFF1976D2),
                                         size: 28,
                                       ),
@@ -980,14 +1002,18 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
                                 height: 60,
                                 decoration: BoxDecoration(
                                   gradient: const LinearGradient(
-                                    colors: [Color(0xFFFF7043), Color(0xFFFFAB91)],
+                                    colors: [
+                                      Color(0xFFFF7043),
+                                      Color(0xFFFFAB91)
+                                    ],
                                     begin: Alignment.centerLeft,
                                     end: Alignment.centerRight,
                                   ),
                                   borderRadius: BorderRadius.circular(30),
                                   boxShadow: [
                                     BoxShadow(
-                                      color: const Color(0xFFFF7043).withOpacity(0.3),
+                                      color: const Color(0xFFFF7043)
+                                          .withOpacity(0.3),
                                       blurRadius: 8,
                                       offset: const Offset(0, 4),
                                     ),

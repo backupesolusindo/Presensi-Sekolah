@@ -1,0 +1,20 @@
+                        -H/Users/mymac/Development/flutter/packages/flutter_tools/gradle/src/main/groovy
+-DCMAKE_SYSTEM_NAME=Android
+-DCMAKE_EXPORT_COMPILE_COMMANDS=ON
+-DCMAKE_SYSTEM_VERSION=28
+-DANDROID_PLATFORM=android-28
+-DANDROID_ABI=arm64-v8a
+-DCMAKE_ANDROID_ARCH_ABI=arm64-v8a
+-DANDROID_NDK=/Users/mymac/Library/Android/sdk/ndk/27.0.12077973
+-DCMAKE_ANDROID_NDK=/Users/mymac/Library/Android/sdk/ndk/27.0.12077973
+-DCMAKE_TOOLCHAIN_FILE=/Users/mymac/Library/Android/sdk/ndk/27.0.12077973/build/cmake/android.toolchain.cmake
+-DCMAKE_MAKE_PROGRAM=/Users/mymac/Library/Android/sdk/cmake/3.22.1/bin/ninja
+-DCMAKE_LIBRARY_OUTPUT_DIRECTORY=/Users/mymac/Documents/Project/Esolusindo/Presensi SMPN 3 Jember/Presensi SMP3 Mobile/Mobile_Wali/walimurid3/build/app/intermediates/cxx/Debug/4c6l3h2s/obj/arm64-v8a
+-DCMAKE_RUNTIME_OUTPUT_DIRECTORY=/Users/mymac/Documents/Project/Esolusindo/Presensi SMPN 3 Jember/Presensi SMP3 Mobile/Mobile_Wali/walimurid3/build/app/intermediates/cxx/Debug/4c6l3h2s/obj/arm64-v8a
+-DCMAKE_BUILD_TYPE=Debug
+-B/Users/mymac/Documents/Project/Esolusindo/Presensi SMPN 3 Jember/Presensi SMP3 Mobile/Mobile_Wali/walimurid3/android/app/.cxx/Debug/4c6l3h2s/arm64-v8a
+-GNinja
+-Wno-dev
+--no-warn-unused-cli
+                        Build command args: []
+                        Version: 2
