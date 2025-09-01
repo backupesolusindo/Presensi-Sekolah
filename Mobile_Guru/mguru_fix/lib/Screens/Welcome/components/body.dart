@@ -47,40 +47,40 @@ class _BodyState extends State<Body> with SingleTickerProviderStateMixin {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: <Widget>[
-            FadeTransition(
-              opacity: _opacityAnimation,
-              child: Column(
-                children: [
-                  const Text(
-                    "PRESENSI ONLINE",
-                    style: TextStyle(
-                      fontSize: 24,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.blueAccent,
-                    ),
-                  ),
-                  Text(
-                    "SMP Negeri 3 Jember",
-                    style: TextStyle(
-                      fontWeight: FontWeight.bold,
-                      fontSize: 18,
-                      color: Colors.grey[700],
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            SizedBox(height: size.height * 0.05),
-            ScaleTransition(
-              scale: _scaleAnimation,
-              child: Container(
-                child: Image.asset(
-                  // "assets/images/smp1logo.png",
-                  "assets/images/iconguru.png",
-                  width: size.width * 0.6,
-                ),
-              ),
-            ),
+            // FadeTransition(
+            //   opacity: _opacityAnimation,
+            //   child: Column(
+            //     children: [
+            //       const Text(
+            //         "PRESENSI ONLINE",
+            //         style: TextStyle(
+            //           fontSize: 24,
+            //           fontWeight: FontWeight.bold,
+            //           color: Colors.blueAccent,
+            //         ),
+            //       ),
+            //       Text(
+            //         "SMP Negeri 3 Jember",
+            //         style: TextStyle(
+            //           fontWeight: FontWeight.bold,
+            //           fontSize: 18,
+            //           color: Colors.grey[700],
+            //         ),
+            //       ),
+            //     ],
+            //   ),
+            // ),
+            // SizedBox(height: size.height * 0.05),
+            // ScaleTransition(
+            //   scale: _scaleAnimation,
+            //   child: Container(
+            //     child: Image.asset(
+            //       // "assets/images/smp1logo.png",
+            //       "assets/images/iconguru.png",
+            //       width: size.width * 0.6,
+            //     ),
+            //   ),
+            // ),
             //SizedBox(height: size.height * 0.05),
             //FadeTransition(
               //opacity: _opacityAnimation,

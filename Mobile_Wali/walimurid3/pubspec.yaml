@@ -57,11 +57,12 @@ flutter:
     - assets/iconhp.png
     - assets/Logo_SMPN_3_Jember.png
     - assets/logosmpn3.png
+    - assets/iconwaliv2.png
 
 flutter_launcher_icons:
   android: true
   ios: true
-  image_path: "assets/iconcuysmpn3.png"
+  image_path: "assets/iconwaliv2.png"
   adaptive_icon_background: "#ffffff"
-  adaptive_icon_foreground: "assets/iconcuysmpn3.png"
+  adaptive_icon_foreground: "assets/iconwaliv2.png"
   adaptive_icon_padding: true
