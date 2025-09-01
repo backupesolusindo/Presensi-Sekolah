@@ -204,7 +204,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                                         border: Border.all(color: Colors.white.withOpacity(0.3)),
                                       ),
                                       child: const Text(
-                                        "SMPN 1 Jember",
+                                        "SMPN 3 Jember",
                                         style: TextStyle(
                                           fontSize: 18,
                                           fontWeight: FontWeight.w500,
