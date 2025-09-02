@@ -6,6 +6,7 @@ plugins {
     id("kotlin-android")
     // Flutter Gradle Plugin harus terakhir
     id("dev.flutter.flutter-gradle-plugin")
+    //id("com.google.gms.google-services")
 }
 
 val keystoreProperties = Properties()
