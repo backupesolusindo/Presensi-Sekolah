@@ -1,1 +1,1 @@
-const String UrlApi = "https://presensi-smp1.esolusindo.com/Api/ApiWali";
+const String UrlApi = "https://presensi-smp3.esolusindo.com/Api/ApiWali";

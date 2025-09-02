@@ -41,7 +41,7 @@ class _EditPasswordPageState extends State<EditPasswordPage> {
 
       final response = await http.post(
         Uri.parse(
-            'https://presensi-smp1.esolusindo.com/Api/ApiWali/WaliAPI/editPassword'),
+            'https://presensi-smp3.esolusindo.com/Api/ApiWali/WaliAPI/editPassword'),
         headers: {'Content-Type': 'application/json'},
         body: jsonEncode(requestBody),
       );
