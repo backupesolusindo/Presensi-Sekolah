@@ -71,7 +71,7 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
     try {
       final response = await http.post(
         Uri.parse(
-            'https://presensi-smp1.esolusindo.com/Api/ApiSiswa/Siswa/SyncSiswa'),
+            'https://presensi-smp3.esolusindo.com/Api/ApiSiswa/Siswa/SyncSiswa'),
         headers: <String, String>{
           'Content-Type': 'application/json; charset=UTF-8',
         },
@@ -393,7 +393,7 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
 
   Future<void> fetchKelas() async {
     var url = Uri.parse(
-        'https://presensi-smp1.esolusindo.com/Api/ApiKelas/ApiKelas/get_kelas/');
+        'https://presensi-smp3.esolusindo.com/Api/ApiKelas/ApiKelas/get_kelas/');
     var response = await http.get(url);
     if (response.statusCode == 200) {
       var jsonData = json.decode(response.body);
@@ -504,7 +504,7 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
                       contentPadding:
                           EdgeInsets.symmetric(horizontal: 16, vertical: 14),
                     ),
-                    value: selectedKelas,
+                    initialValue: selectedKelas,
                     items: kelasList.map((kelas) {
                       return DropdownMenuItem<String>(
                         value: kelas['id_kelas'],

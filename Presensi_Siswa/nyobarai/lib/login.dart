@@ -269,7 +269,7 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
 
   Widget _buildTitle() {
     return Text(
-      'LOGIN ADMIN SMPN 1 JEMBER',
+      'LOGIN ADMIN SMPN 3 JEMBER',
       style: GoogleFonts.poppins(
         textStyle: const TextStyle(
           fontSize: 26.0,

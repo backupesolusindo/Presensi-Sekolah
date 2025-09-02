@@ -126,7 +126,7 @@ class _ProfilePageState extends State<ProfilePage> with TickerProviderStateMixin
   Future<void> _fetchSiswaFromApi() async {
       if (noHp == "Loading..." || noHp == "No HP?") return;
       
-      final url = Uri.parse('https://presensi-smp1.esolusindo.com/Api/ApiMobile/ApiSiswa/bynohp/$noHp');
+      final url = Uri.parse('https://presensi-smp3.esolusindo.com/Api/ApiMobile/ApiSiswa/bynohp/$noHp');
       try {
           final response = await http.get(url).timeout(const Duration(seconds: 20));
           if (response.statusCode == 200) {

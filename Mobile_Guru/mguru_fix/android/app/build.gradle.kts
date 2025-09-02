@@ -32,7 +32,7 @@ android {
 
     defaultConfig {
         applicationId = "com.esolusindo.smpn3jember_guru"
-        minSdk = 28  
+        minSdk = 26  
         targetSdk = 36
         versionCode = flutter.versionCode
         versionName = flutter.versionName
@@ -45,17 +45,26 @@ android {
     // }
 
     signingConfigs {
-        create("release") {
-            keyAlias = keystoreProperties.getProperty("keyAlias")
-            keyPassword = keystoreProperties.getProperty("keyPassword")
-            storeFile = keystoreProperties.getProperty("storeFile")?.let { file(it) }
-            storePassword = keystoreProperties.getProperty("storePassword")
+        // Konfigurasi untuk signed release jika keystore tersedia
+        if (keystorePropertiesFile.exists()) {
+            create("release") {
+                keyAlias = keystoreProperties.getProperty("keyAlias")
+                keyPassword = keystoreProperties.getProperty("keyPassword")
+                storeFile = keystoreProperties.getProperty("storeFile")?.let { file(it) }
+                storePassword = keystoreProperties.getProperty("storePassword")
+            }
         }
     }
 
     buildTypes {
         getByName("release") {
-            signingConfig = signingConfigs.getByName("release")
+            // Gunakan keystore jika tersedia, jika tidak gunakan debug signing
+            signingConfig = if (keystorePropertiesFile.exists()) {
+                signingConfigs.getByName("release")
+            } else {
+                signingConfigs.getByName("debug")
+            }
+            
             isMinifyEnabled = true
             isShrinkResources = true
             proguardFiles(

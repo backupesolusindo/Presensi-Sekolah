@@ -169,7 +169,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
 
   Future<void> _fetchSiswaData() async {
     final url = Uri.parse(
-        'https://presensi-smp1.esolusindo.com/Api/ApiMobile/ApiSiswa/bynohp/$noHp');
+        'https://presensi-smp3.esolusindo.com/Api/ApiMobile/ApiSiswa/bynohp/$noHp');
     try {
       final response = await http.get(url).timeout(const Duration(seconds: 30));
       if (response.statusCode == 200) {
@@ -757,7 +757,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                       ),
                       const SizedBox(height: 4),
                       Text(
-                        selectedSiswa?['nama_kelas'] ?? 'SMP Negeri 1',
+                        selectedSiswa?['nama_kelas'] ?? 'SMP Negeri 3',
                         style: const TextStyle(
                           fontSize: 14,
                           color: textSecondary,
