@@ -32,7 +32,7 @@ android {
 
     defaultConfig {
         applicationId = "com.esolusindo.smpn3jember_guru"
-        minSdk = 28  
+        minSdk = 26  
         targetSdk = 36
         versionCode = flutter.versionCode
         versionName = flutter.versionName
