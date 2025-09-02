@@ -177,7 +177,7 @@
       }
       
       // Buat URL lengkap
-      String fullUrl = "$baseUrl/application/document/foto_pengumuman/$imageUrl";
+      String fullUrl = "$baseUrl/public_html/foto/foto_pengumuman/$imageUrl";
       print("Debug: Final URL yang dibentuk: '$fullUrl'");
       
       
