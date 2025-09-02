@@ -70,13 +70,89 @@ class SplashScreen extends StatefulWidget {
   _SplashScreenState createState() => _SplashScreenState();
 }
 
-class _SplashScreenState extends State<SplashScreen> {
+class _SplashScreenState extends State<SplashScreen> with TickerProviderStateMixin {
   late FirebaseMessaging fm;
+  late AnimationController _fadeController;
+  late AnimationController _scaleController;
+  late AnimationController _slideController;
+  late Animation<double> _fadeAnimation;
+  late Animation<double> _scaleAnimation;
+  late Animation<Offset> _slideAnimation;
 
   @override
   void initState() {
     super.initState();
+    _initializeAnimations();
+    _startAnimations();
     _initializeApp();
+  }
+
+  void _initializeAnimations() {
+    // Fade animation controller
+    _fadeController = AnimationController(
+      duration: const Duration(milliseconds: 1500),
+      vsync: this,
+    );
+    
+    // Scale animation controller
+    _scaleController = AnimationController(
+      duration: const Duration(milliseconds: 1200),
+      vsync: this,
+    );
+    
+    // Slide animation controller
+    _slideController = AnimationController(
+      duration: const Duration(milliseconds: 1000),
+      vsync: this,
+    );
+
+    // Fade animation
+    _fadeAnimation = Tween<double>(
+      begin: 0.0,
+      end: 1.0,
+    ).animate(CurvedAnimation(
+      parent: _fadeController,
+      curve: Curves.easeInOut,
+    ));
+
+    // Scale animation
+    _scaleAnimation = Tween<double>(
+      begin: 0.5,
+      end: 1.0,
+    ).animate(CurvedAnimation(
+      parent: _scaleController,
+      curve: Curves.elasticOut,
+    ));
+
+    // Slide animation
+    _slideAnimation = Tween<Offset>(
+      begin: const Offset(0, 0.3),
+      end: Offset.zero,
+    ).animate(CurvedAnimation(
+      parent: _slideController,
+      curve: Curves.easeOutCubic,
+    ));
+  }
+
+  void _startAnimations() {
+    // Start animations with delays
+    _fadeController.forward();
+    
+    Timer(const Duration(milliseconds: 300), () {
+      _scaleController.forward();
+    });
+    
+    Timer(const Duration(milliseconds: 600), () {
+      _slideController.forward();
+    });
+  }
+
+  @override
+  void dispose() {
+    _fadeController.dispose();
+    _scaleController.dispose();
+    _slideController.dispose();
+    super.dispose();
   }
 
   Future<void> _initializeApp() async {
@@ -140,7 +216,7 @@ class _SplashScreenState extends State<SplashScreen> {
 
   Future<void> _getMockLocation() async {
     // Delay untuk splash screen effect
-    await Future.delayed(const Duration(seconds: 2));
+    await Future.delayed(const Duration(seconds: 3));
     _checkLoginStatus();
   }
 
@@ -191,67 +267,221 @@ class _SplashScreenState extends State<SplashScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.white, // Ubah background menjadi putih
-      body: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            // App logo
-            Container(
-              padding: const EdgeInsets.all(20),
-              decoration: BoxDecoration(
-                color: kPrimaryColor.withOpacity(0.1), // Background logo dengan warna primer transparan
-                borderRadius: BorderRadius.circular(20),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.grey.withOpacity(0.2), // Shadow lebih lembut
-                    blurRadius: 10,
-                    spreadRadius: 5,
+      body: Container(
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+            colors: [
+              Colors.white,
+              Colors.grey.shade50,
+              Colors.white,
+            ],
+            stops: const [0.0, 0.5, 1.0],
+          ),
+        ),
+        child: SafeArea(
+          child: Center(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                // Logo section with animations
+                FadeTransition(
+                  opacity: _fadeAnimation,
+                  child: ScaleTransition(
+                    scale: _scaleAnimation,
+                    child: Container(
+                      padding: const EdgeInsets.all(30),
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(25),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.grey.withOpacity(0.1),
+                            blurRadius: 20,
+                            spreadRadius: 8,
+                            offset: const Offset(0, 8),
+                          ),
+                          BoxShadow(
+                            color: kPrimaryColor.withOpacity(0.05),
+                            blurRadius: 40,
+                            spreadRadius: 15,
+                            offset: const Offset(0, 12),
+                          ),
+                        ],
+                      ),
+                      child: Image.asset(
+                        "assets/images/logosmpn3.png",
+                        width: 120,
+                        height: 120,
+                      ),
+                    ),
                   ),
-                ],
-              ),
-              child: Image.asset(
-                "assets/images/logosmpn3.png",
-                width: 100,
-                height: 100,
-              ),
+                ),
+                
+                const SizedBox(height: 40),
+                
+                // Title section with slide animation
+                SlideTransition(
+                  position: _slideAnimation,
+                  child: FadeTransition(
+                    opacity: _fadeAnimation,
+                    child: Column(
+                      children: [
+                        // Main title
+                        ShaderMask(
+                          shaderCallback: (bounds) => LinearGradient(
+                            colors: [
+                              Colors.blue.shade700,
+                              Colors.blue.shade500,
+                            ],
+                          ).createShader(bounds),
+                          child: const Text(
+                            "SMPN 3 JEMBER",
+                            style: TextStyle(
+                              fontSize: 28,
+                              fontWeight: FontWeight.bold,
+                              color: Colors.white,
+                              letterSpacing: 1.2,
+                            ),
+                          ),
+                        ),
+                        
+                        const SizedBox(height: 8),
+                        
+                        // Subtitle
+                        Text(
+                          "Sistem Presensi Digital",
+                          style: TextStyle(
+                            fontSize: 16,
+                            color: Colors.grey.shade600,
+                            fontWeight: FontWeight.w500,
+                            letterSpacing: 0.5,
+                          ),
+                        ),
+                        
+                        const SizedBox(height: 6),
+                        
+                        // Version or additional info
+                        Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 12,
+                            vertical: 4,
+                          ),
+                          decoration: BoxDecoration(
+                            color: Colors.blue.shade50,
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          child: Text(
+                            "Smart Attendance System",
+                            style: TextStyle(
+                              fontSize: 12,
+                              color: Colors.blue.shade700,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+                
+                const SizedBox(height: 60),
+                
+                // Loading section
+                FadeTransition(
+                  opacity: _fadeAnimation,
+                  child: Column(
+                    children: [
+                      // Custom loading indicator
+                      Stack(
+                        alignment: Alignment.center,
+                        children: [
+                          // Outer circle
+                          SizedBox(
+                            width: 60,
+                            height: 60,
+                            child: CircularProgressIndicator(
+                              strokeWidth: 3,
+                              valueColor: AlwaysStoppedAnimation<Color>(
+                                kPrimaryColor.withOpacity(0.3),
+                              ),
+                            ),
+                          ),
+                          // Inner circle
+                          SizedBox(
+                            width: 45,
+                            height: 45,
+                            child: CircularProgressIndicator(
+                              strokeWidth: 2,
+                              valueColor: AlwaysStoppedAnimation<Color>(
+                                kPrimaryColor,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                      
+                      const SizedBox(height: 24),
+                      
+                      // Loading text
+                      Text(
+                        "Memuat aplikasi...",
+                        style: TextStyle(
+                          fontSize: 14,
+                          color: Colors.grey.shade500,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                
+                // Bottom spacing
+                const SizedBox(height: 80),
+                
+                // Footer info
+                SlideTransition(
+                  position: _slideAnimation,
+                  child: FadeTransition(
+                    opacity: _fadeAnimation,
+                    child: Column(
+                      children: [
+                        Text(
+                          "Powered by Technology",
+                          style: TextStyle(
+                            fontSize: 12,
+                            color: Colors.grey.shade400,
+                            fontWeight: FontWeight.w400,
+                          ),
+                        ),
+                        const SizedBox(height: 4),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Icon(
+                              Icons.security,
+                              size: 14,
+                              color: Colors.grey.shade400,
+                            ),
+                            const SizedBox(width: 4),
+                            Text(
+                              "Secure & Reliable",
+                              style: TextStyle(
+                                fontSize: 11,
+                                color: Colors.grey.shade400,
+                                fontWeight: FontWeight.w400,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ],
             ),
-            const SizedBox(height: 30),
-            
-            // App title
-            Text(
-              "SMPN 3 JEMBER",
-              style: TextStyle(
-                fontSize: 24,
-                fontWeight: FontWeight.bold,
-                color: kPrimaryColor, // Gunakan warna primer untuk teks
-              ),
-            ),
-            const SizedBox(height: 10),
-            
-            Text(
-              "Sistem Presensi Digital",
-              style: TextStyle(
-                fontSize: 16,
-                color: Colors.grey[600], // Teks dengan warna abu-abu
-              ),
-            ),
-            const SizedBox(height: 40),
-            
-            // Loading indicator
-            CircularProgressIndicator(
-              valueColor: AlwaysStoppedAnimation<Color>(kPrimaryColor), // Loading indicator dengan warna primer
-            ),
-            const SizedBox(height: 20),
-            
-            Text(
-              "Memuat aplikasi...",
-              style: TextStyle(
-                fontSize: 14,
-                color: Colors.grey[500], // Teks loading dengan warna abu-abu
-              ),
-            ),
-          ],
+          ),
         ),
       ),
     );
@@ -265,19 +495,71 @@ class _SplashScreenState extends State<SplashScreen> {
         return BackdropFilter(
           filter: ImageFilter.blur(sigmaX: 6, sigmaY: 6),
           child: AlertDialog(
-            title: const Text("FAKE GPS TERDETEKSI"),
-            content: const SingleChildScrollView(
-              child: ListBody(
-                children: <Widget>[
-                  Text("Aplikasi mendeteksi penggunaan Fake GPS."),
-                  SizedBox(height: 10),
-                  Text("Harap uninstall aplikasi Fake GPS untuk melanjutkan."),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(20),
+            ),
+            title: Row(
+              children: [
+                Icon(
+                  Icons.warning_amber_rounded,
+                  color: Colors.orange.shade600,
+                  size: 28,
+                ),
+                const SizedBox(width: 12),
+                const Text(
+                  "FAKE GPS TERDETEKSI",
+                  style: TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ],
+            ),
+            content: Container(
+              decoration: BoxDecoration(
+                color: Colors.orange.shade50,
+                borderRadius: BorderRadius.circular(12),
+              ),
+              padding: const EdgeInsets.all(16),
+              child: const Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    "Aplikasi mendeteksi penggunaan Fake GPS.",
+                    style: TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                  SizedBox(height: 12),
+                  Text(
+                    "Harap uninstall aplikasi Fake GPS untuk melanjutkan menggunakan sistem presensi.",
+                    style: TextStyle(
+                      fontSize: 14,
+                      color: Colors.black87,
+                    ),
+                  ),
                 ],
               ),
             ),
-            actions: <Widget>[
+            actions: [
               TextButton(
-                child: const Text('Keluar Aplikasi'),
+                style: TextButton.styleFrom(
+                  backgroundColor: Colors.red.shade50,
+                  foregroundColor: Colors.red.shade700,
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 20,
+                    vertical: 12,
+                  ),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                ),
+                child: const Text(
+                  'Keluar Aplikasi',
+                  style: TextStyle(fontWeight: FontWeight.w600),
+                ),
                 onPressed: () {
                   Navigator.of(context).pop();
                   // You can add exit app functionality here if needed
