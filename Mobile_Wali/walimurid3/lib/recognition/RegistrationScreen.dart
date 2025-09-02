@@ -504,7 +504,7 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
                       contentPadding:
                           EdgeInsets.symmetric(horizontal: 16, vertical: 14),
                     ),
-                    initialValue: selectedKelas,
+                    value: selectedKelas,
                     items: kelasList.map((kelas) {
                       return DropdownMenuItem<String>(
                         value: kelas['id_kelas'],
