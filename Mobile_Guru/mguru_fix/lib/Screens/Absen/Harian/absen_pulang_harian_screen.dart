@@ -18,7 +18,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:http/http.dart' as http;
 import 'package:mobile_presensi_kdtg/services/location_services.dart';
 
-List<CameraDescription> cameras = [];
+//List<CameraDescription> cameras = [];
 
 class AbsenPulangHarianScreen extends StatelessWidget {
   const AbsenPulangHarianScreen({super.key});
@@ -66,7 +66,7 @@ class _AbsenPage extends State<AbsenPage> {
   void initState() {
     super.initState();
     getPref();
-    prepareCamera();
+    //prepareCamera();
     getCurrentLocation();
   }
 
@@ -96,31 +96,31 @@ class _AbsenPage extends State<AbsenPage> {
     return resBody['data']["pegawai"];
   }
 
-  Future<void> prepareCamera() async {
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    cameras = await availableCameras();
-    controller = CameraController(
-      cameras[prefs.getInt("CameraSelect")!],
-      ResolutionPreset.low,
-      enableAudio: false,
-      imageFormatGroup: ImageFormatGroup.jpeg,
-    );
-    controller.initialize().then((_) {
-      if (!mounted) {
-        _showMyDialog("KAMERA", "Kamera Depan Tidak Terbaca");
-        controller = CameraController(
-          cameras[1],
-          ResolutionPreset.low,
-          enableAudio: false,
-          imageFormatGroup: ImageFormatGroup.jpeg,
-        );
-        return;
-      } else {
-        bacakamera = true;
-      }
-      setState(() {});
-    });
-  }
+  // Future<void> prepareCamera() async {
+  //   SharedPreferences prefs = await SharedPreferences.getInstance();
+  //   cameras = await availableCameras();
+  //   controller = CameraController(
+  //     cameras[prefs.getInt("CameraSelect")!],
+  //     ResolutionPreset.low,
+  //     enableAudio: false,
+  //     imageFormatGroup: ImageFormatGroup.jpeg,
+  //   );
+  //   controller.initialize().then((_) {
+  //     if (!mounted) {
+  //       _showMyDialog("KAMERA", "Kamera Depan Tidak Terbaca");
+  //       controller = CameraController(
+  //         cameras[1],
+  //         ResolutionPreset.low,
+  //         enableAudio: false,
+  //         imageFormatGroup: ImageFormatGroup.jpeg,
+  //       );
+  //       return;
+  //     } else {
+  //       bacakamera = true;
+  //     }
+  //     setState(() {});
+  //   });
+  // }
 
   Future<XFile?> takePicture() async {
     final CameraController cameraController = controller;

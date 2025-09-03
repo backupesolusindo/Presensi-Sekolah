@@ -17,7 +17,7 @@ import 'package:mobile_presensi_kdtg/components/or_divider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:http/http.dart' as http;
 
-import 'Camera/Camera_screen.dart';
+//import 'Camera/Camera_screen.dart';
 
 class SemuaMenu extends StatefulWidget {
   const SemuaMenu({super.key});
@@ -733,120 +733,119 @@ SliverToBoxAdapter _profileUser(double screenHeight) {
           ),
           const SizedBox(height: 10.0),
           Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween, // Mengatur posisi ikon agar lebih rapi
+            mainAxisAlignment: MainAxisAlignment.start,
             children: <Widget>[
-              Expanded(
-                child: Container(
-                  child: TextButton(
-                    onPressed: () {
-                      Navigator.push(context, MaterialPageRoute(builder: (context) {
-                        return const LokasiKampusScreen();
-                      }));
-                    },
-                    child: Column(
-                      children: <Widget>[
-                        Image.asset(
-                          "assets/icons/lokasi_kampus.png",
-                          height: screenHeight * 0.07,
+              SizedBox(
+                width: 80,
+                child: TextButton(
+                  onPressed: () {
+                    Navigator.push(context, MaterialPageRoute(builder: (context) {
+                      return const LokasiKampusScreen();
+                    }));
+                  },
+                  child: Column(
+                    children: <Widget>[
+                      Image.asset(
+                        "assets/icons/lokasi_kampus.png",
+                        height: screenHeight * 0.07,
+                      ),
+                      SizedBox(height: screenHeight * 0.003),
+                      const Text(
+                        "Lokasi\nGedung",
+                        style: TextStyle(
+                          fontSize: 11.0,
+                          fontWeight: FontWeight.w500,
                         ),
-                        SizedBox(height: screenHeight * 0.003),
-                        const Text(
-                          "Lokasi\nGedung",
-                          style: TextStyle(
-                            fontSize: 11.0,
-                            fontWeight: FontWeight.w500,
-                          ),
-                          textAlign: TextAlign.center,
-                        ),
-                      ],
-                    ),
+                        textAlign: TextAlign.center,
+                      ),
+                    ],
                   ),
                 ),
               ),
-              Expanded(
-                child: Container(
-                  child: TextButton(
-                    onPressed: () {
-                      Navigator.push(context, MaterialPageRoute(builder: (context) {
-                        return const ProfilUser();
-                      }));
-                    },
-                    child: Column(
-                      children: <Widget>[
-                        Image.asset(
-                          "assets/icons/profil_user.png",
-                          height: screenHeight * 0.07,
+              const SizedBox(width: 20),
+              SizedBox(
+                width: 80,
+                child: TextButton(
+                  onPressed: () {
+                    Navigator.push(context, MaterialPageRoute(builder: (context) {
+                      return const ProfilUser();
+                    }));
+                  },
+                  child: Column(
+                    children: <Widget>[
+                      Image.asset(
+                        "assets/icons/profil_user.png",
+                        height: screenHeight * 0.07,
+                      ),
+                      SizedBox(height: screenHeight * 0.003),
+                      const Text(
+                        "Profil\nUser",
+                        style: TextStyle(
+                          fontSize: 11.0,
+                          fontWeight: FontWeight.w500,
                         ),
-                        SizedBox(height: screenHeight * 0.003),
-                        const Text(
-                          "Profil\nUser",
-                          style: TextStyle(
-                            fontSize: 11.0,
-                            fontWeight: FontWeight.w500,
-                          ),
-                          textAlign: TextAlign.center,
-                        ),
-                      ],
-                    ),
+                        textAlign: TextAlign.center,
+                      ),
+                    ],
                   ),
                 ),
               ),
-              Expanded(
-                child: Container(
-                  child: TextButton(
-                    onPressed: () {
-                      Navigator.push(context, MaterialPageRoute(builder: (context) {
-                        return const ResetPasswordScreen();
-                      }));
-                    },
-                    child: Column(
-                      children: <Widget>[
-                        Image.asset(
-                          "assets/icons/reset_password.png",
-                          height: screenHeight * 0.07,
+              const SizedBox(width: 20),
+              SizedBox(
+                width: 80,
+                child: TextButton(
+                  onPressed: () {
+                    Navigator.push(context, MaterialPageRoute(builder: (context) {
+                      return const ResetPasswordScreen();
+                    }));
+                  },
+                  child: Column(
+                    children: <Widget>[
+                      Image.asset(
+                        "assets/icons/reset_password.png",
+                        height: screenHeight * 0.07,
+                      ),
+                      SizedBox(height: screenHeight * 0.003),
+                      const Text(
+                        "Reset\nPassword",
+                        style: TextStyle(
+                          fontSize: 11.0,
+                          fontWeight: FontWeight.w500,
                         ),
-                        SizedBox(height: screenHeight * 0.003),
-                        const Text(
-                          "Reset\nPassword",
-                          style: TextStyle(
-                            fontSize: 11.0,
-                            fontWeight: FontWeight.w500,
-                          ),
-                          textAlign: TextAlign.center,
-                        ),
-                      ],
-                    ),
+                        textAlign: TextAlign.center,
+                      ),
+                    ],
                   ),
                 ),
               ),
-              Expanded(
-                child: Container(
-                  child: TextButton(
-                    onPressed: () {
-                      Navigator.push(context, MaterialPageRoute(builder: (context) {
-                        return const CameraScreen();
-                      }));
-                    },
-                    child: Column(
-                      children: <Widget>[
-                        Image.asset(
-                          "assets/icons/atur-kamera.png",
-                          height: screenHeight * 0.07,
-                        ),
-                        SizedBox(height: screenHeight * 0.003),
-                        const Text(
-                          "Setting\nCamera",
-                          style: TextStyle(
-                            fontSize: 11.0,
-                            fontWeight: FontWeight.w500,
-                          ),
-                          textAlign: TextAlign.center,
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-              ),
+              // const SizedBox(width: 20),
+              // SizedBox(
+              //   width: 80,
+              //   child: TextButton(
+              //     onPressed: () {
+              //       Navigator.push(context, MaterialPageRoute(builder: (context) {
+              //         return const CameraScreen();
+              //       }));
+              //     },
+              //     child: Column(
+              //       children: <Widget>[
+              //         Image.asset(
+              //           "assets/icons/atur-kamera.png",
+              //           height: screenHeight * 0.07,
+              //         ),
+              //         SizedBox(height: screenHeight * 0.003),
+              //         const Text(
+              //           "Setting\nCamera",
+              //           style: TextStyle(
+              //             fontSize: 11.0,
+              //             fontWeight: FontWeight.w500,
+              //           ),
+              //           textAlign: TextAlign.center,
+              //         ),
+              //       ],
+              //     ),
+              //   ),
+              // ),
             ],
           ),
         ],

@@ -1,6 +1,5 @@
 import 'dart:async';
 import 'dart:convert';
-import 'dart:io';
 import 'dart:ui';
 
 import 'package:camera/camera.dart';
@@ -12,7 +11,6 @@ import 'package:mobile_presensi_kdtg/components/rounded_button_small.dart';
 import 'package:mobile_presensi_kdtg/constants.dart';
 import 'package:mobile_presensi_kdtg/core.dart';
 import 'package:geolocator/geolocator.dart';
-import 'package:image_picker/image_picker.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:http/http.dart' as http;
 import 'package:mobile_presensi_kdtg/services/location_services.dart';
