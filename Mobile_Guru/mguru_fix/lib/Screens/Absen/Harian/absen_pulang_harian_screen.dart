@@ -361,7 +361,7 @@ class _AbsenPage extends State<AbsenPage> {
         ),
       )),
       Positioned(
-          bottom: 60,
+          bottom: 120,
           width: size.width,
           child: AnimatedOpacity(
               opacity: ssHeader ? 1 : 0,
@@ -385,79 +385,32 @@ class _AbsenPage extends State<AbsenPage> {
                         ),
                       ],
                     ),
-                    child: Column(
-                      children: <Widget>[
-                        Row(
-                          children: [
-                            Expanded(
-                                flex: 1,
-                                child: TextButton(
-                                    onPressed: () {
-                                      if (bacakamera) {
-                                        _popCamera();
-                                      } else {
-                                        getCameraEx();
-                                      }
-                                    },
-                                    child: Container(
-                                      height: 100,
-                                      width: size.width,
-                                      alignment: Alignment.center,
-                                      decoration: BoxDecoration(
-                                        color: Colors.black,
-                                        borderRadius: BorderRadius.circular(12),
-                                        image: DecorationImage(
-                                          image: (_image == null)
-                                              ? const AssetImage(
-                                                  'assets/images/user_image.png')
-                                              : Image.file(_image!).image,
-                                          fit: BoxFit.fill,
-                                        ),
-                                      ),
-                                      child: DecoratedBox(
-                                        decoration: BoxDecoration(
-                                            color: Colors.white60,
-                                            borderRadius:
-                                                BorderRadius.circular(4)),
-                                        child: const Text('Ambil Foto',
-                                            style: TextStyle(
-                                                fontSize: 12,
-                                                fontWeight: FontWeight.w600,
-                                                color: Colors.black)),
-                                      ),
-                                    ))),
-                            Expanded(
-                              flex: 2,
-                              child: Padding(
-                                padding: const EdgeInsets.only(
-                                    bottom: 5, top: 8, right: 0),
-                                child: Column(
-                                  children: <Widget>[
-                                    Text(
-                                      "Jarak Kantor : ${Jarak.toInt()} Meter",
-                                      style: TextStyle(
-                                          fontSize: 12,
-                                          color: Jarak.toInt() < radius
-                                              ? CSuccess
-                                              : CDanger),
-                                    ),
-                                    Text(
-                                      Jarak.toInt() < radius
-                                          ? "Anda Dalam Jangkuan"
-                                          : "Anda Tidak Dalam Wilayah",
-                                      style: TextStyle(
-                                          fontSize: 12,
-                                          color: Jarak.toInt() < radius
-                                              ? CSuccess
-                                              : CDanger),
-                                    )
-                                  ],
-                                ),
-                              ),
-                            )
-                          ],
-                        ),
-                      ],
+                    child: Container(
+                      padding: const EdgeInsets.all(16),
+                      child: Column(
+                        children: <Widget>[
+                          Text(
+                            Jarak.toInt() < radius
+                                ? "Anda Dalam Jangkuan"
+                                : "Anda Tidak Dalam Wilayah",
+                            style: TextStyle(
+                                fontSize: 16,
+                                fontWeight: FontWeight.w600,
+                                color: Jarak.toInt() < radius
+                                    ? CSuccess
+                                    : CDanger),
+                          ),
+                          const SizedBox(height: 8),
+                          Text(
+                            "Jarak : ${Jarak.toInt()} Meter",
+                            style: TextStyle(
+                                fontSize: 14,
+                                color: Jarak.toInt() < radius
+                                    ? CSuccess
+                                    : CDanger),
+                          ),
+                        ],
+                      ),
                     ),
                   )))),
       Positioned(
@@ -472,9 +425,8 @@ class _AbsenPage extends State<AbsenPage> {
                     : const EdgeInsets.only(bottom: 30),
                 duration: const Duration(milliseconds: 500),
                 curve: Curves.fastEaseInToSlowEaseOut,
-                // color: kDarkPrimaryColor,
                 child: (statusLoading == 1)
-                    ? const CircularProgressIndicator()
+                    ? const Center(child: CircularProgressIndicator())
                     : RoundedButtonSmall(
                         text: "PRESENSI PULANG",
                         width: size.width * 0.9,
@@ -488,34 +440,23 @@ class _AbsenPage extends State<AbsenPage> {
                           SharedPreferences prefs =
                               await SharedPreferences.getInstance();
                           if (prefs.getInt("status_spesial") == 1) {
-                            if (_image == null) {
-                              _showMyDialog("Absensi Pulang Harian",
-                                  "Anda Belum Mengambil Foto. Mohon Ambil Foto Terlebih Dahulu !");
+                            // Special status - direct checkout without photo
+                            AbsenSelesaiPost.connectToApiNoPhoto(
+                                    prefs.getString("ID")!,
+                                    DataPegawai['idabsen'],
+                                    la.toString(),
+                                    lo.toString())
+                                .then((value) {
+                              if (value!.status_kode == 200) {
+                                _showMyDialogSuccess("Presensi Berhasil", "Anda sudah berhasil melakukan presensi pulang.");
+                              } else {
+                                _showMyDialog(
+                                    "Absensi Pulang Harian", value.message);
+                              }
                               setState(() {
                                 statusLoading = 0;
                               });
-                            } else {
-                              AbsenSelesaiPost.connectToApi(
-                                      prefs.getString("ID")!,
-                                      DataPegawai['idabsen'],
-                                      la.toString(),
-                                      lo.toString(),
-                                      _image!)
-                                  .then((value) {
-                                if (value!.status_kode == 200) {
-                                  Navigator.pushReplacement(context,
-                                      MaterialPageRoute(builder: (context) {
-                                    return const DashboardScreen();
-                                  }));
-                                } else {
-                                  _showMyDialog(
-                                      "Absensi Harian", value.message);
-                                }
-                                setState(() {
-                                  statusLoading = 0;
-                                });
-                              });
-                            }
+                            });
                           } else {
                             _isMockLocation =
                                 await LocationService.isMockLocation;
@@ -529,36 +470,25 @@ class _AbsenPage extends State<AbsenPage> {
                               });
                             } else {
                               if (Jarak.toInt() < radius) {
-                                if (_image == null) {
-                                  _showMyDialog("Absensi Pulang Harian",
-                                      "Anda Belum Mengambil Foto. Mohon Ambil Foto Terlebih Dahulu !");
-                                } else {
-                                  AbsenSelesaiPost.connectToApi(
-                                          prefs.getString("ID")!,
-                                          DataPegawai['idabsen'],
-                                          la.toString(),
-                                          lo.toString(),
-                                          _image!)
-                                      .then((value) {
-                                    if (value!.status_kode == 200) {
-                                      Navigator.pushReplacement(context,
-                                          MaterialPageRoute(builder: (context) {
-                                        return const DashboardScreen();
-                                      }));
-                                    } else {
-                                      _showMyDialog(
-                                          "Absensi Harian", value.message);
-                                      setState(() {
-                                        statusLoading = 0;
-                                      });
-                                    }
-                                    setState(() {
-                                      statusLoading = 0;
-                                    });
+                                // Normal checkout without photo
+                                AbsenSelesaiPost.connectToApiNoPhoto(
+                                        prefs.getString("ID")!,
+                                        DataPegawai['idabsen'],
+                                        la.toString(),
+                                        lo.toString())
+                                    .then((value) {
+                                  if (value!.status_kode == 200) {
+                                    _showMyDialogSuccess("Presensi Berhasil", "Anda sudah berhasil melakukan presensi pulang.");
+                                  } else {
+                                    _showMyDialog(
+                                        "Absensi Pulang Harian", value.message);
+                                  }
+                                  setState(() {
+                                    statusLoading = 0;
                                   });
-                                }
+                                });
                               } else {
-                                _showMyDialog("Absensi Harian",
+                                _showMyDialog("Absensi Pulang Harian",
                                     "Lokasi Anda Terlalu Jauh");
                                 setState(() {
                                   statusLoading = 0;
@@ -570,7 +500,7 @@ class _AbsenPage extends State<AbsenPage> {
                       ),
               ))),
       Positioned(
-          bottom: size.height * 0.19,
+          bottom: size.height * 0.24,
           right: 8,
           child: SizedBox(
             width: 50,
@@ -616,7 +546,7 @@ class _AbsenPage extends State<AbsenPage> {
             ),
             actions: <Widget>[
               TextButton(
-                child: const Text('Keluar'),
+                child: const Text('Oke'),
                 onPressed: () {
                   Navigator.of(context).pop();
                 },
@@ -657,6 +587,43 @@ class _AbsenPage extends State<AbsenPage> {
       },
     );
   }
+  
+  // FUNGSI BARU UNTUK DIALOG SUKSES
+  Future<void> _showMyDialogSuccess(String title, String message) async {
+    return showDialog<void>(
+      context: context,
+      barrierDismissible: false, // user must tap button!
+      builder: (BuildContext context) {
+        return BackdropFilter(
+          filter: ImageFilter.blur(sigmaX: 6, sigmaY: 6),
+          child: AlertDialog(
+            title: Text(title),
+            content: SingleChildScrollView(
+              child: ListBody(
+                children: <Widget>[
+                  Text(message),
+                ],
+              ),
+            ),
+            actions: <Widget>[
+              TextButton(
+                child: const Text('Oke'),
+                onPressed: () {
+                  // Tutup dialog
+                  Navigator.of(context).pop();
+                  // Arahkan ke Dashboard
+                  Navigator.pushReplacement(context,
+                      MaterialPageRoute(builder: (context) {
+                    return const DashboardScreen();
+                  }));
+                },
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
 
   Future<void> _showPerizinan() async {
     return showDialog<void>(
@@ -682,43 +649,6 @@ class _AbsenPage extends State<AbsenPage> {
                   SharedPreferences prefs =
                       await SharedPreferences.getInstance();
                   prefs.setBool("sl_harian_pulang", false);
-                  Navigator.of(context).pop();
-                },
-              ),
-            ],
-          ),
-        );
-      },
-    );
-  }
-
-  Future<void> _popCamera() async {
-    Size size = MediaQuery.of(context).size;
-    return showDialog<void>(
-      context: context,
-      barrierDismissible: true, // user must tap button!
-      builder: (BuildContext context) {
-        return BackdropFilter(
-          filter: ImageFilter.blur(sigmaX: 6, sigmaY: 6),
-          child: AlertDialog(
-            contentPadding: const EdgeInsets.all(0),
-            content: Container(
-              // height: size.height * 0.6,
-              margin: const EdgeInsets.all(0),
-              padding: const EdgeInsets.all(0),
-              child: CameraPreview(controller),
-            ),
-            actions: <Widget>[
-              TextButton(
-                onPressed: () async {
-                  onTakePictureButtonPressed();
-                  Navigator.of(context).pop();
-                },
-                child: Image.asset("assets/icons/camera.png", height: 50),
-              ),
-              TextButton(
-                child: const Text('Kembali', style: TextStyle(color: CDanger)),
-                onPressed: () async {
                   Navigator.of(context).pop();
                 },
               ),

@@ -40,156 +40,16 @@ class _AbsenHarianScreenState extends State<AbsenHarianScreen> {
   int statusLoading = 0;
   late String Nama = "", NIP = "", JamMasuk = "", idJadwal = "";
   late SharedPreferences prefs;
-  bool bacakamera = false;
   String coba = "asd";
   bool ssHeader = false;
 
-  late CameraController controller;
-  XFile? imageFile;
-  File? _image;
-
-  int selectedCameraIdx = 1;
   List DataJadwal = List.empty();
 
   @override
   void initState() {
     super.initState();
     getDataPegawai();
-    prepareCamera();
     getCurrentLocation();
-  }
-
-  Future<void> prepareCamera() async {
-    prefs = await SharedPreferences.getInstance();
-    cameras = await availableCameras();
-    controller = CameraController(
-      cameras[prefs.getInt("CameraSelect")!],
-      ResolutionPreset.low,
-      enableAudio: false,
-      imageFormatGroup: ImageFormatGroup.jpeg,
-    );
-    controller.initialize().then((_) {
-      if (!mounted) {
-        _showMyDialog("KAMERA", "Kamera Depan Tidak Terbaca");
-        controller = CameraController(
-          cameras[1],
-          ResolutionPreset.low,
-          enableAudio: false,
-          imageFormatGroup: ImageFormatGroup.jpeg,
-        );
-        return;
-      } else {
-        bacakamera = true;
-      }
-    });
-    setState(() {});
-  }
-
-  Future _initCameraController(CameraDescription cameraDescription) async {
-    await controller.dispose();
-  
-    // 3
-    controller = CameraController(cameraDescription, ResolutionPreset.high);
-
-    // If the controller is updated then update the UI.
-    // 4
-    controller.addListener(() {
-      // 5
-      if (mounted) {
-        setState(() {});
-      }
-
-      if (controller.value.hasError) {
-        print('Camera error ${controller.value.errorDescription}');
-      }
-    });
-
-    // 6
-    try {
-      await controller.initialize();
-    } on CameraException {
-      // _showCameraException(e);
-    }
-
-    if (mounted) {
-      setState(() {});
-    }
-  }
-
-  void _onSwitchCamera() {
-    selectedCameraIdx =
-        selectedCameraIdx < cameras.length - 1 ? selectedCameraIdx + 1 : 0;
-    CameraDescription selectedCamera = cameras[selectedCameraIdx];
-    _initCameraController(selectedCamera);
-  }
-
-  Future<XFile?> takePicture() async {
-    final CameraController cameraController = controller;
-    if (!cameraController.value.isInitialized) {
-      return null;
-    }
-
-    if (cameraController.value.isTakingPicture) {
-      // A capture is already pending, do nothing.
-      return null;
-    }
-
-    try {
-      XFile file = await cameraController.takePicture();
-      return file;
-    } on CameraException catch (e) {
-      print("error Camera :");
-      print(e);
-      getCameraEx();
-      return null;
-    }
-  }
-
-  final picker = ImagePicker();
-  Future getCameraEx() async {
-    final pickedFile = await picker.pickImage(
-        source: ImageSource.camera,
-        preferredCameraDevice: CameraDevice.front,
-        maxHeight: 380,
-        maxWidth: 540);
-
-    setState(() {
-      if (pickedFile != null) {
-        _image = File(pickedFile.path);
-      } else {
-        print('No image selected.');
-      }
-    });
-  }
-
-  void onTakePictureButtonPressed() async {
-    final CameraController cameraController = controller;
-    if (!cameraController.value.isInitialized) {
-      _showMyDialog("KAMERA", "Kamera gagal mengambil Foto Anda");
-    }
-
-    if (cameraController.value.isTakingPicture) {}
-
-    try {
-      XFile file = await cameraController.takePicture();
-      if (mounted) {
-        setState(() {
-          imageFile = file;
-          _image = File(file.path);
-          if (imageFile != null) {
-            _image = File(file.path);
-          } else {
-            print('No image selected.');
-            // _showMyDialog("KAMERA", "Kamera gagal mengambil Foto Anda, Mohon tunggu sistem akan membuka kembali kamera");
-          }
-        });
-        // if (file != null) showInSnackBar('Picture saved to ${file.path}');
-      }
-    } on CameraException catch (e) {
-      print("error Camera :");
-      print(e);
-      getCameraEx();
-    }
   }
 
   Future<void> getDataPegawai() async {
@@ -384,7 +244,7 @@ class _AbsenHarianScreenState extends State<AbsenHarianScreen> {
         ),
       )),
       Positioned(
-          bottom: 60,
+          bottom: 120,
           width: size.width,
           child: AnimatedOpacity(
               opacity: ssHeader ? 1 : 0,
@@ -408,112 +268,65 @@ class _AbsenHarianScreenState extends State<AbsenHarianScreen> {
                         ),
                       ],
                     ),
-                    child: Column(
-                      children: <Widget>[
-                        Row(
-                          children: [
-                            Expanded(
-                                flex: 1,
-                                child: TextButton(
-                                    onPressed: () {
-                                      if (bacakamera) {
-                                        _popCamera();
-                                      } else {
-                                        getCameraEx();
-                                      }
-                                    },
-                                    child: Container(
-                                      height: 100,
-                                      width: size.width,
-                                      alignment: Alignment.center,
-                                      decoration: BoxDecoration(
-                                        color: Colors.black,
-                                        borderRadius: BorderRadius.circular(12),
-                                        image: DecorationImage(
-                                          image: (_image == null)
-                                              ? const AssetImage(
-                                                  'assets/images/user_image.png')
-                                              : Image.file(_image!).image,
-                                          fit: BoxFit.fill,
-                                        ),
-                                      ),
-                                      child: DecoratedBox(
-                                        decoration: BoxDecoration(
-                                            color: Colors.white60,
-                                            borderRadius:
-                                                BorderRadius.circular(4)),
-                                        child: const Text('Ambil Foto',
-                                            style: TextStyle(
-                                                fontSize: 12,
-                                                fontWeight: FontWeight.w600,
-                                                color: Colors.black)),
-                                      ),
-                                    ))),
-                            Expanded(
-                              flex: 2,
-                              child: Padding(
-                                padding: const EdgeInsets.only(
-                                    bottom: 5, top: 8, right: 0),
-                                child: Column(
-                                  children: <Widget>[
-                                    Text(
-                                      Jarak.toInt() < radius
-                                          ? "Anda Dalam Jangkuan"
-                                          : "Anda Tidak Dalam Wilayah",
-                                      style: TextStyle(
-                                          fontSize: 12,
-                                          color: Jarak.toInt() < radius
-                                              ? CSuccess
-                                              : CDanger),
-                                    ),
-                                    Container(
-                                      margin: const EdgeInsets.symmetric(
-                                          vertical: 4, horizontal: 8),
-                                      child: DropdownButton(
-                                        hint: const Text("Jadwal Kerja : ",
-                                            style: TextStyle(
-                                                fontSize: 12,
-                                                fontWeight: FontWeight.w600,
-                                                color: Colors.black)),
-                                        dropdownColor: Colors.white,
-                                        icon: const Icon(Icons.arrow_drop_down),
-                                        iconSize: 24,
-                                        isExpanded: true,
-                                        style: const TextStyle(
-                                            color: Colors.black, fontSize: 12),
-                                        items: DataJadwal.map((item) {
-                                          return DropdownMenuItem(
-                                            value: item['idjadwal_masuk']
-                                                .toString(),
-                                            child: Text(item['nama']),
-                                          );
-                                        }).toList(),
-                                        onChanged: (newVal) {
-                                          setState(() {
-                                            idJadwal = newVal as String;
-                                            for (var i = 0;
-                                                i < DataJadwal.length;
-                                                i++) {
-                                              if (DataJadwal[i]
-                                                      ['idjadwal_masuk'] ==
-                                                  idJadwal) {
-                                                JamMasuk =
-                                                    DataJadwal[i]['jam_masuk'];
-                                              }
-                                            }
-                                            print("Jam $JamMasuk");
-                                          });
-                                        },
-                                        value: idJadwal,
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                            )
-                          ],
-                        ),
-                      ],
+                    child: Container(
+                      padding: const EdgeInsets.all(16),
+                      child: Column(
+                        children: <Widget>[
+                          Text(
+                            Jarak.toInt() < radius
+                                ? "Anda Dalam Jangkuan"
+                                : "Anda Tidak Dalam Wilayah",
+                            style: TextStyle(
+                                fontSize: 16,
+                                fontWeight: FontWeight.w600,
+                                color: Jarak.toInt() < radius
+                                    ? CSuccess
+                                    : CDanger),
+                          ),
+                          const SizedBox(height: 16),
+                          Container(
+                            margin: const EdgeInsets.symmetric(
+                                vertical: 4, horizontal: 8),
+                            child: DropdownButton(
+                              hint: const Text("Jadwal Kerja : ",
+                                  style: TextStyle(
+                                      fontSize: 12,
+                                      fontWeight: FontWeight.w600,
+                                      color: Colors.black)),
+                              dropdownColor: Colors.white,
+                              icon: const Icon(Icons.arrow_drop_down),
+                              iconSize: 24,
+                              isExpanded: true,
+                              style: const TextStyle(
+                                  color: Colors.black, fontSize: 12),
+                              items: DataJadwal.map((item) {
+                                return DropdownMenuItem(
+                                  value: item['idjadwal_masuk']
+                                      .toString(),
+                                  child: Text(item['nama']),
+                                );
+                              }).toList(),
+                              onChanged: (newVal) {
+                                setState(() {
+                                  idJadwal = newVal as String;
+                                  for (var i = 0;
+                                      i < DataJadwal.length;
+                                      i++) {
+                                    if (DataJadwal[i]
+                                            ['idjadwal_masuk'] ==
+                                        idJadwal) {
+                                      JamMasuk =
+                                          DataJadwal[i]['jam_masuk'];
+                                    }
+                                  }
+                                  print("Jam $JamMasuk");
+                                });
+                              },
+                              value: idJadwal,
+                            ),
+                          ),
+                        ],
+                      ),
                     ),
                   )))),
       Positioned(
@@ -530,7 +343,7 @@ class _AbsenHarianScreenState extends State<AbsenHarianScreen> {
                 curve: Curves.fastEaseInToSlowEaseOut,
                 // color: kDarkPrimaryColor,
                 child: (statusLoading == 1)
-                    ? const CircularProgressIndicator()
+                    ? const Center(child: CircularProgressIndicator())
                     : RoundedButtonSmall(
                         text: "PRESENSI MASUK",
                         width: size.width * 0.9,
@@ -544,34 +357,26 @@ class _AbsenHarianScreenState extends State<AbsenHarianScreen> {
                           SharedPreferences prefs =
                               await SharedPreferences.getInstance();
                           if (prefs.getInt("status_spesial") == 1) {
-                            if (_image == null) {
-                              _showMyDialog("Absensi Harian",
-                                  "Anda Belum Mengambil Foto. Mohon Ambil Foto Terlebih Dahulu !");
-                            } else {
-                              AbsenPost.connectToApi(
-                                      prefs.getString("ID")!,
-                                      la.toString(),
-                                      lo.toString(),
-                                      "1",
-                                      "1",
-                                      idJadwal,
-                                      JamMasuk,
-                                      _image!)
-                                  .then((value) {
-                                if (value!.status_kode == 200) {
-                                  Navigator.pushReplacement(context,
-                                      MaterialPageRoute(builder: (context) {
-                                    return const DashboardScreen();
-                                  }));
-                                } else {
-                                  _showMyDialog(
-                                      "Absensi Harian", value.message);
-                                }
-                                setState(() {
-                                  statusLoading = 0;
-                                });
+                            // Special status - direct attendance without photo
+                            AbsenPost.connectToApiNoPhoto(
+                                    prefs.getString("ID")!,
+                                    la.toString(),
+                                    lo.toString(),
+                                    "1",
+                                    "1",
+                                    idJadwal,
+                                    JamMasuk)
+                                .then((value) {
+                              if (value!.status_kode == 200) {
+                                _showMyDialogSuccess("Presensi Berhasil", "Anda sudah berhasil melakukan presensi masuk.");
+                              } else {
+                                _showMyDialog(
+                                    "Absensi Harian", value.message);
+                              }
+                              setState(() {
+                                statusLoading = 0;
                               });
-                            }
+                            });
                           } else {
                             _isMockLocation =
                                 await LocationService.isMockLocation;
@@ -584,37 +389,26 @@ class _AbsenHarianScreenState extends State<AbsenHarianScreen> {
                               });
                             } else {
                               if (Jarak.toInt() < radius) {
-                                if (_image == null) {
-                                  _showMyDialog("Absensi Harian",
-                                      "Anda Belum Mengambil Foto. Mohon Ambil Foto Terlebih Dahulu !");
+                                // Normal attendance without photo requirement
+                                AbsenPost.connectToApiNoPhoto(
+                                        prefs.getString("ID")!,
+                                        la.toString(),
+                                        lo.toString(),
+                                        "1",
+                                        "1",
+                                        idJadwal,
+                                        JamMasuk)
+                                    .then((value) {
+                                  if (value!.status_kode == 200) {
+                                    _showMyDialogSuccess("Presensi Berhasil", "Anda sudah berhasil melakukan presensi masuk.");
+                                  } else {
+                                    _showMyDialog(
+                                        "Absensi Harian", value.message);
+                                  }
                                   setState(() {
                                     statusLoading = 0;
                                   });
-                                } else {
-                                  AbsenPost.connectToApi(
-                                          prefs.getString("ID")!,
-                                          la.toString(),
-                                          lo.toString(),
-                                          "1",
-                                          "1",
-                                          idJadwal,
-                                          JamMasuk,
-                                          _image!)
-                                      .then((value) {
-                                    if (value!.status_kode == 200) {
-                                      Navigator.pushReplacement(context,
-                                          MaterialPageRoute(builder: (context) {
-                                        return const DashboardScreen();
-                                      }));
-                                    } else {
-                                      _showMyDialog(
-                                          "Absensi Harian", value.message);
-                                    }
-                                    setState(() {
-                                      statusLoading = 0;
-                                    });
-                                  });
-                                }
+                                });
                               } else {
                                 _showMyDialog("Absensi Harian",
                                     "Lokasi Anda Terlalu Jauh");
@@ -628,7 +422,7 @@ class _AbsenHarianScreenState extends State<AbsenHarianScreen> {
                       ),
               ))),
       Positioned(
-          bottom: size.height * 0.19,
+          bottom: size.height * 0.24,
           right: 8,
           child: SizedBox(
             width: 50,
@@ -715,6 +509,43 @@ class _AbsenHarianScreenState extends State<AbsenHarianScreen> {
       },
     );
   }
+  
+  // FUNGSI BARU UNTUK DIALOG SUKSES
+  Future<void> _showMyDialogSuccess(String title, String message) async {
+    return showDialog<void>(
+      context: context,
+      barrierDismissible: false, // user must tap button!
+      builder: (BuildContext context) {
+        return BackdropFilter(
+          filter: ImageFilter.blur(sigmaX: 6, sigmaY: 6),
+          child: AlertDialog(
+            title: Text(title),
+            content: SingleChildScrollView(
+              child: ListBody(
+                children: <Widget>[
+                  Text(message),
+                ],
+              ),
+            ),
+            actions: <Widget>[
+              TextButton(
+                child: const Text('Oke'),
+                onPressed: () {
+                  // Tutup dialog terlebih dahulu
+                  Navigator.of(context).pop();
+                  // Kemudian navigasi ke Dashboard
+                  Navigator.pushReplacement(context,
+                      MaterialPageRoute(builder: (context) {
+                    return const DashboardScreen();
+                  }));
+                },
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
 
   Future<void> _showPerizinan() async {
     return showDialog<void>(
@@ -746,45 +577,6 @@ class _AbsenHarianScreenState extends State<AbsenHarianScreen> {
             ],
           ),
         );
-      },
-    );
-  }
-
-  Future<void> _popCamera() async {
-    Size size = MediaQuery.of(context).size;
-    return showDialog<void>(
-      context: context,
-      barrierDismissible: true, // user must tap button!
-      builder: (BuildContext context) {
-        return StatefulBuilder(builder: (context, setState) {
-          return BackdropFilter(
-            filter: ImageFilter.blur(sigmaX: 6, sigmaY: 6),
-            child: AlertDialog(
-              contentPadding: const EdgeInsets.all(0),
-              content: Container(
-                // height: size.height * 0.6,
-                margin: const EdgeInsets.all(0),
-                padding: const EdgeInsets.all(0),
-                child: CameraPreview(controller),
-              ),
-              actions: <Widget>[
-                TextButton(
-                  onPressed: () async {
-                    onTakePictureButtonPressed();
-                    Navigator.of(context).pop();
-                  },
-                  child: Image.asset("assets/icons/camera.png", height: 50),
-                ),
-                TextButton(
-                  child: const Text('Kembali', style: TextStyle(color: CDanger)),
-                  onPressed: () async {
-                    Navigator.of(context).pop();
-                  },
-                ),
-              ],
-            ),
-          );
-        });
       },
     );
   }
