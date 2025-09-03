@@ -55,7 +55,7 @@ class _ProfilePageState extends State<ProfilePage> with TickerProviderStateMixin
   int _currentIndex = 2;
   String namaWali = "Loading...";
   String noHp = "Loading...";
-  String nis = "Loading...";
+  String nisn = "Loading...";
   String kelas = "Loading...";
   String namaSiswa = "Loading...";
   List<dynamic> siswaList = [];
@@ -152,7 +152,7 @@ class _ProfilePageState extends State<ProfilePage> with TickerProviderStateMixin
   void _updateSiswaDetail(Map<String, dynamic> siswa) {
     setState(() {
       namaSiswa = siswa['nama'] ?? "Data tidak tersedia";
-      nis = siswa['nis'] ?? "Data tidak tersedia";
+      nisn = siswa['nisn'] ?? "Data tidak tersedia";
       kelas = siswa['nama_kelas'] ?? siswa['kelas'] ?? "Kelas tidak tersedia";
     });
   }
@@ -176,14 +176,14 @@ class _ProfilePageState extends State<ProfilePage> with TickerProviderStateMixin
   // --- FUNGSI BARU: Logika navigasi ke riwayat ---
   Future<void> _navigateToRiwayat() async {
       final prefs = await SharedPreferences.getInstance();
-      final savedNis = prefs.getString('selected_siswa_nis');
+      final savednisn = prefs.getString('selected_siswa_nisn');
       final savedNama = prefs.getString('selected_siswa_nama');
       
-      if (savedNis != null && savedNama != null && mounted) {
+      if (savednisn != null && savedNama != null && mounted) {
           Navigator.pushReplacement(
               context,
               MaterialPageRoute(builder: (context) => RiwayatPage(
-                  selectedSiswaNis: savedNis,
+                  selectedSiswaNisn: savednisn,
                   selectedSiswaNama: savedNama,
               )),
           );
@@ -192,11 +192,11 @@ class _ProfilePageState extends State<ProfilePage> with TickerProviderStateMixin
       }
   }
 
-  // --- FUNGSI DIPERBARUI: Menyimpan NAMA dan NIS agar konsisten ---
+  // --- FUNGSI DIPERBARUI: Menyimpan NAMA dan nisn agar konsisten ---
   Future<void> _saveSelectedSiswa(Map<String, dynamic> siswa) async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.setString('selected_siswa_nama', siswa['nama']);
-    await prefs.setString('selected_siswa_nis', siswa['nis']);
+    await prefs.setString('selected_siswa_nisn', siswa['nisn']);
   }
 
   @override
@@ -456,8 +456,8 @@ class _ProfilePageState extends State<ProfilePage> with TickerProviderStateMixin
         const SizedBox(height: 16),
         _buildInfoCard(
           icon: Icons.badge_outlined,
-          title: 'NIS Siswa',
-          value: nis,
+          title: 'nisn Siswa',
+          value: nisn,
           color: accentBlue,
         ),
         const SizedBox(height: 16),

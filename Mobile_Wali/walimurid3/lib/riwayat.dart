@@ -44,12 +44,12 @@ class ApiErrorHandler {
 }
 
 class RiwayatPage extends StatefulWidget {
-  final String? selectedSiswaNis;
+  final String? selectedSiswaNisn;
   final String? selectedSiswaNama;
 
   const RiwayatPage({
     super.key,
-    this.selectedSiswaNis,
+    this.selectedSiswaNisn,
     this.selectedSiswaNama,
   });
 
@@ -66,7 +66,7 @@ class _RiwayatPageState extends State<RiwayatPage> with TickerProviderStateMixin
   late AnimationController _animationController;
   late Animation<double> _slideAnimation;
 
-  String? _currentNis;
+  String? _currentNisn;
   String? _currentNama;
 
   // Color palette
@@ -98,18 +98,18 @@ class _RiwayatPageState extends State<RiwayatPage> with TickerProviderStateMixin
 
   Future<void> _initializeSiswaData() async {
     // Priority: Use passed parameters first, then SharedPreferences
-    if (widget.selectedSiswaNis != null && widget.selectedSiswaNama != null) {
-      _currentNis = widget.selectedSiswaNis;
+    if (widget.selectedSiswaNisn != null && widget.selectedSiswaNama != null) {
+      _currentNisn = widget.selectedSiswaNisn;
       _currentNama = widget.selectedSiswaNama;
       
       // Save to SharedPreferences for consistency
       final prefs = await SharedPreferences.getInstance();
-      await prefs.setString('selected_siswa_nis', _currentNis!);
+      await prefs.setString('selected_siswa_nisn', _currentNisn!);
       await prefs.setString('selected_siswa_nama', _currentNama!);
     } else {
       // Fallback to SharedPreferences
       final prefs = await SharedPreferences.getInstance();
-      _currentNis = prefs.getString('selected_siswa_nis');
+      _currentNisn = prefs.getString('selected_siswa_nisn');
       _currentNama = prefs.getString('selected_siswa_nama');
     }
     
@@ -126,7 +126,7 @@ class _RiwayatPageState extends State<RiwayatPage> with TickerProviderStateMixin
   }
 
   Future<void> _fetchRiwayat() async {
-    if (_currentNis == null || _currentNis!.isEmpty) {
+    if (_currentNisn == null || _currentNisn!.isEmpty) {
         setState(() {
             isLoading = false;
             errorMessage = 'Siswa belum dipilih. Silakan kembali ke Beranda dan pilih siswa.';
@@ -166,7 +166,7 @@ class _RiwayatPageState extends State<RiwayatPage> with TickerProviderStateMixin
           allRiwayatList = responseData['data'];
           // Filter by selected student NIS
           filteredRiwayatList = allRiwayatList
-              .where((item) => item['nis'] == _currentNis)
+              .where((item) => item['nisn'] == _currentNisn)
               .toList();
 
           setState(() {
@@ -501,7 +501,7 @@ class _RiwayatPageState extends State<RiwayatPage> with TickerProviderStateMixin
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     Text('Nama: ${item['nama'] ?? '-'}'),
-                    Text('NIS: ${item['nis'] ?? '-'}'),
+                    Text('NISN: ${item['nisn'] ?? '-'}'),
                     Text('Tanggal: ${item['tanggal'] ?? '-'}'),
                     Text('Status: ${item['status'] ?? '-'}'),
                     Text('Waktu Masuk: ${item['waktu_masuk'] ?? '-'}'),

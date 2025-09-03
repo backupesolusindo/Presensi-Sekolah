@@ -66,13 +66,13 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
   late Animation<double> _fadeAnimation;
 
   List<dynamic> siswaList = [];
-  String? selectedSiswaNis;
+  String? selectedSiswanisn;
   String? selectedSiswaNama;
   
   Map<String, dynamic>? get selectedSiswa {
-    if (selectedSiswaNis == null || siswaList.isEmpty) return null;
+    if (selectedSiswanisn == null || siswaList.isEmpty) return null;
     try {
-      return siswaList.firstWhere((siswa) => siswa['nis'] == selectedSiswaNis);
+      return siswaList.firstWhere((siswa) => siswa['nisn'] == selectedSiswanisn);
     } catch (e) {
       return null;
     }
@@ -138,14 +138,14 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
     });
     
     // Load saved student selection FIRST
-    selectedSiswaNis = prefs.getString('selected_siswa_nis');
+    selectedSiswanisn = prefs.getString('selected_siswa_nisn');
     selectedSiswaNama = prefs.getString('selected_siswa_nama');
     
     await _fetchSiswaData();
     
     // Validate and ensure selected student still exists
-    if (selectedSiswaNis != null) {
-      bool siswaExists = siswaList.any((s) => s['nis'] == selectedSiswaNis);
+    if (selectedSiswanisn != null) {
+      bool siswaExists = siswaList.any((s) => s['nisn'] == selectedSiswanisn);
       if (!siswaExists && siswaList.isNotEmpty) {
         // If saved student doesn't exist, select first student
         await _selectFirstSiswa();
@@ -161,7 +161,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
   Future<void> _selectFirstSiswa() async {
     if (siswaList.isNotEmpty) {
       final firstSiswa = siswaList.first;
-      selectedSiswaNis = firstSiswa['nis'];
+      selectedSiswanisn = firstSiswa['nisn'];
       selectedSiswaNama = firstSiswa['nama'];
       await _saveSelectedSiswa(firstSiswa);
     }
@@ -222,7 +222,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
     Navigator.push(
       context,
       MaterialPageRoute(builder: (context) => RiwayatPage(
-        selectedSiswaNis: selectedSiswa!['nis'],
+        selectedSiswaNisn: selectedSiswa!['nisn'],
         selectedSiswaNama: selectedSiswa!['nama'],
       )),
     );
@@ -230,12 +230,12 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
 
   Future<void> _saveSelectedSiswa(Map<String, dynamic> siswa) async {
     final prefs = await SharedPreferences.getInstance();
-    await prefs.setString('selected_siswa_nis', siswa['nis']);
+    await prefs.setString('selected_siswa_nisn', siswa['nisn']);
     await prefs.setString('selected_siswa_nama', siswa['nama']);
     await prefs.setString('selected_siswa_kelas', siswa['nama_kelas'] ?? '');
     
     // Update local state
-    selectedSiswaNis = siswa['nis'];
+    selectedSiswanisn = siswa['nisn'];
     selectedSiswaNama = siswa['nama'];
   }
 
@@ -279,8 +279,8 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        _buildSearchBar(),
-                        const SizedBox(height: 24),
+                        // _buildSearchBar(),
+                        // const SizedBox(height: 24),
                         _buildWelcomeSection(),
                         const SizedBox(height: 20),
                         _buildDropdownSiswa(),
@@ -317,36 +317,36 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
       ),
       child: Column(
         children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Container(
-                padding: const EdgeInsets.all(8),
-                decoration: BoxDecoration(
-                  color: Colors.white.withOpacity(0.15),
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: const Icon(
-                  Icons.menu,
-                  color: Colors.white,
-                  size: 20,
-                ),
-              ),
-              Container(
-                padding: const EdgeInsets.all(8),
-                decoration: BoxDecoration(
-                  color: Colors.white.withOpacity(0.15),
-                  borderRadius: BorderRadius.circular(12),
-                  border: Border.all(color: Colors.white.withOpacity(0.3)),
-                ),
-                child: const Icon(
-                  Icons.notifications_outlined,
-                  color: Colors.white,
-                  size: 20,
-                ),
-              ),
-            ],
-          ),
+          // Row(
+          //   mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          //   // children: [
+          //   //   Container(
+          //   //     padding: const EdgeInsets.all(8),
+          //   //     decoration: BoxDecoration(
+          //   //       color: Colors.white.withOpacity(0.15),
+          //   //       borderRadius: BorderRadius.circular(12),
+          //   //     ),
+          //   //     child: const Icon(
+          //   //       Icons.menu,
+          //   //       color: Colors.white,
+          //   //       size: 20,
+          //   //     ),
+          //   //   ),
+          //   //   Container(
+          //   //     padding: const EdgeInsets.all(8),
+          //   //     decoration: BoxDecoration(
+          //   //       color: Colors.white.withOpacity(0.15),
+          //   //       borderRadius: BorderRadius.circular(12),
+          //   //       border: Border.all(color: Colors.white.withOpacity(0.3)),
+          //   //     ),
+          //   //     child: const Icon(
+          //   //       Icons.notifications_outlined,
+          //   //       color: Colors.white,
+          //   //       size: 20,
+          //   //     ),
+          //   //   ),
+          //   // ],
+          // ),
           const SizedBox(height: 24),
           Row(
             children: [
@@ -379,39 +379,39 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
     );
   }
 
-  Widget _buildSearchBar() {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(25),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.05),
-            blurRadius: 10,
-            offset: const Offset(0, 2),
-          ),
-        ],
-      ),
-      child: Row(
-        children: [
-          Icon(
-            Icons.search,
-            color: Colors.grey[400],
-            size: 20,
-          ),
-          const SizedBox(width: 12),
-          Text(
-            'Search...',
-            style: TextStyle(
-              color: Colors.grey[500],
-              fontSize: 14,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
+  // Widget _buildSearchBar() {
+  //   return Container(
+  //     // padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+  //     // decoration: BoxDecoration(
+  //     //   // color: Colors.white,
+  //     //   // borderRadius: BorderRadius.circular(25),
+  //     //   boxShadow: [
+  //     //     BoxShadow(
+  //     //       color: Colors.black.withOpacity(0.05),
+  //     //       blurRadius: 10,
+  //     //       offset: const Offset(0, 2),
+  //     //     ),
+  //     //   ],
+  //     // ),
+  //     // child: Row(
+  //     //   children: [
+  //     //     // Icon(
+  //     //     //   Icons.search,
+  //     //     //   color: Colors.grey[400],
+  //     //     //   size: 20,
+  //     //     // ),
+  //     //     // const SizedBox(width: 12),
+  //     //     // Text(
+  //     //     //   'Search...',
+  //     //     //   style: TextStyle(
+  //     //     //     color: Colors.grey[500],
+  //     //     //     fontSize: 14,
+  //     //     //   ),
+  //     //     // ),
+  //     //   ],
+  //     // ),
+  //   );
+  // }
 
   Widget _buildWelcomeSection() {
     return Container(
@@ -532,7 +532,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                     border: Border.all(color: Colors.grey[200]!),
                   ),
                   child: DropdownButton<String>(
-                    value: selectedSiswaNis,
+                    value: selectedSiswanisn,
                     hint: const Text('Pilih Siswa'),
                     isExpanded: true,
                     underline: Container(),
@@ -544,13 +544,13 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                     ),
                     items: siswaList.map((siswa) {
                       return DropdownMenuItem<String>(
-                        value: siswa['nis'],
+                        value: siswa['nisn'],
                         child: Text(siswa['nama']),
                       );
                     }).toList(),
                     onChanged: (value) async {
                       if (value == null) return;
-                      final siswaToSave = siswaList.firstWhere((s) => s['nis'] == value);
+                      final siswaToSave = siswaList.firstWhere((s) => s['nisn'] == value);
                       await _saveSelectedSiswa(siswaToSave);
                       setState(() {});
                     },
@@ -765,7 +765,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                       ),
                       const SizedBox(height: 8),
                       Text(
-                        'NIS: ${selectedSiswa?['nis'] ?? '-'}',
+                        'nisn: ${selectedSiswa?['nisn'] ?? '-'}',
                         style: const TextStyle(
                           fontSize: 12,
                           color: textSecondary,

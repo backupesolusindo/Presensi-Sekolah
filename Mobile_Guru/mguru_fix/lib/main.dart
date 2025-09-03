@@ -7,7 +7,6 @@ import 'package:mobile_presensi_kdtg/Screens/Login/login_screen.dart';
 import 'package:mobile_presensi_kdtg/Screens/Welcome/welcome_screen.dart';
 import 'package:mobile_presensi_kdtg/Screens/dashboard_screen.dart';
 import 'package:mobile_presensi_kdtg/constants.dart';
-import 'package:page_transition/page_transition.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 
@@ -409,7 +408,7 @@ class _SplashScreenState extends State<SplashScreen> with TickerProviderStateMix
                             ),
                           ),
                           // Inner circle
-                          SizedBox(
+                          const SizedBox(
                             width: 45,
                             height: 45,
                             child: CircularProgressIndicator(
