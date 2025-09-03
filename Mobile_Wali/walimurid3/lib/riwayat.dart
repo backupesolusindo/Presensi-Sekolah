@@ -152,7 +152,7 @@ class _RiwayatPageState extends State<RiwayatPage> with TickerProviderStateMixin
       }
 
       final response = await http.get(
-        Uri.parse('https://presensi-smp3.esolusindo.com/Api/ApiMobile/ApiAbsen/ByNoHp/$noHpOrtu'),
+        Uri.parse('https://presensi-smp3.esolusindo.com/Api/ApiMobile/ApiAbsen/byNoHp/$noHpOrtu'),
         headers: {
           'Content-Type': 'application/json',
           'Accept': 'application/json',

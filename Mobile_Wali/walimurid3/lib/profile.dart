@@ -285,26 +285,26 @@ class _ProfilePageState extends State<ProfilePage> with TickerProviderStateMixin
               padding: EdgeInsets.zero,
             ),
           ),
-          const Text(
-            'Profile',
-            style: TextStyle(
-              fontSize: 20,
-              fontWeight: FontWeight.bold,
-              color: Colors.white,
-            ),
-          ),
-          Container(
-            padding: const EdgeInsets.all(8),
-            decoration: BoxDecoration(
-              color: Colors.white.withOpacity(0.15),
-              borderRadius: BorderRadius.circular(12),
-            ),
-            child: const Icon(
-              Icons.settings,
-              color: Colors.white,
-              size: 20,
-            ),
-          ),
+          // const Text(
+          //   'Profile',
+          //   style: TextStyle(
+          //     fontSize: 20,
+          //     fontWeight: FontWeight.bold,
+          //     color: Colors.white,
+          //   ),
+          // ),
+          // Container(
+          //   padding: const EdgeInsets.all(8),
+          //   decoration: BoxDecoration(
+          //     color: Colors.white.withOpacity(0.15),
+          //     borderRadius: BorderRadius.circular(12),
+          //   ),
+          //   child: const Icon(
+          //     Icons.settings,
+          //     color: Colors.white,
+          //     size: 20,
+          //   ),
+          // ),
         ],
       ),
     );
@@ -396,7 +396,7 @@ class _ProfilePageState extends State<ProfilePage> with TickerProviderStateMixin
                 height: 40,
                 color: Colors.grey.withOpacity(0.3),
               ),
-              _buildQuickStat('24', 'Hadir', Icons.check_circle),
+              _buildQuickStat('0', 'Hadir', Icons.check_circle),
               Container(
                 width: 1,
                 height: 40,
