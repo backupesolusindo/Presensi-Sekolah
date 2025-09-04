@@ -325,29 +325,37 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
       });
     }
   }
+    
 
   @override
-  Widget build(BuildContext context) {
-    Size size = MediaQuery.of(context).size;
-    final screenHeight = MediaQuery.of(context).size.height;
+Widget build(BuildContext context) {
+  Size size = MediaQuery.of(context).size;
+  final screenHeight = MediaQuery.of(context).size.height;
 
-    return Scaffold(
-      body: Container(
-        color: CBackground, // Background color
-        child: Stack(
-          children: [
-            // Positioned background image to cover the full screen
-            Positioned.fill(
-              child: Image.asset(
-                "assets/images/WaliRename.png",
-                fit: BoxFit
-                    .cover, // Ensures the image covers the full background
-              ),
+  return Scaffold(
+    body: Container(
+      color: CBackground, // Background color
+      child: Stack(
+        children: [
+          // Background image
+          Positioned.fill(
+            child: Image.asset(
+              "assets/images/WaliRename.png",
+              fit: BoxFit.cover,
             ),
+          ),
 
-            // The rest of the scrollable content
-            CustomScrollView(
-              physics: const ClampingScrollPhysics(),
+          // Tambahkan RefreshIndicator di sini
+          RefreshIndicator(
+            onRefresh: () async {
+              // reload semua data ketika swipe down
+              await getDataDash();
+              await fetchKegiatan();
+              await fetchJadwalMapel();
+              await fetchPengumuman();
+            },
+            child: CustomScrollView(
+              physics: const AlwaysScrollableScrollPhysics(), // biar bisa di-swipe walau konten pendek
               slivers: <Widget>[
                 _buildHeader(screenHeight),
                 SliverToBoxAdapter(
@@ -368,11 +376,12 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                 _buildJadwalMapelHariIni(screenHeight),
               ],
             ),
-          ],
-        ),
+          ),
+        ],
       ),
-    );
-  }
+    ),
+  );
+}
 
   // --- WIDGET PENGUMUMAN YANG DIPERBAIKI ---
   SliverToBoxAdapter _buildPengumumanSection(double screenHeight) {
