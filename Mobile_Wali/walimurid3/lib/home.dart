@@ -9,6 +9,7 @@ import 'editpassword.dart';
 import 'recognition/RegistrationScreen.dart';
 import 'riwayat.dart';
 import 'profile.dart';
+import 'pengumuman_screen.dart'; // Import pengumuman screen
 
 class ApiErrorHandler {
   static String getErrorMessage(dynamic error) {
@@ -48,6 +49,11 @@ class ApiErrorHandler {
   }
 }
 
+// Core API config class (sesuaikan dengan project Anda)
+class Core {
+  String get ApiUrl => 'https://presensi-smp3.esolusindo.com/'; // Sesuaikan dengan URL API Anda
+}
+
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
 
@@ -68,6 +74,11 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
   List<dynamic> siswaList = [];
   String? selectedSiswanisn;
   String? selectedSiswaNama;
+  
+  // Pengumuman variables
+  List<Map<String, dynamic>> ListPengumuman = [];
+  bool isLoadingPengumuman = false;
+  late PageController _pageController;
   
   Map<String, dynamic>? get selectedSiswa {
     if (selectedSiswanisn == null || siswaList.isEmpty) return null;
@@ -92,6 +103,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
     _initializeLocale();
     _ensureConsistentData();
     _loadUserData();
+    _pageController = PageController();
     _animationController = AnimationController(
       duration: const Duration(milliseconds: 1200),
       vsync: this,
@@ -100,6 +112,15 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
       CurvedAnimation(parent: _animationController, curve: Curves.easeInOut),
     );
     _animationController.forward();
+    fetchPengumuman(); // Fetch pengumuman saat init
+  }
+
+  @override
+  void dispose() {
+    _timer.cancel();
+    _animationController.dispose();
+    _pageController.dispose();
+    super.dispose();
   }
 
   Future<void> _ensureConsistentData() async {
@@ -121,13 +142,6 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
     _timer = Timer.periodic(const Duration(seconds: 1), (Timer t) {
       _updateTime();
     });
-  }
-
-  @override
-  void dispose() {
-    _timer.cancel();
-    _animationController.dispose();
-    super.dispose();
   }
 
   Future<void> _loadUserData() async {
@@ -191,6 +205,57 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
     }
   }
 
+  // Fetch pengumuman from API
+  Future<void> fetchPengumuman() async {
+    setState(() {
+      isLoadingPengumuman = true;
+    });
+
+    try {
+      var url = Uri.parse("${Core().ApiUrl}Api/ApiMobile/ApiPengumuman/getPengumuman");
+      print("Debug: Fetching pengumuman from: $url");
+
+      var response = await http.get(url, headers: {
+        "Accept": "application/json",
+        "Content-Type": "application/json",
+      });
+
+      print("Debug: Response status code: ${response.statusCode}");
+      print("Debug: Response body: ${response.body}");
+
+      if (response.statusCode == 200) {
+        var jsonResponse = json.decode(response.body);
+
+        if (jsonResponse['status'] == true) {
+          var items = jsonResponse['data'];
+          setState(() {
+            ListPengumuman = List<Map<String, dynamic>>.from(items ?? []);
+            isLoadingPengumuman = false;
+          });
+          print("Debug: Number of announcements received: ${ListPengumuman.length}");
+        } else {
+          print("Debug: API returned false status: ${jsonResponse['message']}");
+          setState(() {
+            ListPengumuman = [];
+            isLoadingPengumuman = false;
+          });
+        }
+      } else {
+        print("Debug: HTTP Response status code: ${response.statusCode}");
+        setState(() {
+          ListPengumuman = [];
+          isLoadingPengumuman = false;
+        });
+      }
+    } catch (e) {
+      print("Error fetching pengumuman: $e");
+      setState(() {
+        ListPengumuman = [];
+        isLoadingPengumuman = false;
+      });
+    }
+  }
+
   void _updateTime() {
     final now = DateTime.now();
     setState(() {
@@ -242,6 +307,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
   Future<void> _handleRefresh() async {
     await Future.delayed(const Duration(milliseconds: 500));
     await _loadUserData();
+    await fetchPengumuman(); // Refresh pengumuman juga
     if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
@@ -254,6 +320,49 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
             ),
         );
     }
+  }
+
+  String _formatDate(String? date) {
+    if (date == null || date.isEmpty) {
+      return 'Tanggal belum ditentukan';
+    }
+    
+    try {
+      DateTime parsedDate = DateTime.parse(date);
+      List<String> months = [
+        'Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni',
+        'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'
+      ];
+      
+      return '${parsedDate.day} ${months[parsedDate.month - 1]} ${parsedDate.year}';
+    } catch (e) {
+      return 'Tanggal tidak valid';
+    }
+  }
+
+  // Helper method untuk validasi URL gambar
+  String? _getValidImageUrl(String? imageUrl) {
+    if (imageUrl == null || imageUrl.isEmpty) {
+      return null;
+    }
+    
+    // Jika URL sudah lengkap, gunakan apa adanya
+    if (imageUrl.startsWith('http://') || imageUrl.startsWith('https://')) {
+      return imageUrl;
+    }
+    
+    // Ambil base URL dari Core
+    String baseUrl = Core().ApiUrl;
+    
+    // Pastikan base URL tidak berakhir dengan slash
+    if (baseUrl.endsWith('/')) {
+      baseUrl = baseUrl.substring(0, baseUrl.length - 1);
+    }
+    
+    // Buat URL lengkap
+    String fullUrl = "$baseUrl/public_html/foto/foto_pengumuman/$imageUrl";
+    
+    return fullUrl;
   }
 
   @override
@@ -279,15 +388,11 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        // _buildSearchBar(),
-                        // const SizedBox(height: 24),
-                        _buildWelcomeSection(),
-                        const SizedBox(height: 20),
-                        _buildDropdownSiswa(),
-                        const SizedBox(height: 20),
-                        _buildCategorySection(),
+                        _buildCombinedUserCard(), // Kartu gabungan untuk wali dan siswa
                         const SizedBox(height: 24),
-                        _buildDoctorCard(),
+                        _buildPengumumanSection(), // <<< PENGUMUMAN DIPINDAHKAN KE SINI
+                        const SizedBox(height: 24),
+                        _buildCategorySection(), // Bagian kategori
                         const SizedBox(height: 20),
                       ],
                     ),
@@ -317,36 +422,6 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
       ),
       child: Column(
         children: [
-          // Row(
-          //   mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          //   // children: [
-          //   //   Container(
-          //   //     padding: const EdgeInsets.all(8),
-          //   //     decoration: BoxDecoration(
-          //   //       color: Colors.white.withOpacity(0.15),
-          //   //       borderRadius: BorderRadius.circular(12),
-          //   //     ),
-          //   //     child: const Icon(
-          //   //       Icons.menu,
-          //   //       color: Colors.white,
-          //   //       size: 20,
-          //   //     ),
-          //   //   ),
-          //   //   Container(
-          //   //     padding: const EdgeInsets.all(8),
-          //   //     decoration: BoxDecoration(
-          //   //       color: Colors.white.withOpacity(0.15),
-          //   //       borderRadius: BorderRadius.circular(12),
-          //   //       border: Border.all(color: Colors.white.withOpacity(0.3)),
-          //   //     ),
-          //   //     child: const Icon(
-          //   //       Icons.notifications_outlined,
-          //   //       color: Colors.white,
-          //   //       size: 20,
-          //   //     ),
-          //   //   ),
-          //   // ],
-          // ),
           const SizedBox(height: 24),
           Row(
             children: [
@@ -379,41 +454,9 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
     );
   }
 
-  // Widget _buildSearchBar() {
-  //   return Container(
-  //     // padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
-  //     // decoration: BoxDecoration(
-  //     //   // color: Colors.white,
-  //     //   // borderRadius: BorderRadius.circular(25),
-  //     //   boxShadow: [
-  //     //     BoxShadow(
-  //     //       color: Colors.black.withOpacity(0.05),
-  //     //       blurRadius: 10,
-  //     //       offset: const Offset(0, 2),
-  //     //     ),
-  //     //   ],
-  //     // ),
-  //     // child: Row(
-  //     //   children: [
-  //     //     // Icon(
-  //     //     //   Icons.search,
-  //     //     //   color: Colors.grey[400],
-  //     //     //   size: 20,
-  //     //     // ),
-  //     //     // const SizedBox(width: 12),
-  //     //     // Text(
-  //     //     //   'Search...',
-  //     //     //   style: TextStyle(
-  //     //     //     color: Colors.grey[500],
-  //     //     //     fontSize: 14,
-  //     //     //   ),
-  //     //     // ),
-  //     //   ],
-  //     // ),
-  //   );
-  // }
-
-  Widget _buildWelcomeSection() {
+  // ### MODIFIED WIDGET ###
+  // Kartu gabungan yang lebih ringkas untuk info wali dan dropdown siswa
+  Widget _buildCombinedUserCard() {
     return Container(
       padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
@@ -427,103 +470,82 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
           ),
         ],
       ),
-      child: Row(
-        children: [
-          Container(
-            width: 60,
-            height: 60,
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(15),
-              color: cardWhite,
-              border: Border.all(color: Colors.grey[200]!),
-            ),
-            child: ClipRRect(
-              borderRadius: BorderRadius.circular(15),
-              child: Image.asset(
-                'assets/Logo_SMPN_3_Jember.png',
-                fit: BoxFit.cover,
-                errorBuilder: (context, error, stackTrace) {
-                  return const Icon(
-                    Icons.school,
-                    color: primaryBlue,
-                    size: 24,
-                  );
-                },
-              ),
-            ),
-          ),
-          const SizedBox(width: 16),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  namaWali,
-                  style: const TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
-                    color: textPrimary,
-                  ),
-                ),
-                const SizedBox(height: 4),
-                Text(
-                  noHp,
-                  style: const TextStyle(
-                    fontSize: 14,
-                    color: textSecondary,
-                  ),
-                ),
-                const SizedBox(height: 8),
-                Row(
-                  children: [
-                    const Icon(Icons.access_time, size: 14, color: primaryBlue),
-                    const SizedBox(width: 4),
-                    Text(
-                      _currentTime,
-                      style: const TextStyle(
-                        fontSize: 12,
-                        color: primaryBlue,
-                        fontWeight: FontWeight.w500,
-                      ),
-                    ),
-                  ],
-                ),
-              ],
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildDropdownSiswa() {
-    return Container(
-      padding: const EdgeInsets.all(20),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(20),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.05),
-            blurRadius: 15,
-            offset: const Offset(0, 5),
-          ),
-        ],
-      ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text(
-            'Pilih Siswa',
-            style: TextStyle(
-              fontSize: 16,
-              fontWeight: FontWeight.bold,
-              color: textPrimary,
-            ),
+          // Bagian info pengguna
+          Row(
+            children: [
+              Container(
+                width: 60,
+                height: 60,
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(15),
+                  color: cardWhite,
+                  border: Border.all(color: Colors.grey[200]!),
+                ),
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(15),
+                  child: Image.asset(
+                    'assets/Logo_SMPN_3_Jember.png',
+                    fit: BoxFit.cover,
+                    errorBuilder: (context, error, stackTrace) {
+                      return const Icon(
+                        Icons.school,
+                        color: primaryBlue,
+                        size: 24,
+                      );
+                    },
+                  ),
+                ),
+              ),
+              const SizedBox(width: 16),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      namaWali,
+                      style: const TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                        color: textPrimary,
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      noHp,
+                      style: const TextStyle(
+                        fontSize: 14,
+                        color: textSecondary,
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    Row(
+                      children: [
+                        const Icon(Icons.access_time, size: 14, color: primaryBlue),
+                        const SizedBox(width: 4),
+                        Text(
+                          _currentTime,
+                          style: const TextStyle(
+                            fontSize: 12,
+                            color: primaryBlue,
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+            ],
           ),
-          const SizedBox(height: 12),
+          
+          const SizedBox(height: 16), // Mengurangi jarak vertikal
+          
+          // Bagian pemilihan siswa (dibuat lebih ringkas)
           siswaList.isEmpty
-              ? const Text('Memuat data...')
+              ? const Text('Memuat data siswa...')
               : Container(
                   padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
                   decoration: BoxDecoration(
@@ -556,6 +578,66 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                     },
                   ),
                 ),
+          
+          // Menampilkan info siswa yang dipilih jika tersedia
+          if (selectedSiswa != null) ...[
+            const SizedBox(height: 16),
+            Container(
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                color: lightBlue.withOpacity(0.1),
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(color: lightBlue.withOpacity(0.3)),
+              ),
+              child: Row(
+                children: [
+                  Container(
+                    width: 40,
+                    height: 40,
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(10),
+                      color: primaryBlue.withOpacity(0.1),
+                    ),
+                    child: const Icon(
+                      Icons.person,
+                      color: primaryBlue,
+                      size: 20,
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          selectedSiswaNama ?? 'Siswa Terpilih',
+                          style: const TextStyle(
+                            fontSize: 14,
+                            fontWeight: FontWeight.bold,
+                            color: textPrimary,
+                          ),
+                        ),
+                        Text(
+                          selectedSiswa?['nama_kelas'] ?? 'Kelas',
+                          style: const TextStyle(
+                            fontSize: 12,
+                            color: textSecondary,
+                          ),
+                        ),
+                        Text(
+                          'NISN: ${selectedSiswa?['nisn'] ?? '-'}',
+                          style: const TextStyle(
+                            fontSize: 11,
+                            color: textSecondary,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
         ],
       ),
     );
@@ -672,8 +754,10 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
     );
   }
 
-  Widget _buildDoctorCard() {
+  // Bagian Pengumuman
+  Widget _buildPengumumanSection() {
     return Container(
+      padding: const EdgeInsets.all(20.0),
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(20),
@@ -686,97 +770,254 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
         ],
       ),
       child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Container(
-            padding: const EdgeInsets.all(20),
-            decoration: BoxDecoration(
-              color: lightBlue.withOpacity(0.1),
-              borderRadius: const BorderRadius.only(
-                topLeft: Radius.circular(20),
-                topRight: Radius.circular(20),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              const Text(
+                'Pengumuman Terbaru',
+                style: TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.bold,
+                  color: textPrimary,
+                ),
               ),
-            ),
-            child: Row(
-              children: [
-                Container(
-                  padding: const EdgeInsets.all(6),
-                  decoration: BoxDecoration(
-                    color: primaryBlue,
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                  child: const Text(
-                    'Siswa Terpilih',
-                    style: TextStyle(
-                      fontSize: 10,
-                      color: Colors.white,
-                      fontWeight: FontWeight.w600,
+              TextButton(
+                onPressed: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => const PengumumanScreen(),
                     ),
-                  ),
-                ),
-                const Spacer(),
-                const Text(
-                  'Informasi Siswa',
+                  );
+                },
+                child: const Text(
+                  'Lihat Semua',
                   style: TextStyle(
-                    fontSize: 14,
-                    fontWeight: FontWeight.w600,
+                    fontSize: 12.0,
                     color: primaryBlue,
+                    fontWeight: FontWeight.w500,
                   ),
                 ),
-              ],
-            ),
+              ),
+            ],
           ),
-          Padding(
-            padding: const EdgeInsets.all(20),
-            child: Row(
-              children: [
-                Container(
-                  width: 60,
-                  height: 60,
-                  decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(15),
-                    color: lightBlue.withOpacity(0.1),
-                  ),
-                  child: const Icon(
-                    Icons.person,
+          const SizedBox(height: 12),
+          if (isLoadingPengumuman)
+            const SizedBox(
+              height: 120,
+              child: Center(
+                child: CircularProgressIndicator(
+                  color: primaryBlue,
+                ),
+              ),
+            )
+          else if (ListPengumuman.isEmpty)
+            Container(
+              padding: const EdgeInsets.all(15.0),
+              width: double.infinity,
+              decoration: BoxDecoration(
+                color: primaryBlue.withOpacity(0.1),
+                borderRadius: BorderRadius.circular(12.0),
+              ),
+              child: const Row(
+                children: [
+                  Icon(
+                    Icons.info_outline,
                     color: primaryBlue,
                     size: 24,
                   ),
-                ),
-                const SizedBox(width: 16),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        selectedSiswaNama ?? 'Pilih Siswa',
-                        style: const TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.bold,
-                          color: textPrimary,
+                  SizedBox(width: 10),
+                  Expanded(
+                    child: Text(
+                      "Tidak ada pengumuman terbaru",
+                      style: TextStyle(
+                        color: primaryBlue,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            )
+          else
+            SizedBox(
+              height: 120,
+              child: PageView.builder(
+                controller: _pageController,
+                scrollDirection: Axis.horizontal,
+                itemCount: ListPengumuman.length > 3 ? 3 : ListPengumuman.length,
+                itemBuilder: (context, index) {
+                  final item = ListPengumuman[index];
+                  final String? imageUrl = _getValidImageUrl(item['gambar']);
+
+                  return GestureDetector(
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => const PengumumanScreen(),
+                        ),
+                      );
+                    },
+                    child: Container(
+                      margin: const EdgeInsets.only(right: 10.0),
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(12.0),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withOpacity(0.1),
+                            blurRadius: 8,
+                            offset: const Offset(0, 4),
+                          ),
+                        ],
+                      ),
+                      child: ClipRRect(
+                        borderRadius: BorderRadius.circular(12.0),
+                        child: Stack(
+                          fit: StackFit.expand,
+                          children: [
+                            // Background image or color
+                            if (imageUrl != null && imageUrl.isNotEmpty)
+                              Image.network(
+                                imageUrl,
+                                fit: BoxFit.cover,
+                                loadingBuilder: (context, child, loadingProgress) {
+                                  if (loadingProgress == null) return child;
+                                  return Container(
+                                    color: primaryBlue.withOpacity(0.1),
+                                    child: const Center(
+                                      child: CircularProgressIndicator(
+                                        color: primaryBlue,
+                                      ),
+                                    ),
+                                  );
+                                },
+                                errorBuilder: (context, error, stackTrace) {
+                                  return Container(
+                                    color: primaryBlue.withOpacity(0.1),
+                                    child: const Center(
+                                      child: Icon(
+                                        Icons.broken_image,
+                                        color: primaryBlue,
+                                        size: 40,
+                                      ),
+                                    ),
+                                  );
+                                },
+                              )
+                            else
+                              Container(
+                                decoration: BoxDecoration(
+                                  gradient: LinearGradient(
+                                    begin: Alignment.topLeft,
+                                    end: Alignment.bottomRight,
+                                    colors: [
+                                      primaryBlue.withOpacity(0.8),
+                                      lightBlue.withOpacity(0.6),
+                                    ],
+                                  ),
+                                ),
+                              ),
+
+                            // Overlay for better text readability
+                            Container(
+                              decoration: BoxDecoration(
+                                gradient: LinearGradient(
+                                  colors: [
+                                    Colors.black.withOpacity(0.6),
+                                    Colors.black.withOpacity(0.3),
+                                    Colors.transparent
+                                  ],
+                                  begin: Alignment.bottomCenter,
+                                  end: Alignment.topCenter,
+                                  stops: const [0.0, 0.4, 1.0],
+                                ),
+                              ),
+                            ),
+
+                            // Content text
+                            Positioned(
+                              bottom: 10,
+                              left: 12,
+                              right: 12,
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  Text(
+                                    item['judul'] ?? 'Judul tidak tersedia',
+                                    style: const TextStyle(
+                                      fontSize: 14.0,
+                                      fontWeight: FontWeight.bold,
+                                      color: Colors.white,
+                                      shadows: [
+                                        Shadow(
+                                          blurRadius: 4.0,
+                                          color: Colors.black54,
+                                          offset: Offset(1.0, 1.0),
+                                        )
+                                      ],
+                                    ),
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
+                                  const SizedBox(height: 2),
+                                  Text(
+                                    item['isi'] ?? 'Konten tidak tersedia',
+                                    style: TextStyle(
+                                      fontSize: 11.0,
+                                      color: Colors.white.withOpacity(0.9),
+                                    ),
+                                    maxLines: 2,
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
+                                  const SizedBox(height: 4),
+                                  if (item['tanggal'] != null)
+                                    Row(
+                                      children: [
+                                        const Icon(
+                                          Icons.access_time_filled,
+                                          size: 12,
+                                          color: Colors.white,
+                                        ),
+                                        const SizedBox(width: 4),
+                                        Text(
+                                          _formatDate(item['tanggal']),
+                                          style: const TextStyle(
+                                            fontSize: 10.0,
+                                            color: Colors.white,
+                                            fontWeight: FontWeight.w600,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                ],
+                              ),
+                            ),
+                          ],
                         ),
                       ),
-                      const SizedBox(height: 4),
-                      Text(
-                        selectedSiswa?['nama_kelas'] ?? 'SMP Negeri 3',
-                        style: const TextStyle(
-                          fontSize: 14,
-                          color: textSecondary,
-                        ),
-                      ),
-                      const SizedBox(height: 8),
-                      Text(
-                        'nisn: ${selectedSiswa?['nisn'] ?? '-'}',
-                        style: const TextStyle(
-                          fontSize: 12,
-                          color: textSecondary,
-                        ),
-                      ),
-                    ],
+                    ),
+                  );
+                },
+              ),
+            ),
+          if (ListPengumuman.length > 3)
+            Padding(
+              padding: const EdgeInsets.only(top: 8.0),
+              child: Center(
+                child: Text(
+                  "Geser untuk melihat pengumuman lainnya • ${ListPengumuman.length} total",
+                  style: const TextStyle(
+                    fontSize: 10.0,
+                    color: Colors.grey,
+                    fontStyle: FontStyle.italic,
                   ),
                 ),
-              ],
+              ),
             ),
-          ),
         ],
       ),
     );
