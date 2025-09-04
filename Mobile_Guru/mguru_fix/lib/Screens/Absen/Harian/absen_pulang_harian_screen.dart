@@ -361,7 +361,7 @@ class _AbsenPage extends State<AbsenPage> {
         ),
       )),
       Positioned(
-          bottom: 120,
+          bottom: 80,
           width: size.width,
           child: AnimatedOpacity(
               opacity: ssHeader ? 1 : 0,
@@ -373,7 +373,7 @@ class _AbsenPage extends State<AbsenPage> {
                   duration: const Duration(milliseconds: 500),
                   curve: Curves.fastEaseInToSlowEaseOut,
                   child: Container(
-                    margin: const EdgeInsets.only(left: 10.0, right: 10.0),
+                    margin: const EdgeInsets.only(left: 20.0, right: 20.0),
                     decoration: BoxDecoration(
                       color: Colors.white,
                       borderRadius: BorderRadius.circular(12.0),
@@ -414,7 +414,7 @@ class _AbsenPage extends State<AbsenPage> {
                     ),
                   )))),
       Positioned(
-          bottom: 8,
+          bottom: 20,
           width: size.width,
           child: AnimatedOpacity(
               opacity: ssHeader ? 1 : 0,
